@@ -1,0 +1,25 @@
+volumes:
+  db_data_dev:
+
+
+services:
+  clepsy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - .:/app
+      - db_data_dev:/var/lib/clepsy
+
+    env_file:
+      - .env
+    entrypoint: ["sh", "-c", "sleep infinity & wait"]
+    ports:
+      - "8000:8000"
+
+    environment:
+      GOOSE_DRIVER: sqlite3
+      GOOSE_DBSTRING: /var/lib/clepsy/db.sqlite3
+      GOOSE_MIGRATION_DIR: ./migrations
+      PADDLE_OCR_BASE_DIR: /var/lib/clepsy/paddle_cache

@@ -1,0 +1,113 @@
+@import "tailwindcss";
+@import "./themes.css";
+@import "./easymde_override.css";
+@import "./multi_select.css";
+@import "./flatpickr.css";
+
+@source "**/*.py";
+@source "**/*.js";
+@source "static/custom_scripts/**/*.js";
+
+
+
+/* HTMX Indicator Styles */
+.htmx-indicator {
+    opacity: 0;
+    transition: opacity 200ms ease-in;
+}
+.htmx-request .htmx-indicator {
+    opacity: 1;
+}
+.htmx-request.htmx-indicator {
+    opacity: 1;
+}
+
+/* Component overrides loaded last */
+
+/* Insights: Fullscreen-friendly rules for the per-tag chart */
+#time-spent-per-tag-wrapper {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* clip anything exceeding the panel/card */
+    border-radius: inherit; /* respect parent card rounding for clipping */
+}
+
+#time-spent-per-tag-wrapper:fullscreen {
+    width: 100vw;
+    height: 100vh;
+}
+
+#time-spent-per-tag {
+    flex: 1;
+    min-height: 260px; /* fallback if the page is short */
+    overflow: hidden;  /* clip any accidental overflow on zoom */
+}
+
+#time-spent-per-tag svg {
+    overflow: hidden;
+    display: block;
+}
+
+
+
+
+
+
+
+
+
+/* Duration Picker (inline chevrons) */
+.html-duration-picker-input-controls-wrapper {
+    position: relative;
+    display: inline-block;
+}
+.html-duration-picker-input-controls-wrapper .html-duration-picker {
+    text-align: right;
+    padding-right: 22px; /* room for chevrons */
+    box-sizing: border-box;
+}
+/* Width is controlled via classes (e.g., w-full) on the wrapper when desired */
+.html-duration-picker-input-controls-wrapper .controls {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px; /* space between carets */
+    padding: 0;
+}
+.html-duration-picker-input-controls-wrapper .scroll-btn {
+    width: 16px;
+    height: 12px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: default;
+    line-height: 0; /* tighten inline box */
+}
+.html-duration-picker-input-controls-wrapper .caret {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    display: inline-block;
+}
+.html-duration-picker-input-controls-wrapper .caret.caret-up {
+    border-width: 0 4px 5px 4px;
+    border-color: transparent transparent currentColor transparent;
+}
+.html-duration-picker-input-controls-wrapper .caret.caret-down {
+    border-width: 5px 4px 0 4px;
+    border-color: currentColor transparent transparent transparent;
+}
+
+
+
+.flatpickr-calendar {
+  z-index: 99933333333333333333333333339 !important;
+}
+
+
+.flatpickr-calendar.open { z-index: 2147483647 !important; }

@@ -1,0 +1,135 @@
+/* multi_select.css - Styles for the custom multi-select component (dark/light/any theme)
+   This file provides enhanced styling for the multi-select dropdown, completely independent from single select. */
+
+@layer components {
+  /* Multi-select button styling - independent from single select */
+  /* Shared button styles for multi-select and single select */
+  .multi-select button.btn-outline,
+  .select button.btn-outline {
+    display: flex;
+    height: calc(var(--spacing) * 9);
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--spacing) * 2);
+    border-radius: var(--radius-md);
+    border-style: solid;
+    border-width: 1px;
+    border-color: var(--color-input);
+    background-color: transparent;
+    padding-top: calc(var(--spacing) * 2);
+    padding-bottom: calc(var(--spacing) * 2);
+    padding-left: calc(var(--spacing) * 3);
+    padding-right: calc(var(--spacing) * 3);
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+    font-weight: normal;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    transition-property: color, box-shadow, background-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    cursor: pointer;
+
+    &:focus-visible {
+      border-color: var(--color-ring);
+      box-shadow: 0 0 0 calc(3px) color-mix(in oklab, var(--color-ring) 50%, transparent);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    /* Dark mode styling */
+    &:is(.dark *) {
+      background-color: color-mix(in oklab, var(--color-input) 30%, transparent);
+
+      &:hover {
+        @media (hover: hover) {
+          background-color: color-mix(in oklab, var(--color-input) 50%, transparent);
+        }
+      }
+    }
+  }
+
+  /* Multi-select dropdown container */
+  .multi-select-dropdown {
+    background-color: var(--color-popover);
+    color: var(--color-popover-foreground);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    padding: calc(var(--spacing) * 1);
+  }
+
+  /* Multi-select option styling - completely independent */
+  .multi-select-option {
+    position: relative;
+    display: flex;
+    width: 100%;
+    cursor: default;
+    align-items: center;
+    gap: calc(var(--spacing) * 2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-radius: var(--radius-sm);
+    padding-top: calc(var(--spacing) * 1.5);
+    padding-bottom: calc(var(--spacing) * 1.5);
+    padding-left: calc(var(--spacing) * 2);
+    padding-right: calc(var(--spacing) * 7.5);
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    user-select: none;
+
+    &:disabled {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    &[aria-disabled="true"] {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    &[aria-hidden="true"] {
+      display: none;
+    }
+
+    /* Selected state with checkmark background */
+    &.selected {
+      background-color: var(--color-accent);
+      color: var(--color-accent-foreground);
+      background-image: var(--check-icon);
+      background-size: 0.875rem;
+      background-position: center right 0.5rem;
+      background-repeat: no-repeat;
+    }
+
+    /* Hover and focus states */
+    &:hover,
+    &.active,
+    &:focus-visible {
+      @media (hover: hover) {
+        background-color: var(--color-accent);
+        color: var(--color-accent-foreground);
+      }
+    }
+
+    /* Selected item hover state - should still show checkmark */
+    &.selected:hover {
+      @media (hover: hover) {
+        background-color: var(--color-accent);
+        color: var(--color-accent-foreground);
+        background-image: var(--check-icon);
+        background-size: 0.875rem;
+        background-position: center right 0.5rem;
+        background-repeat: no-repeat;
+      }
+    }
+  }
+}

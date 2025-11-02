@@ -1,0 +1,25 @@
+{$DOMAIN} {
+    encode gzip
+
+    # Serve static assets
+    @static path /static/*
+    handle @static {
+        root * /srv/static
+        file_server
+        header {
+            # long cache for hashed assets (optional)
+            /static/* Cache-Control "public, max-age=31536000, immutable"
+        }
+    }
+
+    # Everything else to FastAPI
+    handle {
+        reverse_proxy clepsy:8000
+    }
+
+    log
+}
+
+www.{$DOMAIN} {
+    redir https://{$DOMAIN}{uri} 301
+}

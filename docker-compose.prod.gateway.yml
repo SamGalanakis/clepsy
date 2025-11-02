@@ -1,0 +1,27 @@
+services:
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    environment:
+      GOOSE_DRIVER: sqlite3
+      GOOSE_DBSTRING: /var/lib/clepsy/db.sqlite3
+      GOOSE_MIGRATION_DIR: ./migrations
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - type: bind
+        source: ./Caddyfile
+        target: /etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+      - static_assets:/srv/static:ro
+    networks: [web]
+    depends_on: [clepsy]
+
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,52 @@
+
+
+:root {
+  --mde-bg: var(--color-card);
+  --mde-fg: var(--color-card-foreground);
+  --mde-border: var(--color-border);
+
+  --mde-toolbar-bg: var(--color-card);
+  --mde-toolbar-fg: var(--color-muted-foreground);
+  --mde-toolbar-fg-hover: var(--color-foreground);
+
+  --mde-preview-bg: var(--color-popover);
+  --mde-preview-fg: var(--color-popover-foreground);
+
+  --mde-gutter-bg: var(--color-muted);
+  --mde-gutter-fg: var(--color-muted-foreground);
+
+  --mde-cursor: var(--color-foreground);
+  --mde-selection: color-mix(in oklch, var(--color-primary) 22%, transparent);
+}
+
+/* 2) Apply to SimpleMDE/EasyMDE UI */
+.editor-toolbar { background: var(--mde-toolbar-bg); border: 1px solid var(--mde-border); border-bottom: 0; }
+.editor-toolbar a { color: var(--mde-toolbar-fg); }
+.editor-toolbar a:hover, .editor-toolbar a.active { color: var(--mde-toolbar-fg-hover); border-color: var(--mde-border); }
+.editor-statusbar { color: var(--color-muted-foreground); border-top: 1px solid var(--mde-border); }
+
+.CodeMirror { background: var(--mde-bg); color: var(--mde-fg); border: 1px solid var(--mde-border); }
+.CodeMirror-gutters { background: var(--mde-gutter-bg); border-right: 1px solid var(--mde-border); }
+.CodeMirror-linenumber { color: var(--mde-gutter-fg); }
+.CodeMirror-cursor { border-left-color: var(--mde-cursor); }
+.CodeMirror-selected { background: var(--mde-selection) !important; }
+
+.editor-preview, .editor-preview-side { background: var(--mde-preview-bg); color: var(--mde-preview-fg); }
+.editor-preview pre, .editor-preview code,
+.editor-preview-side pre, .editor-preview-side code { background: var(--color-muted); color: var(--mde-fg); }
+
+/* 3) Token colors (default CM5 theme scope) */
+.cm-s-default .cm-header    { color: var(--color-primary); }
+.cm-s-default .cm-link      { color: var(--color-accent); }
+.cm-s-default .cm-string    { color: var(--color-chart-3); }
+.cm-s-default .cm-number    { color: var(--color-chart-2); }
+.cm-s-default .cm-keyword   { color: var(--color-chart-1); }
+.cm-s-default .cm-comment   { color: var(--color-muted-foreground); }
+.cm-s-default .cm-atom      { color: var(--color-chart-4); }
+.cm-s-default .cm-tag,
+.cm-s-default .cm-attribute { color: var(--color-chart-5); }
+
+/* (optional) respect your mono font */
+.CodeMirror, .editor-preview code, .editor-preview pre {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}

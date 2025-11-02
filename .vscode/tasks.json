@@ -1,0 +1,18 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "create_db",
+            "type": "shell",
+            "command": "uv run ./scripts/create_db.py --user_id test_user --password password --encryption_key test_key --description 'I am a software developer' "
+        },
+        {
+            "label": "run_tailwind",
+            "type": "shell",
+            "command": "uv run tailwindcss -i ./src/clepsy/frontend/css/app.css -o ./static/app.css",
+            "problemMatcher": []
+        }
+    ]
+}

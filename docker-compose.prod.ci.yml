@@ -1,0 +1,6 @@
+services:
+  clepsy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: tests

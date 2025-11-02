@@ -1,0 +1,28 @@
+{
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    // Format and organize imports on save
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "always",
+        "source.fixAll.ruff": "always"
+    },
+    // Ruff (native) extension settings (no deprecated ruff-lsp options)
+    "ruff.lint.enable": true,
+    // Use Ruff as the default Python formatter
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": false,
+        "markdown": true,
+        "scminput": false,
+        "shellscript": true,
+        "python": true
+    },
+    "baml.enablePlaygroundProxy": false
+}
