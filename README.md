@@ -74,4 +74,5 @@ This project is dual-licensed:
 - **Commercial License:** For commercial licensing options please contact [sam@clepsy.ai](mailto:sam@clepsy.ai).
 
 **Copyright © 2025 Samouil Galanakis. All rights reserved.**
-```
+
+
