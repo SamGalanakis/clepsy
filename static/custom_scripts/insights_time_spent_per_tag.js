@@ -489,6 +489,13 @@
         containerId: 'time-spent-per-tag',
         wrapperId: 'time-spent-per-tag-wrapper',
         render: renderTimeSpentPerTag,
+        placeholder: ({ data }) => {
+          const hasEvents = Array.isArray(data?.activity_specs) && data.activity_specs.some(s => Array.isArray(s?.events) && s.events.length > 0);
+          if (!data || !hasEvents) {
+            return { title: 'Time Spent per Tag', message: 'No tagged activity within the selected window.' };
+          }
+          return null;
+        },
       });
     } else {
       el.__clepsyChart();

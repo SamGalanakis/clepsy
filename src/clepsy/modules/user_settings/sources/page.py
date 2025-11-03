@@ -52,53 +52,63 @@ def create_sources_table(
     now = datetime.now(dt_timezone.utc)
     headers = ["Name", "Type", "Last Seen", "Created", "Status", ""]
     if not sources:
+        # Mobile: full width; Desktop: allow the wider min width
         return div(
             id="sources-table",
-            class_="mx-auto min-w-[theme(screens.md)] w-fit max-w-full rounded-radius border border-outline dark:border-outline-dark overflow-x-auto",
+            class_="mx-auto w-full sm:min-w-[theme(screens.md)] sm:w-fit max-w-full rounded-radius border border-outline dark:border-outline-dark overflow-x-auto",
         )[div(class_="p-8 text-center text-muted-foreground")["No sources yet."]]
     return div(
         id="sources-table",
-        class_="mx-auto min-w-[theme(screens.md)] w-max table rounded-radius border border-outline dark:border-outline-dark",
+        class_="mx-auto w-full rounded-radius border border-outline dark:border-outline-dark",
     )[
-        table(class_="table w-auto mx-auto")[
-            thead(
-                class_="border-b border-outline bg-surface-alt text-sm text-on-surface-strong dark:border-outline-dark dark:bg-surface-dark-alt dark:text-on-surface-dark-strong"
-            )[tr[(th(scope="col", class_="p-4")[h] for h in headers)]],
-            tbody(class_="divide-y divide-outline dark:divide-outline-dark")[
-                (
-                    tr[
-                        td(class_="p-4 whitespace-normal break-all")[str(src.name)],
-                        td(class_="p-4")[str(src.source_type.value)],
-                        td(class_="p-4")[
-                            format_recent_or_ordinal(src.last_seen, tz_str, now=now)
-                        ],
-                        td(class_="p-4")[
-                            format_recent_or_ordinal(src.created_at, tz_str, now=now)
-                        ],
-                        td(class_="p-4")[
-                            create_status_toggle(
-                                is_active=(src.status == SourceStatus.ACTIVE),
-                                source_id=src.id,
-                            )
-                        ],
-                        td(class_="p-4 text-right")[
-                            create_button(
-                                text=None,
-                                variant="destructive",
-                                size="sm",
-                                icon="delete",
-                                attrs={
-                                    "type": "button",
-                                    "hx-delete": f"/s/sources/{src.id}",
-                                    "hx-target": "#sources-table",
-                                    "hx-swap": "outerHTML",
-                                },
-                            )
-                        ],
-                    ]
-                    for src in sources
-                )
-            ],
+        # Horizontal scroll container for small screens
+        div(class_="w-full overflow-x-auto")[
+            table(class_="table min-w-[720px] w-max")[
+                thead(
+                    class_="border-b border-outline bg-surface-alt text-sm text-on-surface-strong dark:border-outline-dark dark:bg-surface-dark-alt dark:text-on-surface-dark-strong"
+                )[tr[(th(scope="col", class_="p-4")[h] for h in headers)]],
+                tbody(class_="divide-y divide-outline dark:divide-outline-dark")[
+                    (
+                        tr[
+                            td(class_="p-4 align-top")[
+                                div(
+                                    class_="max-w-[8ch] sm:max-w-none whitespace-normal break-all break-words hyphens-auto"
+                                )[str(src.name)]
+                            ],
+                            td(class_="p-4")[str(src.source_type.value)],
+                            td(class_="p-4")[
+                                format_recent_or_ordinal(src.last_seen, tz_str, now=now)
+                            ],
+                            td(class_="p-4")[
+                                format_recent_or_ordinal(
+                                    src.created_at, tz_str, now=now
+                                )
+                            ],
+                            td(class_="p-4")[
+                                create_status_toggle(
+                                    is_active=(src.status == SourceStatus.ACTIVE),
+                                    source_id=src.id,
+                                )
+                            ],
+                            td(class_="p-4 text-right")[
+                                create_button(
+                                    text=None,
+                                    variant="destructive",
+                                    size="sm",
+                                    icon="delete",
+                                    attrs={
+                                        "type": "button",
+                                        "hx-delete": f"/s/sources/{src.id}",
+                                        "hx-target": "#sources-table",
+                                        "hx-swap": "outerHTML",
+                                    },
+                                )
+                            ],
+                        ]
+                        for src in sources
+                    )
+                ],
+            ]
         ]
     ]
 
@@ -112,7 +122,8 @@ async def create_sources_page(conn: aiosqlite.Connection) -> Element:
         content_id="add-source-modal-content",
         extra_classes="w-full sm:max-w-[425px]",
     )
-    content = div(class_="card min-w-[theme(screens.md)] w-fit mx-auto")[
+    # Mobile: card should be full width; Desktop: keep previous min width behaviour
+    content = div(class_="card w-full sm:min-w-[theme(screens.md)] sm:w-fit mx-auto")[
         div(class_="p-6 border-b border-outline")[
             h2(class_="text-lg font-semibold text-on-surface-strong")["Sources"],
             p(class_="text-sm text-muted-foreground mt-1")[
@@ -149,5 +160,5 @@ async def create_sources_page(conn: aiosqlite.Connection) -> Element:
     return create_standard_content(
         user_settings=user_settings,
         content=[content],
-        inner_classes="mx-auto min-w-[theme(screens.md)] w-fit max-w-full",
+        inner_classes="mx-auto w-full max-w-full sm:min-w-[theme(screens.md)] sm:w-fit",
     )

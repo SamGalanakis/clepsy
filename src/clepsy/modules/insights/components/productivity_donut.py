@@ -61,7 +61,7 @@ def create_productivity_donut_body(
 
     return div(
         id="productivity_donut_chart",
-        class_="relative w-full h-auto min-h-[300px] overflow-visible",
+        class_="relative w-full h-auto min-h-[260px] sm:min-h-[300px] overflow-visible",
         x_init="window.initInsightsProductivityDonutFromJson($el.dataset.productivity)",
         **{"data-productivity": payload},
     )

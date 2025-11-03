@@ -127,35 +127,38 @@ def create_workers_table_card() -> Element:
 
     return div(
         id="workers-table",
-        class_="card overflow-hidden",
+        class_="card",
         hx_get="/s/monitoring/workers/table",
         hx_trigger="every 10s",
         hx_swap="outerHTML",
     )[
-        table(class_="min-w-full divide-y divide-border/80")[
-            thead(class_="bg-surface-subtle")[
-                tr[
-                    th(
-                        class_="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant"
-                    )["Name"],
-                    th(
-                        class_="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant"
-                    )["Status"],
-                    th(
-                        class_="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant"
-                    )["Last seen"],
-                    th(
-                        class_="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant"
-                    )["Last error"],
-                    th(
-                        class_="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant"
-                    )["Avg period"],
-                    th(
-                        class_="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant"
-                    )["Logs"],
-                ]
-            ],
-            tbody(class_="divide-y divide-border")[rows],
+        # Horizontal scroll container so table never clips on small screens
+        div(class_="w-full overflow-x-auto")[
+            table(class_="table min-w-[720px] w-max divide-y divide-border/80")[
+                thead(class_="bg-surface-subtle")[
+                    tr[
+                        th(
+                            class_="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant"
+                        )["Name"],
+                        th(
+                            class_="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant"
+                        )["Status"],
+                        th(
+                            class_="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant"
+                        )["Last seen"],
+                        th(
+                            class_="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant"
+                        )["Last error"],
+                        th(
+                            class_="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant"
+                        )["Avg period"],
+                        th(
+                            class_="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-on-surface-variant"
+                        )["Logs"],
+                    ]
+                ],
+                tbody(class_="divide-y divide-border")[rows],
+            ]
         ]
     ]
 

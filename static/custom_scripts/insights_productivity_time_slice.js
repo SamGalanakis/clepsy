@@ -291,6 +291,13 @@
         fullscreen: true,
         autoBandZoom: true,
         render: renderProductivitySlice,
+        placeholder: ({ data }) => {
+          const hasEvents = Array.isArray(data?.activity_specs) && data.activity_specs.some(s => Array.isArray(s?.events) && s.events.length > 0);
+          if (!data || !hasEvents) {
+            return { title: 'Average Productivity', message: 'Not enough data to render.' };
+          }
+          return null;
+        },
         settings: {
           preserveOpen: true,
           buildPanel(ctx){

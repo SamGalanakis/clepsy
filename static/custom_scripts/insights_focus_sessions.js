@@ -226,7 +226,14 @@
         fullscreen:true,
         autoBandZoom:false,
         zoom:null,
-  render: (ctx)=>{ ctx.state = Object.assign({}, ctx.state, { focusCfg: readSharedConfig() }); return renderCalendar(ctx); }
+  render: (ctx)=>{ ctx.state = Object.assign({}, ctx.state, { focusCfg: readSharedConfig() }); return renderCalendar(ctx); },
+        placeholder: ({ data }) => {
+          const hasEvents = Array.isArray(data?.activity_specs) && data.activity_specs.some(s => Array.isArray(s?.events) && s.events.length > 0);
+          if (!data || !hasEvents) {
+            return { title: 'Focus Sessions', message: 'Not enough data to render.' };
+          }
+          return null;
+        }
       });
     } else { el.__clepsyChart(); }
   };
@@ -241,7 +248,14 @@
         fullscreen:true,
         autoBandZoom:false,
         zoom:null,
-  render: (ctx)=>{ ctx.state = Object.assign({}, ctx.state, { focusCfg: readSharedConfig() }); return renderHistogram(ctx); }
+  render: (ctx)=>{ ctx.state = Object.assign({}, ctx.state, { focusCfg: readSharedConfig() }); return renderHistogram(ctx); },
+        placeholder: ({ data }) => {
+          const hasEvents = Array.isArray(data?.activity_specs) && data.activity_specs.some(s => Array.isArray(s?.events) && s.events.length > 0);
+          if (!data || !hasEvents) {
+            return { title: 'Focus Sessions', message: 'Not enough data to render.' };
+          }
+          return null;
+        }
       });
     } else { el.__clepsyChart(); }
   };
