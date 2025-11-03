@@ -68,7 +68,7 @@ class JWTMiddleware:
 
         return True
 
-    async def redirect_to_registration(self, request: Request, is_htmx: bool):
+    async def redirect_to_registration(self, is_htmx: bool):
         if is_htmx:
             # HTMX expects a 200 with HX-Redirect header
             return JSONResponse(
@@ -79,7 +79,7 @@ class JWTMiddleware:
         else:
             return RedirectResponse(url="/s/create-account")
 
-    async def redirect_to_login(self, request: Request, is_htmx: bool):
+    async def redirect_to_login(self, is_htmx: bool):
         if is_htmx:
             # HTMX expects a 200 with HX-Redirect header
             return JSONResponse(
@@ -89,11 +89,16 @@ class JWTMiddleware:
             return RedirectResponse(url="/s/login")
 
     async def check_authentication(self, request: Request, to_authenticate: bool):
+        """Validate the Authorization cookie if present.
+
+        Returns a tuple of (authenticated, decoded_token | None, reason | None)
+        where reason is one of: "no_token", "invalid_token".
+        """
         auth_token = request.cookies.get("Authorization")
         if auth_token is None:
             if to_authenticate:
-                logger.debug("No auth token")
-            return False, None
+                logger.debug("No auth token cookie present")
+            return False, None, "no_token"
 
         try:
             jwt_token = auth_token.split(" ")[1]
@@ -101,18 +106,18 @@ class JWTMiddleware:
             request.state.jwt_payload = decoded_token
             request.state.authenticated = True
 
-            return True, decoded_token
+            return True, decoded_token, None
         except Exception as e:
             if to_authenticate:
                 logger.debug(f"Invalid token, {e}")
-            return False, None
+            return False, None, "invalid_token"
 
     async def __call__(self, request: Request, call_next):
         # do something with the request object
         is_htmx = "HX-Request" in request.headers
         to_authenticate = self.to_authenticate(request.url.path)
         path = request.url.path
-        authenticated, decoded_token = await self.check_authentication(
+        authenticated, decoded_token, auth_reason = await self.check_authentication(
             request, to_authenticate
         )
 
@@ -130,19 +135,38 @@ class JWTMiddleware:
             response = await call_next(request)
         elif authenticated and not user_settings:
             logger.warning("User is authenticated but no user settings found")
+            logger.info(
+                "Authenticated user missing settings; path=%s. Routing based on onboarding allowances.",
+                path,
+            )
             # Allow specific paths while onboarding
             allowed = any(
                 path.startswith(prefix)
                 for prefix in self.allowed_when_uninitialized_prefixes
             )
             if allowed:
+                logger.info(
+                    "Allowing access during initialization to path=%s (allowed prefix)",
+                    path,
+                )
                 response = await call_next(request)
             else:
                 # Redirect authenticated user without settings to the wizard
-                response = await self.redirect_to_registration(request, is_htmx)
+                logger.info(
+                    "Redirecting authenticated-but-uninitialized user to /s/create-account from path=%s",
+                    path,
+                )
+                response = await self.redirect_to_registration(is_htmx)
 
         else:
-            response = await self.redirect_to_login(request, is_htmx)
+            if to_authenticate:
+                # Only log for paths we protect to avoid noise on assets etc.
+                logger.info(
+                    "Unauthenticated request to protected path=%s (reason=%s); redirecting to /s/login",
+                    path,
+                    auth_reason,
+                )
+            response = await self.redirect_to_login(is_htmx)
 
         return response
 
