@@ -3,7 +3,6 @@ from datetime import date as datetime_date, datetime, timedelta, timezone
 import io
 import math
 import os
-from pathlib import Path
 import re
 from typing import Callable, Sequence, TypeVar
 from uuid import uuid4
@@ -401,11 +400,6 @@ def get_bootstrap_password() -> str:
     if config.bootstrap_password:
         return config.bootstrap_password.get_secret_value()
 
-    try:
-        return read_docker_secret("clepsy_password")
-    except FileNotFoundError:
-        pass
-
     password = read_bootstrap_password_file()
     if password is not None:
         return password
@@ -417,16 +411,6 @@ def get_bootstrap_password() -> str:
         config.bootstrap_password_file_path,
     )
     return password
-
-
-def read_docker_secret(name: str) -> str:
-    path = Path(f"/run/secrets/{name}")
-
-    if not path.is_file():
-        raise FileNotFoundError(f"Docker secret '{name}' not found at {path}")
-
-    secret = path.read_text(encoding="ascii").strip()
-    return secret
 
 
 def generate_bootstrap_password() -> str:
