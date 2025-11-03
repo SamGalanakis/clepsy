@@ -1048,7 +1048,9 @@ async def run_sessionization():
     logger.info("Starting sessionization run")
     async with get_db_connection() as conn:
         user_settings = await select_user_settings(conn)
-        assert user_settings is not None, "User settings must be configured"
+        if not user_settings:
+            logger.warning("No user settings found. Exiting sessionization run.")
+            return
         llm_config = user_settings.text_model_config
         previous_run = await select_latest_sessionization_run(conn)
 
@@ -1095,10 +1097,14 @@ async def run_sessionization():
                 )
                 return
 
-        assert candidate_creation_interval_start < candidate_creation_interval_end, (
-            f"Invalid candidate creation interval: start={candidate_creation_interval_start} "
-            f">= end={candidate_creation_interval_end}"
-        )
+        if candidate_creation_interval_start < candidate_creation_interval_end:
+            error_message = (
+                f"Invalid candidate creation interval: start={candidate_creation_interval_start} "
+                f">= end={candidate_creation_interval_end}"
+                "Aborting sessionization run."
+            )
+            logger.error(error_message)
+            return None
 
         new_activity_specs = await select_specs_with_tags_in_time_range(
             conn,
@@ -1122,9 +1128,13 @@ async def run_sessionization():
     # Fetch specs from previous window's overlap region (if any)
     specs_not_finalized: list[DBActivitySpecWithTags] = []
     if previous_run and previous_run.overlap_start is not None:
-        assert (
-            previous_run.finalized_horizon is not None
-        ), "finalized_horizon must be set if overlap_start is set"
+        if previous_run.finalized_horizon is None:
+            error_message = (
+                "Inconsistent previous run: overlap_start is set but finalized_horizon is None. "
+                "Aborting sessionization run."
+            )
+            logger.error(error_message)
+            return None
 
         async with get_db_connection() as conn:
             specs_not_finalized = await select_specs_with_tags_in_time_range(
@@ -1212,6 +1222,7 @@ async def run_sessionization():
             assert (
                 previous_run is not None
             ), "previous_run must be set if first island is left_connected"
+
             assert (
                 previous_run.finalized_horizon is not None
             ), "finalized_horizon must be set if first island is left_connected"
