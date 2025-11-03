@@ -1,13 +1,11 @@
 # .github/workflows/docker-dev.yml
-name: Docker dev CI
+name: Docker Dev CI
 
 on:
-  push:
-    branches:
-      - dev
   pull_request:
     branches:
       - dev
+    types: [opened, synchronize, reopened]
 
 env:
   REGISTRY: ghcr.io
