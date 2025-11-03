@@ -147,6 +147,7 @@ if not config.log_level:
 baml_log_level = os.environ.get("BAML_LOG")
 if not baml_log_level:
     baml_log_level = "info" if config.is_dev else "warn"
+    os.environ["BAML_LOG"] = baml_log_level
 
 
 class InterceptHandler(logging.Handler):
