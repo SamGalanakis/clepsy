@@ -1,13 +1,11 @@
-# .github/workflows/docker-image.yml
-name: Docker Publish CI
+# .github/workflows/docker-dev.yml
+name: Dev CI
 
 on:
-  push:
+  pull_request:
     branches:
-      - main
-  workflow_dispatch:
-
-
+      - dev
+    types: [opened, synchronize, reopened]
 
 env:
   REGISTRY: ghcr.io
@@ -41,8 +39,6 @@ jobs:
   build-and-push-image:
     needs: test
     runs-on: ubuntu-latest
-    # Only run on merged PRs to main
-    if: github.event.pull_request.merged == true
     permissions:
       contents:       read
       packages:       write
@@ -68,7 +64,6 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push
         id: push
