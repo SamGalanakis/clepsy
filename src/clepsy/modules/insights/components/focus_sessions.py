@@ -70,7 +70,7 @@ def create_focus_sessions_calendar_body(
     )
     return div(
         id="focus_sessions_calendar_chart",
-        class_="relative w-full h-auto min-h-[340px] overflow-visible",
+        class_="relative w-full h-auto min-h-[280px] sm:min-h-[340px] overflow-visible",
         x_init="window.initInsightsFocusSessionsCalendarFromJson($el.dataset.focus)",
         **{"data-focus": payload},
     )
@@ -95,7 +95,7 @@ def create_focus_sessions_histogram_body(
     )
     return div(
         id="focus_sessions_histogram_chart",
-        class_="relative w-full h-auto min-h-[340px] overflow-visible",
+        class_="relative w-full h-auto min-h-[280px] sm:min-h-[340px] overflow-visible",
         x_init="window.initInsightsFocusSessionsHistogramFromJson($el.dataset.focus)",
         **{"data-focus": payload},
     )
@@ -155,7 +155,7 @@ def create_focus_sessions_calendar_container(
     return div(
         id="focus-sessions-calendar-wrapper",
         class_=(
-            "focus-sessions-subchart w-full flex-1 basis-2/3 min-w-[480px] max-w-[1600px]"
+            "focus-sessions-subchart w-full flex-1 basis-full sm:basis-2/3 min-w-0 sm:min-w-[480px] max-w-[1600px]"
         ),
         **{
             "hx-get": "/s/insights/update-focus-sessions-calendar",
@@ -164,7 +164,7 @@ def create_focus_sessions_calendar_container(
             "hx-swap": "outerHTML",
             "x-bind:hx-vals": _hx_common(),
         },
-    )[body]
+    )[div(class_="w-full overflow-x-auto")[div(class_="min-w-[520px]")[body]]]
 
 
 def create_focus_sessions_histogram_container(
@@ -187,7 +187,7 @@ def create_focus_sessions_histogram_container(
     return div(
         id="focus-sessions-histogram-wrapper",
         class_=(
-            "focus-sessions-subchart w-full flex-1 basis-1/3 min-w-[320px] max-w-[640px]"
+            "focus-sessions-subchart w-full flex-1 basis-full sm:basis-1/3 min-w-0 sm:min-w-[320px] max-w-[640px]"
         ),
         **{
             "hx-get": "/s/insights/update-focus-sessions-histogram",
@@ -196,7 +196,7 @@ def create_focus_sessions_histogram_container(
             "hx-swap": "outerHTML",
             "x-bind:hx-vals": _hx_common(),
         },
-    )[body]
+    )[div(class_="w-full overflow-x-auto")[div(class_="min-w-[520px]")[body]]]
 
 
 def create_focus_sessions_stats_container(
@@ -239,7 +239,7 @@ def create_focus_sessions_stats_container(
 def _settings_inputs():
     # Inputs share class focus-session-setting so JS can re-read values.
     return [
-        div(class_="flex flex-col")[
+        div(class_="flex flex-col items-center text-center")[
             div(class_="text-[10px] uppercase tracking-wide opacity-60 mb-0.5")[
                 "Min Duration (min)"
             ],
@@ -249,10 +249,10 @@ def _settings_inputs():
                 min="1",
                 step="1",
                 value="20",
-                class_="focus-session-setting input input-xs bg-base-900 w-20",
+                class_="focus-session-setting input input-xs bg-base-900 w-24",
             ),
         ],
-        div(class_="flex flex-col")[
+        div(class_="flex flex-col items-center text-center")[
             div(class_="text-[10px] uppercase tracking-wide opacity-60 mb-0.5")[
                 "Productive Threshold"
             ],
@@ -263,10 +263,10 @@ def _settings_inputs():
                 max="1",
                 step="0.05",
                 value="0.8",
-                class_="focus-session-setting input input-xs bg-base-900 w-20",
+                class_="focus-session-setting input input-xs bg-base-900 w-24",
             ),
         ],
-        div(class_="flex flex-col")[
+        div(class_="flex flex-col items-center text-center")[
             div(class_="text-[10px] uppercase tracking-wide opacity-60 mb-0.5")[
                 "Max Single Interruption (s)"
             ],
@@ -279,7 +279,7 @@ def _settings_inputs():
                 class_="focus-session-setting input input-xs bg-base-900 w-24",
             ),
         ],
-        div(class_="flex flex-col")[
+        div(class_="flex flex-col items-center text-center")[
             div(class_="text-[10px] uppercase tracking-wide opacity-60 mb-0.5")[
                 "Max Disruption (%)"
             ],
@@ -290,7 +290,7 @@ def _settings_inputs():
                 max="1",
                 step="0.01",
                 value="0.10",
-                class_="focus-session-setting input input-xs bg-base-900 w-20",
+                class_="focus-session-setting input input-xs bg-base-900 w-24",
             ),
         ],
     ]
@@ -332,23 +332,28 @@ def create_focus_sessions_section(
 
     settings_panel = div(
         id="focus-sessions-settings",
-        class_="flex flex-row flex-wrap gap-4 items-center text-xs",
+        class_="flex flex-row flex-wrap gap-4 items-center justify-center text-xs",
     )[_settings_inputs()]
 
-    # Use CSS grid to center title irrespective of dynamic widths of stats/settings.
+    # Title should be full-width above the stats/settings row (mobile-friendly)
     top_bar = div(
         class_=(
-            "grid gap-6 items-center px-4 py-3 rounded-md border border-base-300/40 "
-            "bg-base-950/40 w-full "
-            "grid-cols-[1fr_auto_1fr]"
+            "flex flex-col gap-3 px-4 py-3 rounded-md border border-base-300/40 "
+            "bg-base-950/40 w-full"
         )
     )[
-        div(class_="flex flex-row flex-wrap gap-8 items-center justify-start")[stats],
-        div(class_="text-base font-semibold tracking-tight text-center px-4")[
-            "Focus Sessions"
-        ],
-        div(class_="flex flex-row flex-wrap gap-5 justify-end items-center")[
-            settings_panel
+        # Full-width title row
+        div(
+            class_="w-full text-base sm:text-lg font-semibold tracking-tight text-center"
+        )["Focus Sessions"],
+        # Stats (left) and settings (right)
+        div(class_="flex flex-row flex-wrap items-start justify-between gap-6")[
+            div(class_="flex flex-row flex-wrap gap-8 items-center justify-start")[
+                stats
+            ],
+            div(class_="flex flex-row flex-wrap gap-5 justify-end items-center")[
+                settings_panel
+            ],
         ],
     ]
 

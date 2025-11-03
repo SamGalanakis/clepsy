@@ -61,8 +61,8 @@ def create_productivity_time_slice_body(
 
     return div(
         id="productivity_time_slice_chart",
-        # Allow vertical overflow only so horizontal size stays stable.
-        class_="relative w-full h-auto min-h-[320px] overflow-x-hidden overflow-y-visible",
+        # Allow vertical overflow only so horizontal size stays stable; smaller min-h on mobile.
+        class_="relative w-full h-auto min-h-[280px] sm:min-h-[320px] overflow-x-hidden overflow-y-visible",
         x_init="window.initInsightsProductivityTimeSliceFromJson($el.dataset.productivity)",
         **{"data-productivity": payload},
     )
