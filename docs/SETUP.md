@@ -36,7 +36,7 @@ The Clepsy API now listens on port `8000` inside the container and is reachable 
 Visit the URL provided by your tunnel and sign in using the generated bootstrap password.
 Get the bootstrap password by running:
 ```bash
-docker compose cp clepsy:/var/lib/clepsy/bootstrap_password.txt - | cat
+docker compose cp clepsy:/var/lib/clepsy/bootstrap_password.txt - | tar -xO
 ```
 Rotate the password from the Clepsy UI immediately after login.
 
