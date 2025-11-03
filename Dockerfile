@@ -82,4 +82,3 @@ COPY --from=builder /app/static/ /app/static/
 RUN uv sync --no-dev --frozen
 
 RUN chmod +x /app/entrypoint.sh
-ENTRYPOINT ["/app/entrypoint.sh"]
