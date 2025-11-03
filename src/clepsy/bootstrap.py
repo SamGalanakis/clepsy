@@ -29,17 +29,7 @@ async def init():
             # Ensure user_auth is initialized on first boot
             auth_row = await select_user_auth(conn)
             if auth_row is None:
-                if config.is_prod:
-                    try:
-                        bootstrap_pw = utils.get_bootstrap_password()
-                    except FileNotFoundError as exc:
-                        raise FileNotFoundError(
-                            "Clepsy bootstrap password not found; set env or Docker secret clepsy_password"
-                        ) from exc
-                else:
-                    # In dev, allow missing and skip init
-                    bootstrap_pw = utils.get_bootstrap_password()
-
+                bootstrap_pw = utils.get_bootstrap_password()
                 await create_user_auth(conn, _hash(bootstrap_pw))
 
         except ValueError:
