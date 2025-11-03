@@ -1,10 +1,11 @@
 # .github/workflows/docker-image.yml
-name: Docker Publish CI
+name: Main CI
 
 on:
-  push:
+  pull_request:
     branches:
       - main
+    types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
 
 
@@ -41,7 +42,6 @@ jobs:
   build-and-push-image:
     needs: test
     runs-on: ubuntu-latest
-    # Only run on merged PRs to main
     if: github.event.pull_request.merged == true
     permissions:
       contents:       read
