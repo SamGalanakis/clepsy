@@ -14,7 +14,7 @@ services:
       - db_data:/var/lib/clepsy
       - static_assets:/shared-static
       - caches:/var/lib/clepsy-caches
-    entrypoint: ["sh", "-c", "uvicorn clepsy.main:app --host 0.0.0.0 --port 8000 --workers 1"]
+    entrypoint: ["/app/entrypoint.sh"]
     ports:
       - "127.0.0.1:${CLEPSY_PORT:-8000}:8000"
     environment:
