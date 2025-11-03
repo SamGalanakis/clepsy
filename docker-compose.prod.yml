@@ -16,7 +16,7 @@ services:
       - caches:/var/lib/clepsy-caches
     entrypoint: ["/app/entrypoint.sh"]
     ports:
-      - "127.0.0.1:${CLEPSY_PORT:-8000}:8000"
+      - "${CLEPSY_PORT:-8000}:8000"
     environment:
       GOOSE_DRIVER: sqlite3
       GOOSE_DBSTRING: /var/lib/clepsy/db.sqlite3
