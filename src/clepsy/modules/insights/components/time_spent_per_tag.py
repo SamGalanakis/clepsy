@@ -67,8 +67,8 @@ def create_time_spent_per_tag_body(
 
     return div(
         id="time-spent-per-tag",
-        # Allow vertical expansion but prevent horizontal overflow from affecting flex width.
-        class_="relative w-full h-auto min-h-[320px] overflow-x-hidden overflow-y-visible",
+        # Allow vertical expansion; smaller min-height on mobile.
+        class_="relative w-full h-auto min-h-[280px] sm:min-h-[320px] overflow-x-hidden overflow-y-visible",
         x_init="window.initInsightsTimeSpentPerTagFromJson($el.dataset.insights)",
         **{"data-insights": payload},
     )

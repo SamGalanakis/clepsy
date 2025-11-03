@@ -1,4 +1,4 @@
-from htpy import Element, body, div, head, html, link, main, script, title
+from htpy import Element, body, div, head, html, link, main, meta, script, title
 
 from clepsy.entities import UserSettings
 from clepsy.frontend.components.sidebar import (
@@ -85,6 +85,8 @@ def create_base_page(
     ]
 
     header_additions = [
+        # Ensure responsive breakpoints use the real device width
+        meta(name="viewport", content="width=device-width, initial-scale=1"),
         *styles,
         *scripts,
         link(rel="icon", href="/static/favicon.svg", type="image/svg+xml"),

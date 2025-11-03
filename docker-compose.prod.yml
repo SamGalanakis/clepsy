@@ -15,7 +15,6 @@ services:
       - static_assets:/shared-static
       - caches:/var/lib/clepsy-caches
     entrypoint: ["/app/entrypoint.sh"]
-    secrets: [clepsy_password]
     ports:
       - "127.0.0.1:${CLEPSY_PORT:-8000}:8000"
     environment:
@@ -23,9 +22,3 @@ services:
       GOOSE_DBSTRING: /var/lib/clepsy/db.sqlite3
       GOOSE_MIGRATION_DIR: ./migrations
       PADDLE_OCR_BASE_DIR: /var/lib/clepsy-caches/paddle_cache
-
-
-
-secrets:
-  clepsy_password:
-    file: ./clepsy_password.txt

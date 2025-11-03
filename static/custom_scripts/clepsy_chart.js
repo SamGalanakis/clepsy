@@ -74,6 +74,10 @@
       parseData: null, // optional transform hook(parsedRaw) => data
       onError: null, // optional (error, container)
   settings: null, // { buildPanel: (ctx)=>HTMLElement|string, preserveOpen: true|false, icon?: (theme)=>string|HTMLElement, title?: string }
+  // Optional placeholder short-circuit: function({data, width, height, container, theme, state}) =>
+  //   false | null | string | { title?: string, message: string }
+  // If provided and returns truthy, a simple non-SVG placeholder is rendered instead of running D3.
+  placeholder: null,
   autoBandZoom: true, // if render returns bandZoom config, apply band zoom automatically
   // Generic zoom/pan (independent of band zoom):
   // zoom: { enable:true, selector:'g.zoom-layer', scaleExtent:[0.8,8], wheel:true, pan:true, preserve:true, doubleClickReset:true }
@@ -207,7 +211,60 @@
             }
             const theme = defaultTheme();
             const data = loadData();
+
+            // Placeholder check (skip D3 if insufficient data)
+            let ph = null;
+            if (typeof config.placeholder === 'function') {
+              try { ph = config.placeholder({ data, width: size.width, height: size.height, container, theme, state: prevState }); } catch(_) { ph = null; }
+            }
+
+            // Clear previous content before rendering
             d3.select(container).selectAll('*').remove();
+
+            if (ph && (typeof ph === 'string' || (ph && ph.message))) {
+              const title = (typeof ph === 'object' && ph && ph.title) ? ph.title : null;
+              const message = typeof ph === 'string' ? ph : ph.message;
+              const wrapper = document.createElement('div');
+              wrapper.style.display = 'flex';
+              wrapper.style.flexDirection = 'column';
+              wrapper.style.alignItems = 'center';
+              wrapper.style.justifyContent = 'center';
+              wrapper.style.width = '100%';
+              wrapper.style.height = size.height + 'px';
+              wrapper.style.textAlign = 'center';
+              wrapper.style.padding = '12px';
+              wrapper.style.boxSizing = 'border-box';
+              if (title) {
+                const h = document.createElement('div');
+                h.textContent = title;
+                h.style.fontWeight = '600';
+                h.style.fontSize = '14px';
+                h.style.color = 'var(--color-fg, #ddd)';
+                h.style.marginBottom = '8px';
+                wrapper.appendChild(h);
+              }
+              const p = document.createElement('div');
+              p.textContent = message || 'No data';
+              p.style.color = 'var(--color-muted, #888)';
+              p.style.fontSize = '12px';
+              wrapper.appendChild(p);
+              container.appendChild(wrapper);
+              const controlsEl = ensureControlsContainer();
+              controlsEl.querySelectorAll(':scope > .clepsy-chart-btn').forEach(b=>b.remove());
+              if (config.fullscreen && wrapperEl) {
+                const fsBtn = document.createElement('div');
+                fsBtn.className='clepsy-chart-btn clepsy-chart-fs-btn';
+                const updateIcon=()=>{ fsBtn.textContent = isWrapperFullscreen()? '🗗':'⛶'; };
+                updateIcon();
+                fsBtn.addEventListener('click',(e)=>{
+                  e.stopPropagation();
+                  if (isWrapperFullscreen()) { document.exitFullscreen?.(); }
+                  else { enteringFullscreenRequested = true; requestAnimationFrame(()=> wrapperEl.requestFullscreen?.()); }
+                });
+                controlsEl.appendChild(fsBtn);
+              }
+              return; // skip normal render path
+            }
             const result = config.render({
               container,
               wrapper: wrapperEl,

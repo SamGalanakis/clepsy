@@ -34,14 +34,14 @@ def create_login_page(error_message: Optional[str] = None) -> Element:
                     required=True,
                     attrs={"type": "password"},
                 ),
-            ],
-            footer(class_="flex flex-col items-center gap-2 mt-6")[
-                create_button(
-                    variant="primary",
-                    text="Login",
-                    extra_classes="w-full",
-                    attrs={"type": "submit"},
-                ),
+                footer(class_="flex flex-col items-center gap-2 mt-6")[
+                    create_button(
+                        variant="primary",
+                        text="Login",
+                        extra_classes="w-full",
+                        attrs={"type": "submit"},
+                    ),
+                ],
             ],
         ],
     ]
