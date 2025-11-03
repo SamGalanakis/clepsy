@@ -45,7 +45,12 @@ def parse_results(ocr_result: list[Any]) -> List[BoxText]:
             boxes = boxes.tolist()
 
         if not boxes:
-            boxes = result.get("rec_boxes") or []
+            rb = result.get("rec_boxes")
+            if isinstance(rb, np.ndarray):
+                rb = rb.tolist()
+            if rb is None:
+                rb = []
+            boxes = rb
 
         for txt, conf, box in zip(texts, scores, boxes):
             box_arr = np.asarray(box, dtype=float).reshape(-1, 2)

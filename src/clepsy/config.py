@@ -144,6 +144,11 @@ if not config.log_level:
     config.log_level = "DEBUG" if config.is_dev else "INFO"
 
 
+baml_log_level = os.environ.get("BAML_LOG")
+if not baml_log_level:
+    baml_log_level = "info" if config.is_dev else "warn"
+
+
 class InterceptHandler(logging.Handler):
     def emit(self, record):
         # Get corresponding Loguru level
