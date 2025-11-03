@@ -23,4 +23,4 @@ goose up
 
 # Start the application
 log "Starting Clepsy backend..."
-exec uvicorn src.clepsy.main:app --host 0.0.0.0 --port 8000 --workers 1 --root-path /app
+exec uvicorn clepsy.main:app --host 0.0.0.0 --port 8000 --workers 1
