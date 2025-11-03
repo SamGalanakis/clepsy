@@ -217,7 +217,14 @@
         fullscreen: true,
         autoBandZoom: false,
         zoom: null, // no zoom; donut static
-        render: renderDonut
+        render: renderDonut,
+        placeholder: ({ data }) => {
+          const hasEvents = Array.isArray(data?.activity_specs) && data.activity_specs.some(s => Array.isArray(s?.events) && s.events.length > 0);
+          if (!data || !hasEvents) {
+            return { title: 'Productivity', message: 'Not enough data to render.' };
+          }
+          return null;
+        }
       });
     } else {
       el.__clepsyChart();

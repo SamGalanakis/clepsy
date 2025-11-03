@@ -253,10 +253,10 @@ async def create_insights_page(user_settings: UserSettings) -> Element:
 
     graphs_grid = div(
         class_=(
-            "flex flex-wrap justify-center gap-6 md:gap-7 xl:gap-8 w-full "
+            "flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-7 xl:gap-8 w-full "
             "[&>.insight-graph]:w-full [&>.insight-graph]:grow "
-            "[&>.insight-graph]:basis-[520px] [&>.insight-graph]:min-w-[520px] "
-            "[&>.insight-graph]:max-w-full"
+            "[&>.insight-graph]:basis-full sm:[&>.insight-graph]:basis-[520px] "
+            "sm:[&>.insight-graph]:min-w-[520px] [&>.insight-graph]:max-w-full"
         ),
     )[
         time_spent_graph,
@@ -281,5 +281,5 @@ async def create_insights_page(user_settings: UserSettings) -> Element:
     return create_standard_content(
         user_settings=user_settings,
         content=content,
-        inner_classes="mx-auto w-full max-w-screen-2xl min-w-[360px] px-4 sm:px-6 lg:px-8",
+        inner_classes="mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-8",
     )

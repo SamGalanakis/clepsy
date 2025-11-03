@@ -27,7 +27,9 @@ def create_dark_mode_switcher(attrs: dict | None = None):
         data_tooltip="Toggle dark mode",
         data_side="bottom",
         onclick="document.dispatchEvent(new CustomEvent('basecoat:theme'))",
-        class_=("btn-icon-outline size-8 " + user_class).strip(),
+        class_=(
+            "btn-icon-outline size-11 sm:size-8 " + user_class
+        ).strip(),  # Larger touch target on mobile, unchanged on desktop
         **attrs,
     )[
         span(class_="hidden dark:block")[
@@ -74,7 +76,9 @@ def create_theme_switcher(attrs: dict | None = None):
     user_class = attrs.pop("class", "") or attrs.pop("class_", "") if attrs else ""
     return select(
         id="theme-select",
-        class_=("select h-8 leading-none " + user_class).strip(),
+        class_=(
+            "select h-11 sm:h-8 leading-none " + user_class
+        ).strip(),  # Taller on mobile, unchanged on desktop
         **attrs,
     )[
         option(value="default", selected=False)["Default"],
@@ -103,7 +107,7 @@ def create_top_bar(
         icon="plus",
         variant="outline",
         size="default",
-        extra_classes="size-8",
+        extra_classes="size-11 sm:size-8",  # Larger on mobile, unchanged on desktop
         attrs={
             "data-tooltip": "Add activity",
             "data-side": "bottom",
@@ -120,7 +124,7 @@ def create_top_bar(
         text=None,
         icon="sidebar_toggle",
         variant="ghost",
-        extra_classes="size-7 -ml-1.5",  # ← removed mr-auto
+        extra_classes="size-11 sm:size-7 -ml-1.5",  # Larger on mobile, unchanged on desktop
         attrs={
             "onclick": "document.dispatchEvent(new CustomEvent('basecoat:sidebar'))",
             "data-side": "bottom",
@@ -134,11 +138,12 @@ def create_top_bar(
     header_el = header(
         class_="bg-background sticky inset-x-0 top-0 isolate flex shrink-0 items-center border-b z-10"
     )[
-        div(class_="flex h-14 w-full items-center px-4")[
-            # left side ------------------------------------------------------
+        div(
+            class_="flex h-[72px] sm:h-14 w-full items-center px-4"
+        )[  # Taller on mobile
             sidebar_toggle if include_sidebar_toggle else None,
             # right side (ml-auto pushes this group to the far right) --------
-            div(class_="ml-auto flex items-center gap-2")[
+            div(class_="ml-auto flex items-center gap-3 sm:gap-2")[
                 add_activity_button if include_add_activity else None,
                 theme_switcher,
                 script(src="/static/custom_scripts/theme_switcher.js"),
