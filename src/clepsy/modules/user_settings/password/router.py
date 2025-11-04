@@ -85,7 +85,7 @@ async def change_password(
                     content=settings_page_content, status_code=status.HTTP_200_OK
                 )
             new_password_hash = hash_password(new_password)
-        await update_user_password(conn, password_hash=new_password_hash)
+            await update_user_password(conn, password_hash=new_password_hash)
         await invalidate_user_settings_cache()
         settings_page_content = await create_password_page(user_settings=user_settings)
         response = HTMLResponse(content=settings_page_content)
