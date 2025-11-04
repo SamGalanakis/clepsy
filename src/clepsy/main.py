@@ -78,13 +78,13 @@ website_router = APIRouter(prefix="/s")
 
 website_router.include_router(home_router)
 website_router.include_router(login_router)
-website_router.include_router(tags_router)
 website_router.include_router(user_settings_router)
 website_router.include_router(activity_router)
 website_router.include_router(goals_router)
 website_router.include_router(account_creation_router)
 website_router.include_router(insights_router)
 website_router.include_router(monitoring_router)
+website_router.include_router(tags_router)
 
 
 sources_router.include_router(aggregator_router)
