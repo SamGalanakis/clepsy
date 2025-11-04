@@ -69,7 +69,7 @@ docker compose logs -f caddy
 ```
 Open `https://$DOMAIN/` and log in using the password stored at `/var/lib/clepsy/bootstrap_password.txt`. Retrieve it the same way:
 ```bash
-docker compose cp clepsy:/var/lib/clepsy/bootstrap_password.txt - | cat
+docker compose cp clepsy:/var/lib/clepsy/bootstrap_password.txt - | tar -xO
 ```
 
 ## After Deployment
