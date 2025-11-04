@@ -75,6 +75,9 @@ def init_master_key(path: Path) -> bytes:
     return key
 
 
+cache_dir = Path("/var/lib/clepsy-caches")
+
+
 class Config(BaseSettings):
     log_file_path: Path = Path("/var/lib/clepsy/logs/app.log")
     master_key_file_path: Path = Path("/var/lib/clepsy/secret.key")
@@ -90,7 +93,7 @@ class Config(BaseSettings):
     api_host: str = "0.0.0.0"
     max_desktop_screenshot_log_interval_seconds: int = 30
     api_port: int = int(os.environ["PORT"])
-    cache_dir: Path = Path("/tmp/cache")
+    cache_dir: Path = cache_dir
     jwt_secret: SecretStr = SecretStr(
         os.getenv("JWT_SECRET", binascii.hexlify(os.urandom(24)).decode())
     )
@@ -115,7 +118,7 @@ class Config(BaseSettings):
     max_session_window_overlap: timedelta = timedelta(minutes=15)
     gliner_pii_model: str = "knowledgator/gliner-pii-small-v1.0"
     gliner_pii_threshold: float = 0.5
-    gliner_cache_dir: Path = Path("/var/lib/clepsy/gliner_cache")
+    gliner_cache_dir: Path = cache_dir / "gliner"
 
     @property
     def ap_scheduler_db_connection_string(self) -> str:
@@ -197,5 +200,7 @@ if not config.db_path.is_file():
     raise FileNotFoundError("Db file not found - migrations failed?")
 
 config.cache_dir.mkdir(exist_ok=True, parents=True)
+
+config.gliner_cache_dir.mkdir(exist_ok=True, parents=True)
 
 logger.info(f"Running in {config.environment} mode")
