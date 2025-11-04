@@ -1,5 +1,7 @@
 from __future__ import annotations
+# ruff: noqa: I001
 
+import asyncio
 from loguru import logger
 
 from clepsy.modules.sessions.tasks import run_sessionization
@@ -10,8 +12,6 @@ def run_sessionization_job() -> None:
     logger.info("[RQ] run_sessionization_job starting")
     # Note: run_sessionization is async; if it is, we need to run it in an event loop.
     try:
-        import asyncio
-
         if asyncio.iscoroutinefunction(run_sessionization):
             asyncio.run(run_sessionization())
         else:

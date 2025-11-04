@@ -13,20 +13,20 @@ from clepsy.modules.pii.pii import DEFAULT_PII_ENTITY_TYPES, anonymize_text
 from clepsy.infra.streams import xadd_source_event
 
 
-def _ensure_aware(ts: datetime) -> datetime:
+def ensure_aware(ts: datetime) -> datetime:
     if ts.tzinfo is None:
         return ts.replace(tzinfo=timezone.utc)
     return ts
 
 
-def _serialize_mobile_event(event: MobileAppUsageEvent) -> tuple[str, datetime, str]:
+def serialize_mobile_event(event: MobileAppUsageEvent) -> tuple[str, datetime, str]:
     payload = {
         "app_label": event.app_label,
         "package_name": event.package_name,
         "activity_name": event.activity_name,
         "media_metadata": event.media_metadata,
         "notification_text": event.notification_text,
-        "timestamp": _ensure_aware(event.timestamp).isoformat(),
+        "timestamp": ensure_aware(event.timestamp).isoformat(),
     }
     return "mobile_app_usage", event.timestamp, json.dumps(payload)
 
@@ -34,7 +34,7 @@ def _serialize_mobile_event(event: MobileAppUsageEvent) -> tuple[str, datetime, 
 def persist_mobile_app_usage_job(event_dict: dict) -> None:
     """RQ job to anonymize (if needed) and persist a mobile app usage event as a source_event."""
 
-    async def _inner():
+    async def inner():
         # Pydantic validation
         evt = MobileAppUsageEvent.model_validate(event_dict)
 
@@ -46,10 +46,10 @@ def persist_mobile_app_usage_job(event_dict: dict) -> None:
                 threshold=config.gliner_pii_threshold,
             )
 
-        etype, etime, payload_json = _serialize_mobile_event(evt)
+        etype, etime, payload_json = serialize_mobile_event(evt)
         _ = xadd_source_event(
             event_type=etype, timestamp=etime, payload_json=payload_json
         )
         logger.debug("Published mobile app usage source_event to stream")
 
-    asyncio.run(_inner())
+    asyncio.run(inner())

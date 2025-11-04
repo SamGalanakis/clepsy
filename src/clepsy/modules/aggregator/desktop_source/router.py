@@ -11,10 +11,8 @@ from clepsy.entities import (
     DesktopInputScreenshotEvent,
 )
 from clepsy.infra.rq_setup import get_connection
-from clepsy.jobs.desktop import (
-    persist_desktop_afk_event_job,
-    process_desktop_screenshot_job,
-)
+from clepsy.infra.streams import xadd_source_event
+from clepsy.jobs.desktop import process_desktop_screenshot_job
 
 
 router = APIRouter(prefix="/desktop")
@@ -30,13 +28,23 @@ async def receive_afk_start(
             timestamp=timestamp,
             time_since_last_user_activity=time_since_last_user_activity,
         )
-        q = Queue("default", connection=get_connection())  # type: ignore[arg-type]
-        q.enqueue(
-            persist_desktop_afk_event_job,
-            event.model_dump(),
-            job_timeout=60,  # quick event write
-            result_ttl=0,  # drop result to save memory
-            failure_ttl=24 * 3600,
+        # Inline write to Valkey stream (no need to queue a tiny write)
+        payload_json = json.dumps(
+            {
+                "timestamp": (
+                    event.timestamp
+                    if event.timestamp.tzinfo
+                    else event.timestamp.replace(tzinfo=timezone.utc)
+                ).isoformat(),
+                "time_since_last_user_activity": str(time_since_last_user_activity),
+            }
+        )
+        _ = xadd_source_event(
+            event_type="desktop_afk_event",
+            timestamp=event.timestamp
+            if event.timestamp.tzinfo
+            else event.timestamp.replace(tzinfo=timezone.utc),
+            payload_json=payload_json,
         )
     except HTTPException:
         raise
@@ -91,6 +99,7 @@ async def receive_data(
         DesktopInputScreenshotEvent.model_validate(
             {**data_dict, "screenshot": screenshot_image}
         )
+
         q = Queue("default", connection=get_connection())  # type: ignore[arg-type]
         q.enqueue(
             process_desktop_screenshot_job,

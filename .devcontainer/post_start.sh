@@ -19,10 +19,10 @@ echo "Setup completed for workspace: $workspace_folder_basename"
 uv sync
 uvx prek install --install-hooks
 
-uv run tailwindcss -i ./src/clepsy/frontend/css/app.css -o ./static/app.css
+# uv run tailwindcss -i ./src/clepsy/frontend/css/app.css -o ./static/app.css
 
 
 
 
-baml-cli generate
-goose up
+# baml-cli generate
+# goose up

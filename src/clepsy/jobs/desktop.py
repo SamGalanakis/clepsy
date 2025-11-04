@@ -15,22 +15,26 @@ from clepsy.db.queries import select_user_settings
 from clepsy.infra.streams import xadd_source_event
 from clepsy.entities import DesktopInputScreenshotEvent
 from clepsy.modules.aggregator.desktop_source.worker import process_desktop_check
+from clepsy.entities import (
+    ProcessedDesktopCheckScreenshotEventOCR,
+    ProcessedDesktopCheckScreenshotEventVLM,
+)
 
 
-def _ensure_aware(ts: datetime) -> datetime:
+def ensure_aware(ts: datetime) -> datetime:
     if ts.tzinfo is None:
         return ts.replace(tzinfo=timezone.utc)
     return ts
 
 
-def _deserialize_screenshot(image_bytes: bytes) -> Image.Image:
+def deserialize_screenshot(image_bytes: bytes) -> Image.Image:
     with io.BytesIO(image_bytes) as bio:
         img = Image.open(bio)
         img.load()
         return img
 
 
-def _build_desktop_event_from_payload(
+def build_desktop_event_from_payload(
     data: dict[str, Any], image_bytes: bytes
 ) -> DesktopInputScreenshotEvent:
     # Coerce timestamp to aware datetime
@@ -39,60 +43,56 @@ def _build_desktop_event_from_payload(
         ts = datetime.fromisoformat(ts)
     if ts is None:
         raise ValueError("timestamp is required")
-    ts = _ensure_aware(ts)
+    ts = ensure_aware(ts)
 
-    data = {**data, "timestamp": ts, "screenshot": _deserialize_screenshot(image_bytes)}
+    data = {**data, "timestamp": ts, "screenshot": deserialize_screenshot(image_bytes)}
     return DesktopInputScreenshotEvent.model_validate(data)
 
 
-def _processed_event_to_payload(evt) -> tuple[str, datetime, dict[str, Any]]:
+def processed_event_to_payload(evt) -> tuple[str, datetime, dict[str, Any]]:
     """Map processed desktop event to a (event_type, event_time, payload_json) triple.
 
     event_type: one of 'desktop_screenshot_ocr' | 'desktop_screenshot_vlm'
     payload carries active_window, timestamp, and either image_text or llm_description, plus flags.
     """
-    from clepsy.entities import (
-        ProcessedDesktopCheckScreenshotEventOCR,
-        ProcessedDesktopCheckScreenshotEventVLM,
-    )
-
-    if isinstance(evt, ProcessedDesktopCheckScreenshotEventOCR):
-        payload = {
-            "active_window": {
-                "title": evt.active_window.title,
-                "app_name": evt.active_window.app_name,
-                "is_active": evt.active_window.is_active,
-                "bbox": {
-                    "left": evt.active_window.bbox.left,
-                    "top": evt.active_window.bbox.top,
-                    "width": evt.active_window.bbox.width,
-                    "height": evt.active_window.bbox.height,
+    match evt:
+        case ProcessedDesktopCheckScreenshotEventOCR():
+            payload = {
+                "active_window": {
+                    "title": evt.active_window.title,
+                    "app_name": evt.active_window.app_name,
+                    "is_active": evt.active_window.is_active,
+                    "bbox": {
+                        "left": evt.active_window.bbox.left,
+                        "top": evt.active_window.bbox.top,
+                        "width": evt.active_window.bbox.width,
+                        "height": evt.active_window.bbox.height,
+                    },
                 },
-            },
-            "timestamp": evt.timestamp.isoformat(),
-            "image_text": evt.image_text,
-            "image_text_post_processed_by_llm": evt.image_text_post_processed_by_llm,
-        }
-        return "desktop_screenshot_ocr", evt.timestamp, payload
-    elif isinstance(evt, ProcessedDesktopCheckScreenshotEventVLM):
-        payload = {
-            "active_window": {
-                "title": evt.active_window.title,
-                "app_name": evt.active_window.app_name,
-                "is_active": evt.active_window.is_active,
-                "bbox": {
-                    "left": evt.active_window.bbox.left,
-                    "top": evt.active_window.bbox.top,
-                    "width": evt.active_window.bbox.width,
-                    "height": evt.active_window.bbox.height,
+                "timestamp": evt.timestamp.isoformat(),
+                "image_text": evt.image_text,
+                "image_text_post_processed_by_llm": evt.image_text_post_processed_by_llm,
+            }
+            return "desktop_screenshot_ocr", evt.timestamp, payload
+        case ProcessedDesktopCheckScreenshotEventVLM():
+            payload = {
+                "active_window": {
+                    "title": evt.active_window.title,
+                    "app_name": evt.active_window.app_name,
+                    "is_active": evt.active_window.is_active,
+                    "bbox": {
+                        "left": evt.active_window.bbox.left,
+                        "top": evt.active_window.bbox.top,
+                        "width": evt.active_window.bbox.width,
+                        "height": evt.active_window.bbox.height,
+                    },
                 },
-            },
-            "timestamp": evt.timestamp.isoformat(),
-            "llm_description": evt.llm_description,
-        }
-        return "desktop_screenshot_vlm", evt.timestamp, payload
-    else:  # pragma: no cover - defensive
-        raise TypeError(f"Unexpected processed desktop event type: {type(evt)}")
+                "timestamp": evt.timestamp.isoformat(),
+                "llm_description": evt.llm_description,
+            }
+            return "desktop_screenshot_vlm", evt.timestamp, payload
+        case _:
+            raise TypeError(f"Unexpected processed desktop event type: {type(evt)}")
 
 
 def process_desktop_screenshot_job(data: dict[str, Any], image_bytes: bytes) -> None:
@@ -103,8 +103,8 @@ def process_desktop_screenshot_job(data: dict[str, Any], image_bytes: bytes) -> 
     needed for aggregation in the source_events table.
     """
 
-    async def _inner():
-        desktop_evt = _build_desktop_event_from_payload(data, image_bytes)
+    async def inner():
+        desktop_evt = build_desktop_event_from_payload(data, image_bytes)
         async with get_db_connection(include_uuid_func=False) as conn:
             user_settings = await select_user_settings(conn)
             if not user_settings:
@@ -115,7 +115,7 @@ def process_desktop_screenshot_job(data: dict[str, Any], image_bytes: bytes) -> 
             desktop_evt, user_settings=user_settings
         )
 
-        event_type, event_time, payload = _processed_event_to_payload(processed)
+        event_type, event_time, payload = processed_event_to_payload(processed)
         payload_json = json.dumps(payload)
 
         # Publish to Valkey stream rather than DB
@@ -124,35 +124,8 @@ def process_desktop_screenshot_job(data: dict[str, Any], image_bytes: bytes) -> 
         )
         logger.debug("Published desktop processed event to stream: {}", event_type)
 
-    asyncio.run(_inner())
+    asyncio.run(inner())
 
 
-def persist_desktop_afk_event_job(event_dict: dict) -> None:
-    """Persist a desktop AFK start event as a source_event.
-
-    This is currently not used by aggregation, but kept for future use and parity with prior API.
-    """
-
-    async def _inner():
-        # Validate and normalize timestamp
-        ts = event_dict.get("timestamp")
-        if isinstance(ts, str):
-            ts = datetime.fromisoformat(ts)
-        if ts is None:
-            ts = datetime.now(tz=timezone.utc)
-        ts = _ensure_aware(ts)
-
-        payload_json = json.dumps(
-            {
-                "timestamp": ts.isoformat(),
-                "time_since_last_user_activity": str(
-                    event_dict.get("time_since_last_user_activity")
-                ),
-            }
-        )
-        _ = xadd_source_event(
-            event_type="desktop_afk_event", timestamp=ts, payload_json=payload_json
-        )
-        logger.debug("Published desktop AFK source_event to stream")
-
-    asyncio.run(_inner())
+# Note: AFK events are now persisted inline in the router by writing directly
+# to the Valkey stream; no RQ job needed for the lightweight AFK event.

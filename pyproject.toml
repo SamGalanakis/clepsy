@@ -51,6 +51,7 @@ dev = [
     "pytest-sugar>=1.0.0",
     "pytest-emoji>=0.2.0",
     "rich>=13.0.0",
+    "rq-dashboard>=0.8.5",
 ]
 
 [tool.uv]

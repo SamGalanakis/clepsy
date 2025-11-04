@@ -123,6 +123,19 @@ wheels = [
 ]
 
 [[package]]
+name = "arrow"
+version = "1.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-dateutil" },
+    { name = "tzdata" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b9/33/032cdc44182491aa708d06a68b62434140d8c50820a087fac7af37703357/arrow-1.4.0.tar.gz", hash = "sha256:ed0cc050e98001b8779e84d461b0098c4ac597e88704a655582b21d116e526d7", size = 152931, upload-time = "2025-10-18T17:46:46.761Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ed/c9/d7977eaacb9df673210491da99e6a247e93df98c715fc43fd136ce1d3d33/arrow-1.4.0-py3-none-any.whl", hash = "sha256:749f0769958ebdc79c173ff0b0670d59051a535fa26e8eba02953dc19eb43205", size = 68797, upload-time = "2025-10-18T17:46:45.663Z" },
+]
+
+[[package]]
 name = "asyncclick"
 version = "8.3.0.5"
 source = { registry = "https://pypi.org/simple" }
@@ -161,6 +174,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/53/57/f98bc15c12cc022ef195f689ee57ed61d8a8677bda3089c4d58fb1872d45/bce_python_sdk-0.9.46.tar.gz", hash = "sha256:4bf01b22e6d172ccd94aa201f8bc6f2a98d0da4784160e77cfacfcc71c2686be", size = 253806, upload-time = "2025-09-15T06:51:52.753Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c0/f5/20e9ab324b22a77970c57bc8267e586e85e2aa1277d80f2c58ca8a39a13e/bce_python_sdk-0.9.46-py3-none-any.whl", hash = "sha256:655074da6592ce8b036f605d9a272bfdcd1f515eb2f8e3f0333bb7cc62f700cb", size = 352622, upload-time = "2025-09-15T06:51:50.811Z" },
+]
+
+[[package]]
+name = "blinker"
+version = "1.9.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/21/28/9b3f50ce0e048515135495f198351908d99540d69bfdc8c1d15b73dc55ce/blinker-1.9.0.tar.gz", hash = "sha256:b4ce2265a7abece45e7cc896e98dbebe6cead56bcf805a3d23136d145f5445bf", size = 22460, upload-time = "2024-11-08T17:25:47.436Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/10/cb/f2ad4230dc2eb1a74edf38f1a38b9b52277f75bef262d8908e60d957e13c/blinker-1.9.0-py3-none-any.whl", hash = "sha256:ba0efaa9080b619ff2f3459d1d500c57bddea4a6b424b60a91141db6fd2f08bc", size = 8458, upload-time = "2024-11-08T17:25:46.184Z" },
 ]
 
 [[package]]
@@ -341,6 +363,7 @@ dev = [
     { name = "pytest-sugar" },
     { name = "pytest-xdist" },
     { name = "rich" },
+    { name = "rq-dashboard" },
     { name = "ruff" },
 ]
 
@@ -392,6 +415,7 @@ dev = [
     { name = "pytest-sugar", specifier = ">=1.0.0" },
     { name = "pytest-xdist", specifier = ">=3.5.0" },
     { name = "rich", specifier = ">=13.0.0" },
+    { name = "rq-dashboard", specifier = ">=0.8.5" },
     { name = "ruff", specifier = ">=0.8.1" },
 ]
 
@@ -622,6 +646,23 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/58/46/0028a82567109b5ef6e4d2a1f04a583fb513e6cf9527fcdd09afd817deeb/filelock-3.20.0.tar.gz", hash = "sha256:711e943b4ec6be42e1d4e6690b48dc175c822967466bb31c0c293f34334c13f4", size = 18922, upload-time = "2025-10-08T18:03:50.056Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/76/91/7216b27286936c16f5b4d0c530087e4a54eead683e6b0b73dd0c64844af6/filelock-3.20.0-py3-none-any.whl", hash = "sha256:339b4732ffda5cd79b13f4e2711a31b0365ce445d95d243bb996273d072546a2", size = 16054, upload-time = "2025-10-08T18:03:48.35Z" },
+]
+
+[[package]]
+name = "flask"
+version = "3.1.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "blinker" },
+    { name = "click" },
+    { name = "itsdangerous" },
+    { name = "jinja2" },
+    { name = "markupsafe" },
+    { name = "werkzeug" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/dc/6d/cfe3c0fcc5e477df242b98bfe186a4c34357b4847e87ecaef04507332dab/flask-3.1.2.tar.gz", hash = "sha256:bf656c15c80190ed628ad08cdfd3aaa35beb087855e2f494910aa3774cc4fd87", size = 720160, upload-time = "2025-08-19T21:03:21.205Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ec/f9/7f9263c5695f4bd0023734af91bedb2ff8209e8de6ead162f35d8dc762fd/flask-3.1.2-py3-none-any.whl", hash = "sha256:ca1d8112ec8a6158cc29ea4858963350011b5c846a414cdb7a954aa9e967d03c", size = 103308, upload-time = "2025-08-19T21:03:19.499Z" },
 ]
 
 [[package]]
@@ -862,6 +903,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f2/97/ebf4da567aa6827c909642694d71c9fcf53e5b504f2d96afea02718862f3/iniconfig-2.1.0.tar.gz", hash = "sha256:3abbd2e30b36733fee78f9c7f7308f2d0050e88f0087fd25c2645f63c773e1c7", size = 4793, upload-time = "2025-03-19T20:09:59.721Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl", hash = "sha256:9deba5723312380e77435581c6bf4935c94cbfab9b1ed33ef8d238ea168eb760", size = 6050, upload-time = "2025-03-19T20:10:01.071Z" },
+]
+
+[[package]]
+name = "itsdangerous"
+version = "2.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/9c/cb/8ac0172223afbccb63986cc25049b154ecfb5e85932587206f42317be31d/itsdangerous-2.2.0.tar.gz", hash = "sha256:e0050c0b7da1eea53ffaf149c0cfbb5c6e2e2b69c4bef22c81fa6eb73e5f6173", size = 54410, upload-time = "2024-04-16T21:28:15.614Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/04/96/92447566d16df59b2a776c0fb82dbc4d9e07cd95062562af01e408583fc4/itsdangerous-2.2.0-py3-none-any.whl", hash = "sha256:c6242fc49e35958c8b15141343aa660db5fc54d4f13a1db01a3f5891b98700ef", size = 16234, upload-time = "2024-04-16T21:28:14.499Z" },
 ]
 
 [[package]]
@@ -2052,6 +2102,18 @@ wheels = [
 ]
 
 [[package]]
+name = "redis-sentinel-url"
+version = "1.0.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "redis" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cc/e3/68de4c8aacbd9952667d7d0f5af55b873553a09a6227ac5b7f7c622610c9/Redis-Sentinel-Url-1.0.1.tar.gz", hash = "sha256:ec1854ab9379a28789423c3cd4082739fb69c7b4b11bb50ae7858697c131b13e", size = 7599, upload-time = "2017-04-05T07:47:55.456Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/40/35/20f997f367c87ef1e6ebf418af7c2450cb5da860d066d7229226031534ad/Redis_Sentinel_Url-1.0.1-py2.py3-none-any.whl", hash = "sha256:c6991e2000c5c7a5e2b95eb2d62fd5b0a6b02a59554caf0f9f79d18e152d9663", size = 4685, upload-time = "2017-04-05T07:47:53.545Z" },
+]
+
+[[package]]
 name = "regex"
 version = "2025.9.18"
 source = { registry = "https://pypi.org/simple" }
@@ -2169,6 +2231,22 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/8e/f5/46e39abc46ff6ff4f3151ee4fd2c1bf7601a8d26bd30fd951c5496b1e6c6/rq-2.6.0.tar.gz", hash = "sha256:92ad55676cda14512c4eea5782f398a102dc3af108bea197c868c4c50c5d3e81", size = 675315, upload-time = "2025-09-06T03:15:12.854Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/cc/66/6cf141584526e3ed5b57a194e09cbdf7058334bd3926bb3f96e2453cf053/rq-2.6.0-py3-none-any.whl", hash = "sha256:be5ccc0f0fc5f32da0999648340e31476368f08067f0c3fce6768d00064edbb5", size = 112533, upload-time = "2025-09-06T03:15:09.894Z" },
+]
+
+[[package]]
+name = "rq-dashboard"
+version = "0.8.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "arrow" },
+    { name = "flask" },
+    { name = "redis" },
+    { name = "redis-sentinel-url" },
+    { name = "rq" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e9/58/9a85afa373d2db2e559a7b23eedecb907025477a608c18b352f32659662b/rq_dashboard-0.8.5.tar.gz", hash = "sha256:69d2c0446388aa7f49e3950c691a7110f1e1272d1827d02b72d21c191cca533a", size = 206065, upload-time = "2025-08-05T10:05:06.725Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1f/4e/82bdabe08ba8ed577660a946416ce086f18412244adaec8dfeb5ee686280/rq_dashboard-0.8.5-py2.py3-none-any.whl", hash = "sha256:56db516f96b7233a5cb3a6accc3d2d00e5646c247034cea873c0688b5b83dfc1", size = 210486, upload-time = "2025-08-05T10:05:05.606Z" },
 ]
 
 [[package]]
@@ -2766,6 +2844,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/86/eb/20b6cdf273913d0ad05a6a14aed4b9a85591c18a987a3d47f20fa13dcc47/websockets-15.0.1-cp313-cp313-win32.whl", hash = "sha256:ba9e56e8ceeeedb2e080147ba85ffcd5cd0711b89576b83784d8605a7df455fa", size = 176393, upload-time = "2025-03-05T20:02:53.814Z" },
     { url = "https://files.pythonhosted.org/packages/1b/6c/c65773d6cab416a64d191d6ee8a8b1c68a09970ea6909d16965d26bfed1e/websockets-15.0.1-cp313-cp313-win_amd64.whl", hash = "sha256:e09473f095a819042ecb2ab9465aee615bd9c2028e4ef7d933600a8401c79561", size = 176837, upload-time = "2025-03-05T20:02:55.237Z" },
     { url = "https://files.pythonhosted.org/packages/fa/a8/5b41e0da817d64113292ab1f8247140aac61cbf6cfd085d6a0fa77f4984f/websockets-15.0.1-py3-none-any.whl", hash = "sha256:f7a866fbc1e97b5c617ee4116daaa09b722101d4a3c170c787450ba409f9736f", size = 169743, upload-time = "2025-03-05T20:03:39.41Z" },
+]
+
+[[package]]
+name = "werkzeug"
+version = "3.1.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "markupsafe" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9f/69/83029f1f6300c5fb2471d621ab06f6ec6b3324685a2ce0f9777fd4a8b71e/werkzeug-3.1.3.tar.gz", hash = "sha256:60723ce945c19328679790e3282cc758aa4a6040e4bb330f53d30fa546d44746", size = 806925, upload-time = "2024-11-08T15:52:18.093Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/52/24/ab44c871b0f07f491e5d2ad12c9bd7358e527510618cb1b803a88e986db1/werkzeug-3.1.3-py3-none-any.whl", hash = "sha256:54b78bf3716d19a65be4fceccc0d1d7b89e608834989dfae50ea87564639213e", size = 224498, upload-time = "2024-11-08T15:52:16.132Z" },
 ]
 
 [[package]]

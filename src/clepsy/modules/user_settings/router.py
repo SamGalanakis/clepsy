@@ -17,6 +17,7 @@ from clepsy.frontend.components import create_base_page
 from clepsy.modules.user_settings.page import (
     create_tags_page,
 )  # existing tags page builder
+from clepsy.modules.user_settings.sources.router import router as sources_router
 
 # Page builders
 from .general.page import create_general_settings_page
@@ -37,6 +38,7 @@ router.include_router(general_router)
 router.include_router(password_router)
 router.include_router(llm_models_router)
 router.include_router(productivity_router)
+router.include_router(sources_router)
 
 SettingsPageName = Literal[
     "general",

@@ -3,6 +3,7 @@ volumes:
 
 services:
   clepsy:
+    image: clepsy-dev
     build:
       context: .
       dockerfile: Dockerfile
@@ -31,11 +32,8 @@ services:
     restart: unless-stopped
 
   rq-worker-default:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: builder
-    command: bash -lc "rq worker --url redis://valkey:6379/0 default"
+    image: clepsy-dev
+    command: bash -lc "uv run rq worker --url redis://valkey:6379/0 default"
     environment:
       VALKEY_URL: redis://valkey:6379/0
       PYTHONPATH: /app
@@ -47,20 +45,15 @@ services:
 
   rq-dashboard:
     image: hannes221/rq-dashboard-fast
+    depends_on: [valkey]
     ports:
-      - '5000:8000'
+      - "5000:8000"
     environment:
       - REDIS_URL=redis://valkey:6379/0
 
-
-
-
   rq-worker-aggregation:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: builder
-    command: bash -lc "rq worker --url redis://valkey:6379/0 aggregation"
+    image: clepsy-dev
+    command: bash -lc "uv run rq worker --url redis://valkey:6379/0 aggregation"
     environment:
       VALKEY_URL: redis://valkey:6379/0
       PYTHONPATH: /app
@@ -71,11 +64,8 @@ services:
       - valkey
 
   rq-cron:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: builder
-    command: bash -lc "rq cron clepsy.cron_config --url redis://valkey:6379/0"
+    image: clepsy-dev
+    command: bash -lc "uv run rq cron clepsy.cron_config --url redis://valkey:6379/0"
     environment:
       VALKEY_URL: redis://valkey:6379/0
       PYTHONPATH: /app
