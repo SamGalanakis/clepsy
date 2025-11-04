@@ -24,3 +24,49 @@ services:
       GOOSE_DRIVER: sqlite3
       GOOSE_DBSTRING: /var/lib/clepsy/db.sqlite3
       GOOSE_MIGRATION_DIR: ./migrations
+      VALKEY_URL: redis://valkey:6379/0
+
+  valkey:
+    image: valkey/valkey:9.0.0
+    container_name: valkey
+    networks: [web]
+    restart: unless-stopped
+
+  rq-worker-default:
+    image: ghcr.io/samgalanakis/clepsy:latest
+    container_name: rq-worker-default
+    networks: [web]
+    command: ["bash", "-lc", "rq worker --url redis://valkey:6379/0 default"]
+    environment:
+      VALKEY_URL: redis://valkey:6379/0
+    volumes:
+      - db_data:/var/lib/clepsy
+      - caches:/var/lib/clepsy-caches
+    depends_on:
+      - valkey
+
+  rq-worker-aggregation:
+    image: ghcr.io/samgalanakis/clepsy:latest
+    container_name: rq-worker-aggregation
+    networks: [web]
+    command: ["bash", "-lc", "rq worker --url redis://valkey:6379/0 aggregation"]
+    environment:
+      VALKEY_URL: redis://valkey:6379/0
+    volumes:
+      - db_data:/var/lib/clepsy
+      - caches:/var/lib/clepsy-caches
+    depends_on:
+      - valkey
+
+  rq-cron:
+    image: ghcr.io/samgalanakis/clepsy:latest
+    container_name: rq-cron
+    networks: [web]
+    command: ["bash", "-lc", "rq cron clepsy.cron_config --url redis://valkey:6379/0"]
+    environment:
+      VALKEY_URL: redis://valkey:6379/0
+    volumes:
+      - db_data:/var/lib/clepsy
+      - caches:/var/lib/clepsy-caches
+    depends_on:
+      - valkey

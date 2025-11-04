@@ -4,12 +4,17 @@ import json
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from PIL import Image
+from rq import Queue
 
 from clepsy.entities import (
     DesktopInputAfkStartEvent,
     DesktopInputScreenshotEvent,
 )
-from clepsy.queues import event_bus
+from clepsy.infra.rq_setup import get_connection
+from clepsy.jobs.desktop import (
+    persist_desktop_afk_event_job,
+    process_desktop_screenshot_job,
+)
 
 
 router = APIRouter(prefix="/desktop")
@@ -25,7 +30,14 @@ async def receive_afk_start(
             timestamp=timestamp,
             time_since_last_user_activity=time_since_last_user_activity,
         )
-        await event_bus.publish(event)
+        q = Queue("default", connection=get_connection())  # type: ignore[arg-type]
+        q.enqueue(
+            persist_desktop_afk_event_job,
+            event.model_dump(),
+            job_timeout=60,  # quick event write
+            result_ttl=0,  # drop result to save memory
+            failure_ttl=24 * 3600,
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -70,17 +82,24 @@ async def receive_data(
             ) from exc
 
         # Add screenshot and convert timestamp
-        data_dict["screenshot"] = screenshot_image
+        # We'll pass raw bytes to the RQ job and reconstruct the image server-side
         ts = datetime.fromisoformat(data_dict["timestamp"])  # may be naive or aware
         if ts.tzinfo is None:
             ts = ts.replace(tzinfo=timezone.utc)
         data_dict["timestamp"] = ts
-
-        # Create and validate the event
-        desktop_check_event = DesktopInputScreenshotEvent.model_validate(data_dict)
-
-        # Publish event
-        await event_bus.publish(desktop_check_event)
+        # Validate minimal fields now to catch bad requests early
+        DesktopInputScreenshotEvent.model_validate(
+            {**data_dict, "screenshot": screenshot_image}
+        )
+        q = Queue("default", connection=get_connection())  # type: ignore[arg-type]
+        q.enqueue(
+            process_desktop_screenshot_job,
+            data_dict,
+            image_bytes,
+            job_timeout=300,  # allow OCR/VLM time
+            result_ttl=0,  # we don't need the return value persisted
+            failure_ttl=24 * 3600,
+        )
 
     except HTTPException:
         raise

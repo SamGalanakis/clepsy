@@ -57,7 +57,7 @@ any potentially sensitive text before being sent to the LLM. Not to be depended 
 
 ## Tech Stack
 
-**Backend:** FastAPI • SQLite • Goose • APScheduler
+**Backend:** FastAPI • SQLite • Goose • RQ + Valkey (Cron)
 
 **Frontend:** [htpy](https://htpy.dev/) • HTMX • Alpine.js • TailwindCSS • [Basecoat UI](https://basecoatui.com/) • D3.js
 
@@ -74,5 +74,3 @@ This project is dual-licensed:
 - **Commercial License:** For commercial licensing options please contact [sam@clepsy.ai](mailto:sam@clepsy.ai).
 
 **Copyright © 2025 Samouil Galanakis. All rights reserved.**
-
-

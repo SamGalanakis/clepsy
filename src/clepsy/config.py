@@ -19,7 +19,6 @@ logging.getLogger("aiosqlite").setLevel(logging.INFO)
 logging.getLogger("aiocache").setLevel(logging.INFO)
 logging.getLogger("asyncio").setLevel(logging.INFO)
 logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
-logging.getLogger("apscheduler").setLevel(logging.WARNING)
 
 logging.getLogger("python_multipart.multipart").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
@@ -53,7 +52,7 @@ def decode_key_file(data: bytes) -> bytes | None:
         # pad if needed
         b64 += "=" * (-len(b64) % 4)
         return base64.b64decode(b64, validate=True)
-    except Exception:
+    except (UnicodeDecodeError, binascii.Error, ValueError):
         logger.exception("Failed to decode key file")
         return None
 
@@ -85,7 +84,6 @@ class Config(BaseSettings):
     aggregation_interval: timedelta = timedelta(minutes=10)  # 20
     aggregation_grace_period: timedelta = timedelta(minutes=1)
     db_path: Path = Path("/var/lib/clepsy/db.sqlite3")
-    ap_scheduler_sqlite_db_path: Path = Path("/var/lib/clepsy/apscheduler.sqlite3")
     screenshot_size: tuple[int, int] = (1024, 1024)
     software_version: str = version("clepsy")
     bootstrap_password_file_path: Path = Path("/var/lib/clepsy/bootstrap_password.txt")
@@ -119,10 +117,9 @@ class Config(BaseSettings):
     gliner_pii_model: str = "knowledgator/gliner-pii-small-v1.0"
     gliner_pii_threshold: float = 0.5
     gliner_cache_dir: Path = cache_dir / "gliner"
-
-    @property
-    def ap_scheduler_db_connection_string(self) -> str:
-        return f"sqlite:////{self.ap_scheduler_sqlite_db_path.as_posix()}"
+    # RQ/Valkey
+    valkey_url: str
+    # APScheduler removed; RQ Cron provides scheduling
 
     @property
     def is_dev(self) -> bool:

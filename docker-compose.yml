@@ -1,7 +1,6 @@
 volumes:
   db_data_dev:
 
-
 services:
   clepsy:
     build:
@@ -22,3 +21,66 @@ services:
       GOOSE_DRIVER: sqlite3
       GOOSE_DBSTRING: /var/lib/clepsy/db.sqlite3
       GOOSE_MIGRATION_DIR: ./migrations
+      VALKEY_URL: redis://valkey:6379/0
+
+  valkey:
+    image: valkey/valkey:9.0.0
+    container_name: valkey
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  rq-worker-default:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    command: bash -lc "rq worker --url redis://valkey:6379/0 default"
+    environment:
+      VALKEY_URL: redis://valkey:6379/0
+      PYTHONPATH: /app
+    volumes:
+      - .:/app
+      - db_data_dev:/var/lib/clepsy
+    depends_on:
+      - valkey
+
+  rq-dashboard:
+    image: hannes221/rq-dashboard-fast
+    ports:
+      - '5000:8000'
+    environment:
+      - REDIS_URL=redis://valkey:6379/0
+
+
+
+
+  rq-worker-aggregation:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    command: bash -lc "rq worker --url redis://valkey:6379/0 aggregation"
+    environment:
+      VALKEY_URL: redis://valkey:6379/0
+      PYTHONPATH: /app
+    volumes:
+      - .:/app
+      - db_data_dev:/var/lib/clepsy
+    depends_on:
+      - valkey
+
+  rq-cron:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    command: bash -lc "rq cron clepsy.cron_config --url redis://valkey:6379/0"
+    environment:
+      VALKEY_URL: redis://valkey:6379/0
+      PYTHONPATH: /app
+    volumes:
+      - .:/app
+      - db_data_dev:/var/lib/clepsy
+    depends_on:
+      - valkey

@@ -6,7 +6,12 @@
 	"shutdownAction": "stopCompose",
 	"service": "clepsy",
 	"runServices": [
-		"clepsy"
+		"clepsy",
+		"valkey",
+		"rq-worker-default",
+		"rq-dashboard",
+		"rq-worker-aggregation",
+		"rq-cron"
 	],
 	"features": {
 		"ghcr.io/devcontainers/features/git:1": {},

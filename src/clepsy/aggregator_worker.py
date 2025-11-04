@@ -1,18 +1,18 @@
+from __future__ import annotations
+
+# ruff: noqa: I001
 import asyncio
-from asyncio import Queue
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
-import time
+from datetime import datetime
 from typing import NamedTuple
 
 import aiosqlite
 from baml_py import Collector
-from baml_py.errors import BamlError
-from loguru import logger
 
 from baml_client import b
 from baml_client.type_builder import TypeBuilder
 import baml_client.types as baml_types
+from loguru import logger
 from clepsy import utils
 from clepsy.config import config
 from clepsy.db.db import get_db_connection
@@ -36,14 +36,15 @@ from clepsy.modules.aggregator.programmatic_timeline_validation import (
     validate_timeline_programmatically,
 )
 from clepsy.modules.aggregator.stitching import stitch_timeline
-from clepsy.workers import AbstractWorker
 
 
 async def llm_productivity_level_activity(
     activity_name: str, activity_description: str, user_settings: E.UserSettings
 ) -> E.ProductivityLevel:
-    productivity_guidelines = f"""Please classify the productivity level of the activity based on the following guidelines:\\n
-    {user_settings.productivity_prompt}"""
+    productivity_guidelines = (
+        """Please classify the productivity level of the activity based on the following guidelines:\n
+    {guidelines}"""
+    ).format(guidelines=user_settings.productivity_prompt)
 
     client = create_client_registry(
         llm_config=user_settings.text_model_config, name="TextClient", set_primary=True
@@ -326,7 +327,10 @@ async def generate_isolated_timeline(
     )
 
     client = create_client_registry(
-        llm_config=text_model_config, name="TextClient", set_primary=True
+        llm_config=text_model_config,
+        name="TextClient",
+        set_primary=True,
+        request_timeout_seconds=60 * 5,
     )
 
     if not inputs.logs:
@@ -738,233 +742,3 @@ async def do_empty_aggregation():
         )
         if close_events:
             await insert_activity_events(conn, close_events)
-
-
-class AggregatorWorker(AbstractWorker):
-    def __init__(
-        self,
-        input_queue: Queue[E.AggregationInputEvent | E.ShutdownEvent],
-        interval: timedelta,
-        name: str = "AggregatorWorker",
-    ):
-        super().__init__(input_queue, name)
-        self.interval = interval
-        self.current_aggregation_batch: list[E.AggregationInputEvent] = []
-        self.next_aggregation_batch: list[E.AggregationInputEvent] = []
-        self.current_aggregation_start_time = None
-
-    async def aggregation_runner(self):
-        logger.info("Starting aggregation run...")
-        self.current_aggregation_start_time = datetime.now(tz=timezone.utc)
-
-        while not self.shutdown_received:
-            aggregation_end_time = self.current_aggregation_start_time + self.interval
-            processing_time = aggregation_end_time + config.aggregation_grace_period
-
-            now = datetime.now(tz=timezone.utc)
-            logger.info(
-                "Starting aggregation for period from {} to {}",
-                self.current_aggregation_start_time,
-                aggregation_end_time,
-            )
-            sleep_for = (processing_time - now).total_seconds()
-            if sleep_for < 0:
-                logger.warning(
-                    "Aggregation runner late by {} seconds; proceeding without sleep",
-                    abs(sleep_for),
-                )
-                sleep_for = 0
-            await asyncio.sleep(sleep_for)
-            if self.shutdown_received:
-                logger.info("Shutdown received, stopping aggregation run")
-                break
-
-            aggregation_time_span = E.TimeSpan(
-                start_time=self.current_aggregation_start_time,
-                end_time=aggregation_end_time,
-            )
-
-            to_process_now = self.current_aggregation_batch
-            next_batch = self.next_aggregation_batch
-            self.next_aggregation_batch = []
-            self.current_aggregation_batch = next_batch
-            logger.info(
-                "Processing {} events for aggregation from {} to {}",
-                len(to_process_now),
-                self.current_aggregation_start_time,
-                aggregation_end_time,
-            )
-            aggregation_func_start_time = time.monotonic()
-
-            try:
-                if to_process_now:
-                    try:
-                        await do_aggregation(
-                            input_logs=to_process_now,
-                            aggregation_time_span=aggregation_time_span,
-                        )
-                    except E.MissingUserSettingsError:
-                        self.signal(
-                            E.SettingsNotSetSignal(
-                                timestamp=datetime.now(tz=timezone.utc),
-                                severity=E.WorkerSignalSeverity.ERROR,
-                            )
-                        )
-                        logger.exception(
-                            "User settings missing during aggregation for interval {} to {}",
-                            aggregation_time_span.start_time,
-                            aggregation_time_span.end_time,
-                        )
-                    except BamlError as e:
-                        self.signal(
-                            E.BamlErrorSignal(
-                                timestamp=datetime.now(tz=timezone.utc),
-                                severity=E.WorkerSignalSeverity.ERROR,
-                                exception=e,
-                            )
-                        )
-                        logger.exception(
-                            "BAML error during aggregation for interval {} to {}: {}",
-                            aggregation_time_span.start_time,
-                            aggregation_time_span.end_time,
-                            e,
-                        )
-                    except Exception as e:
-                        # Catch-all to avoid silently stopping the background task
-                        logger.exception(
-                            "Unexpected error during aggregation for interval {} to {}: {}",
-                            aggregation_time_span.start_time,
-                            aggregation_time_span.end_time,
-                            e,
-                        )
-                    else:
-                        self.signal_success()
-                        logger.info(
-                            "Successfully processed aggregation for interval {} to {}",
-                            aggregation_time_span.start_time,
-                            aggregation_time_span.end_time,
-                        )
-
-                else:
-                    try:
-                        await do_empty_aggregation()
-                    except Exception as e:
-                        logger.exception(
-                            "Unexpected error during empty aggregation for interval {} to {}: {}",
-                            aggregation_time_span.start_time,
-                            aggregation_time_span.end_time,
-                            e,
-                        )
-                    else:
-                        self.signal_success()
-
-                    logger.info(
-                        "No events to process for interval {} to {}, recorded empty aggregation",
-                        aggregation_time_span.start_time,
-                        aggregation_time_span.end_time,
-                    )
-
-            finally:
-                logger.info(
-                    "Processed aggregation for interval {} to {} ({} events), took {} seconds",
-                    aggregation_time_span.start_time,
-                    aggregation_time_span.end_time,
-                    len(to_process_now),
-                    time.monotonic() - aggregation_func_start_time,
-                )
-
-            self.current_aggregation_start_time = aggregation_end_time
-
-    async def receive_item(self, item: E.AggregationInputEvent):
-        current_timestamp = datetime.now(tz=timezone.utc)
-        event_timestamp = item.timestamp
-
-        current_aggregation_start_time = self.current_aggregation_start_time
-        assert (
-            current_aggregation_start_time is not None
-        ), "Current aggregation start time must be set before receiving items"
-        current_aggregation_end_time = current_aggregation_start_time + self.interval
-
-        in_future = event_timestamp > current_timestamp
-
-        if in_future:
-            logger.warning(
-                "Received event with timestamp in the future: {}, current time: {}, event: {}",
-                event_timestamp,
-                current_timestamp,
-                item,
-            )
-            return
-
-        before_current_aggregation_start_time = (
-            event_timestamp < current_aggregation_start_time
-        )
-
-        if before_current_aggregation_start_time:
-            logger.warning(
-                "Received event with timestamp before current aggregation start time: {}, current aggregation start time: {}, event: {}",
-                event_timestamp,
-                current_aggregation_start_time,
-                item,
-            )
-            return
-
-        in_next_aggregation = event_timestamp >= current_aggregation_end_time
-
-        if in_next_aggregation:
-            self.next_aggregation_batch.append(item)
-            return
-
-        in_current_aggregation = (
-            event_timestamp >= current_aggregation_start_time
-            and event_timestamp < current_aggregation_end_time
-        )
-
-        if in_current_aggregation:
-            self.current_aggregation_batch.append(item)
-
-    async def run(self):
-        async with get_db_connection(start_transaction=False) as conn:
-            previous_aggregation = await select_latest_aggregation(conn)
-            close_events = await get_interrupted_activity_close_events(
-                conn, previous_aggregation=previous_aggregation
-            )
-        if close_events:
-            async with get_db_connection(
-                start_transaction=False, commit_on_exit=True
-            ) as conn:
-                await insert_activity_events(conn, close_events)
-
-        background_aggregation_task = asyncio.create_task(self.aggregation_runner())
-
-        # Ensure we log if the background task ever dies unexpectedly
-        def _bg_done(task: asyncio.Task):
-            try:
-                exc = task.exception()
-            except asyncio.CancelledError:
-                logger.info("Aggregation runner task cancelled")
-                return
-            if exc:
-                logger.exception("Aggregation runner crashed with exception: {}", exc)
-            else:
-                logger.warning("Aggregation runner exited without exception")
-
-        background_aggregation_task.add_done_callback(_bg_done)
-
-        while not self.shutdown_received:
-            try:
-                work_item = await self.input_queue.get()
-                logger.trace("Received work item in aggregator_worker")
-                if isinstance(work_item, E.ShutdownEvent):
-                    self.shutdown_received = True
-                    self.input_queue.task_done()
-                    logger.info("Shutting down aggregator_worker due to shutdown event")
-                    break
-
-                await self.receive_item(work_item)
-            except asyncio.CancelledError:
-                logger.info("Run loop cancelled.")
-                self.shutdown_received = True
-                break
-
-        background_aggregation_task.cancel()

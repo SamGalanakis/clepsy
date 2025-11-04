@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 
 import aiosqlite
 from htpy import Element, div, h2, p, span
+from rq import Queue
 
 from clepsy.db.queries import (
     select_goal_progress_current,
@@ -23,11 +24,10 @@ from clepsy.frontend.components import (
     create_standard_content,
 )
 from clepsy.frontend.components.icons import get_icon_svg
+from clepsy.infra.rq_setup import get_connection
 from clepsy.modules.goals.calculate_goals import (
     is_progress_stale,
-    update_current_progress_job,
 )
-from clepsy.scheduler import scheduler
 
 from .utils import (
     complete_periods_since_created,
@@ -144,18 +144,21 @@ async def render_goal_row(
                 )
     has_periods = bool(periods)
 
-    # Kick background refresh if stale or no current progress
+    # Kick background refresh via RQ if stale or no current progress
     if is_active and (stale or progress_row is None):
-        job_id = f"{goal.id}_current"
-        await scheduler.configure_task(
-            func_or_task_id=job_id,
-            func=update_current_progress_job,
-            max_running_jobs=1,
-        )
-        await scheduler.add_job(
-            func_or_task_id=job_id,
-            kwargs={"goal_id": goal.id, "ttl": ttl_from_db / 2},
-        )
+        try:
+            q = Queue("default", connection=get_connection())  # type: ignore[arg-type]
+            # Enqueue the async job wrapper; pass ttl seconds as float
+            from clepsy.jobs.goals import run_update_current_progress_job
+
+            q.enqueue(
+                run_update_current_progress_job,
+                goal.id,
+                float(ttl_from_db.total_seconds()),
+            )
+        except Exception:  # noqa: BLE001
+            # Best-effort enqueue; UI will keep polling/allow manual refresh
+            pass
 
     # Assemble card
     created_local = goal.created_at.astimezone(ZoneInfo(goal.timezone))
