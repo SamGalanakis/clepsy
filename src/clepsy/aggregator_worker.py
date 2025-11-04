@@ -730,12 +730,14 @@ async def do_aggregation(
 
 
 async def do_empty_aggregation():
-    async with get_db_connection(start_transaction=False) as conn:
+    # Open a connection and perform both read and optional write within the same context
+    async with get_db_connection(start_transaction=False, commit_on_exit=True) as conn:
         previous_aggregation = await select_latest_aggregation(conn)
         close_events = await get_interrupted_activity_close_events(
             conn, previous_aggregation=previous_aggregation
         )
-    await insert_activity_events(conn, close_events or [])
+        if close_events:
+            await insert_activity_events(conn, close_events)
 
 
 class AggregatorWorker(AbstractWorker):
@@ -827,6 +829,14 @@ class AggregatorWorker(AbstractWorker):
                             aggregation_time_span.end_time,
                             e,
                         )
+                    except Exception as e:
+                        # Catch-all to avoid silently stopping the background task
+                        logger.exception(
+                            "Unexpected error during aggregation for interval {} to {}: {}",
+                            aggregation_time_span.start_time,
+                            aggregation_time_span.end_time,
+                            e,
+                        )
                     else:
                         self.signal_success()
                         logger.info(
@@ -836,8 +846,17 @@ class AggregatorWorker(AbstractWorker):
                         )
 
                 else:
-                    await do_empty_aggregation()
-                    self.signal_success()
+                    try:
+                        await do_empty_aggregation()
+                    except Exception as e:
+                        logger.exception(
+                            "Unexpected error during empty aggregation for interval {} to {}: {}",
+                            aggregation_time_span.start_time,
+                            aggregation_time_span.end_time,
+                            e,
+                        )
+                    else:
+                        self.signal_success()
 
                     logger.info(
                         "No events to process for interval {} to {}, recorded empty aggregation",
@@ -917,6 +936,20 @@ class AggregatorWorker(AbstractWorker):
                 await insert_activity_events(conn, close_events)
 
         background_aggregation_task = asyncio.create_task(self.aggregation_runner())
+
+        # Ensure we log if the background task ever dies unexpectedly
+        def _bg_done(task: asyncio.Task):
+            try:
+                exc = task.exception()
+            except asyncio.CancelledError:
+                logger.info("Aggregation runner task cancelled")
+                return
+            if exc:
+                logger.exception("Aggregation runner crashed with exception: {}", exc)
+            else:
+                logger.warning("Aggregation runner exited without exception")
+
+        background_aggregation_task.add_done_callback(_bg_done)
 
         while not self.shutdown_received:
             try:

@@ -14,7 +14,6 @@ from clepsy.db.db import get_db_connection
 from clepsy.db.deps import get_user_settings
 from clepsy.entities import UserSettings
 from clepsy.frontend.components import create_base_page
-from clepsy.modules.tags.router import router as tags_router
 from clepsy.modules.user_settings.page import (
     create_tags_page,
 )  # existing tags page builder
@@ -31,7 +30,6 @@ from .password.router import router as password_router
 from .productivity.page import create_productivity_page
 from .productivity.router import router as productivity_router
 from .sources.page import create_sources_page
-from .sources.router import router as sources_router
 
 
 router = APIRouter()
@@ -39,8 +37,6 @@ router.include_router(general_router)
 router.include_router(password_router)
 router.include_router(llm_models_router)
 router.include_router(productivity_router)
-router.include_router(sources_router)
-router.include_router(tags_router)
 
 SettingsPageName = Literal[
     "general",

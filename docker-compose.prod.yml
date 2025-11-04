@@ -1,7 +1,9 @@
 volumes:
-  db_data:               # ← named volume for SQLite
+  db_data:
   static_assets:
   caches:
+  paddlex-cache:
+
 networks:
   web:
 
@@ -14,6 +16,7 @@ services:
       - db_data:/var/lib/clepsy
       - static_assets:/shared-static
       - caches:/var/lib/clepsy-caches
+      - paddlex-cache:/root/.paddlex
     entrypoint: ["/app/entrypoint.sh"]
     ports:
       - "${CLEPSY_PORT:-8000}:8000"
@@ -21,4 +24,3 @@ services:
       GOOSE_DRIVER: sqlite3
       GOOSE_DBSTRING: /var/lib/clepsy/db.sqlite3
       GOOSE_MIGRATION_DIR: ./migrations
-      PADDLE_OCR_BASE_DIR: /var/lib/clepsy-caches/paddle_cache

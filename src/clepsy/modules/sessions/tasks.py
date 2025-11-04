@@ -1097,7 +1097,7 @@ async def run_sessionization():
                 )
                 return
 
-        if candidate_creation_interval_start < candidate_creation_interval_end:
+        if candidate_creation_interval_start > candidate_creation_interval_end:
             error_message = (
                 f"Invalid candidate creation interval: start={candidate_creation_interval_start} "
                 f">= end={candidate_creation_interval_end}"
