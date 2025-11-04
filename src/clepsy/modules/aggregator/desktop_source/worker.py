@@ -37,6 +37,8 @@ from clepsy.workers import AbstractWorker
 _WHITESPACE_RE = re.compile(r"[ \t]+")
 _NON_INFO_LINE_RE = re.compile(r"^[0-9\W_]+$")
 
+paddle_ocr_semaphore = asyncio.Semaphore(1)
+
 
 def prepare_ocr_text(
     raw_text: str,
@@ -126,12 +128,13 @@ async def process_desktop_check_using_ocr(
     desktop_check_input: DesktopInputScreenshotEvent,
     text_model_config: LLMConfig,
 ) -> ProcessedDesktopCheckScreenshotEventOCR:
-    raw_ocr_text = await asyncio.to_thread(
-        ocr_ui_text,
-        image=desktop_check_input.screenshot,
-        lang_code="en",  # TODO: make configurable in UI or use multi lang by default
-        ocr_version="PP-OCRv5",
-    )
+    async with paddle_ocr_semaphore:
+        raw_ocr_text = await asyncio.to_thread(
+            ocr_ui_text,
+            image=desktop_check_input.screenshot,
+            lang_code="en",  # TODO: make configurable in UI or use multi lang by default
+            ocr_version="PP-OCRv5",
+        )
 
     cleaned_ocr_text = prepare_ocr_text(raw_ocr_text)
     ocr_text = cleaned_ocr_text if cleaned_ocr_text else raw_ocr_text.strip()
