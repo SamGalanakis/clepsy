@@ -22,4 +22,3 @@ services:
       GOOSE_DRIVER: sqlite3
       GOOSE_DBSTRING: /var/lib/clepsy/db.sqlite3
       GOOSE_MIGRATION_DIR: ./migrations
-      PADDLE_OCR_BASE_DIR: /var/lib/clepsy/paddle_cache
