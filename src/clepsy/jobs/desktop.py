@@ -8,6 +8,7 @@ from typing import Any
 import dramatiq
 from loguru import logger
 from clepsy.infra import dramatiq_setup as _dramatiq_setup  # noqa: F401
+from clepsy.jobs.actor_init import actor_init
 
 from clepsy.db.db import get_db_connection
 from clepsy.db.queries import select_user_settings
@@ -97,6 +98,8 @@ async def process_desktop_screenshot_job(data: dict[str, Any], image_b64: str) -
 
     Performs OCR/VLM processing and publishes a compact payload to the Valkey stream.
     """
+    # Ensure DB adapters/converters are registered in this worker process
+    await actor_init()
     desktop_evt = build_desktop_event_from_payload(data, image_b64)
     async with get_db_connection(include_uuid_func=False) as conn:
         user_settings = await select_user_settings(conn)

@@ -1079,8 +1079,24 @@ async def run_sessionization():
             )
         else:
             candidate_creation_interval_start = previous_run.candidate_creation_end
+            # Debug timezone awareness and values before comparison to diagnose naive/aware mismatches
+            start_plus_window = (
+                candidate_creation_interval_start + config.session_window_length
+            )
+            logger.info(
+                "Sessionization interval debug | prev_end: {} (tzinfo={} type={}) | +window: {} (tzinfo={} type={}) | latest_agg_end: {} (tzinfo={} type={})",
+                candidate_creation_interval_start,
+                getattr(candidate_creation_interval_start, "tzinfo", None),
+                type(candidate_creation_interval_start),
+                start_plus_window,
+                getattr(start_plus_window, "tzinfo", None),
+                type(start_plus_window),
+                latest_aggregation_interval_end_time,
+                getattr(latest_aggregation_interval_end_time, "tzinfo", None),
+                type(latest_aggregation_interval_end_time),
+            )
             candidate_creation_interval_end = min(
-                candidate_creation_interval_start + config.session_window_length,
+                start_plus_window,
                 latest_aggregation_interval_end_time,
             )
 

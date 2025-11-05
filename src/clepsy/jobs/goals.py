@@ -5,6 +5,7 @@ from datetime import timedelta
 
 import dramatiq
 from clepsy.infra import dramatiq_setup as _dramatiq_setup  # noqa: F401
+from clepsy.jobs.actor_init import actor_init
 from loguru import logger
 
 from clepsy.modules.goals.calculate_goals import (
@@ -22,6 +23,8 @@ async def run_update_current_progress_job(goal_id: int, ttl_seconds: float) -> N
     - ttl_seconds: freshness window in seconds; if the latest progress row is newer than this, skip
     """
     try:
+        # Ensure DB adapters/converters are registered in this worker process
+        await actor_init()
         logger.info(
             "[Dramatiq] run_update_current_progress_job goal_id={} ttl_seconds={}",
             goal_id,
@@ -39,6 +42,8 @@ async def run_update_current_progress_job(goal_id: int, ttl_seconds: float) -> N
 async def run_update_previous_full_period_result_job(goal_id: int) -> None:
     """Dramatiq async actor: compute and upsert the previous full period result for a goal."""
     try:
+        # Ensure DB adapters/converters are registered in this worker process
+        await actor_init()
         logger.info(
             "[Dramatiq] run_update_previous_full_period_result_job goal_id={}", goal_id
         )

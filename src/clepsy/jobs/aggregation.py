@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 # ruff: noqa: I001
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -12,8 +10,9 @@ import clepsy.entities as E
 from clepsy.aggregator_worker import do_aggregation, do_empty_aggregation
 from clepsy.config import config
 from clepsy.entities import TimeSpan
-from clepsy.infra.streams import xrange_source_events
 from clepsy.infra import dramatiq_setup as _dramatiq_setup  # noqa: F401
+from clepsy.infra.streams import xrange_source_events
+from clepsy.jobs.actor_init import actor_init
 
 
 def current_window(now: Optional[datetime] = None) -> tuple[datetime, datetime]:
@@ -58,6 +57,9 @@ async def aggregate_window(
     - If start/end are not provided, compute the current window.
     - Reads events from Valkey Streams and runs aggregation.
     """
+    # Ensure DB adapters/converters are registered in this worker process
+    await actor_init()
+
     start: datetime
     end: datetime
     if start_iso and end_iso:
