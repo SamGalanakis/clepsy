@@ -32,6 +32,10 @@ from clepsy.frontend.components import (
     create_base_page,
 )
 from clepsy.modules.goals.calculate_goals import update_current_progress_for_goal
+from clepsy.scheduling import (
+    schedule_goal_previous_period_update,
+    unschedule_goal_previous_period_update,
+)
 
 from .pages import (
     create_create_goal_form,
@@ -72,8 +76,8 @@ async def delete_goal_endpoint(
 
         # Return 200 with empty body so hx-swap="outerHTML" clears the row element
         resp = HTMLResponse("", status_code=200)
-
-        # Periodic evaluation schedules have been removed; nothing to cancel here.
+        # Remove periodic schedule for this goal (best effort)
+        await unschedule_goal_previous_period_update(goal_id=goal_id)
 
         resp.headers["HX-Trigger"] = json.dumps(
             {
@@ -564,8 +568,13 @@ async def persist_created_goal(
             include_tag_ids=include_tag_ids,
             exclude_tag_ids=exclude_tag_ids,
         )
-
-    # Periodic cron scheduling has been removed in favor of on-demand updates.
+    # Schedule periodic evaluation for previous full period result
+    await schedule_goal_previous_period_update(
+        goal_id=goal_id,
+        period=period,
+        timezone_str=timezone_str or None,
+        created_at=eff_from,
+    )
 
     response = RedirectResponse(url="/s/goals", status_code=200)
     response.headers["HX-Trigger"] = json.dumps(

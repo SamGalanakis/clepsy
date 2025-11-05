@@ -32,37 +32,11 @@ services:
     networks: [web]
     restart: unless-stopped
 
-  rq-worker-default:
+  dramatiq-worker:
     image: ghcr.io/samgalanakis/clepsy:latest
-    container_name: rq-worker-default
+    container_name: dramatiq-worker
     networks: [web]
-    command: ["bash", "-lc", "rq worker --url redis://valkey:6379/0 default"]
-    environment:
-      VALKEY_URL: redis://valkey:6379/0
-    volumes:
-      - db_data:/var/lib/clepsy
-      - caches:/var/lib/clepsy-caches
-    depends_on:
-      - valkey
-
-  rq-worker-aggregation:
-    image: ghcr.io/samgalanakis/clepsy:latest
-    container_name: rq-worker-aggregation
-    networks: [web]
-    command: ["bash", "-lc", "rq worker --url redis://valkey:6379/0 aggregation"]
-    environment:
-      VALKEY_URL: redis://valkey:6379/0
-    volumes:
-      - db_data:/var/lib/clepsy
-      - caches:/var/lib/clepsy-caches
-    depends_on:
-      - valkey
-
-  rq-cron:
-    image: ghcr.io/samgalanakis/clepsy:latest
-    container_name: rq-cron
-    networks: [web]
-    command: ["bash", "-lc", "rq cron clepsy.cron_config --url redis://valkey:6379/0"]
+    command: ["bash", "-lc", "dramatiq clepsy.jobs.desktop clepsy.jobs.mobile clepsy.jobs.aggregation clepsy.jobs.sessions clepsy.jobs.goals --processes 2 --threads 4"]
     environment:
       VALKEY_URL: redis://valkey:6379/0
     volumes:

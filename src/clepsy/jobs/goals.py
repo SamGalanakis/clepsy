@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-import asyncio
+# ruff: noqa: I001
 from datetime import timedelta
 
+import dramatiq
+from clepsy.infra import dramatiq_setup as _dramatiq_setup  # noqa: F401
 from loguru import logger
 
 from clepsy.modules.goals.calculate_goals import (
@@ -11,8 +13,9 @@ from clepsy.modules.goals.calculate_goals import (
 )
 
 
-def run_update_current_progress_job(goal_id: int, ttl_seconds: float) -> None:
-    """RQ Job wrapper: update current progress for a goal if stale.
+@dramatiq.actor
+async def run_update_current_progress_job(goal_id: int, ttl_seconds: float) -> None:
+    """Dramatiq async actor: update current progress for a goal if stale.
 
     Parameters:
     - goal_id: The goal identifier
@@ -20,27 +23,26 @@ def run_update_current_progress_job(goal_id: int, ttl_seconds: float) -> None:
     """
     try:
         logger.info(
-            "[RQ] run_update_current_progress_job goal_id={} ttl_seconds={}",
+            "[Dramatiq] run_update_current_progress_job goal_id={} ttl_seconds={}",
             goal_id,
             ttl_seconds,
         )
-        asyncio.run(
-            _update_current_progress_job(
-                goal_id=goal_id, ttl=timedelta(seconds=ttl_seconds)
-            )
+        await _update_current_progress_job(
+            goal_id=goal_id, ttl=timedelta(seconds=ttl_seconds)
         )
     except Exception:
-        logger.exception("[RQ] run_update_current_progress_job failed")
+        logger.exception("[Dramatiq] run_update_current_progress_job failed")
         raise
 
 
-def run_update_previous_full_period_result_job(goal_id: int) -> None:
-    """RQ Job wrapper: compute and upsert the previous full period result for a goal."""
+@dramatiq.actor
+async def run_update_previous_full_period_result_job(goal_id: int) -> None:
+    """Dramatiq async actor: compute and upsert the previous full period result for a goal."""
     try:
         logger.info(
-            "[RQ] run_update_previous_full_period_result_job goal_id={}", goal_id
+            "[Dramatiq] run_update_previous_full_period_result_job goal_id={}", goal_id
         )
-        asyncio.run(_update_previous_full_period_goal_result_job(goal_id=goal_id))
+        await _update_previous_full_period_goal_result_job(goal_id=goal_id)
     except Exception:
-        logger.exception("[RQ] run_update_previous_full_period_result_job failed")
+        logger.exception("[Dramatiq] run_update_previous_full_period_result_job failed")
         raise

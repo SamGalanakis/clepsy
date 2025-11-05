@@ -21,5 +21,3 @@ async def init():
             logger.warning("User settings not found or database issue")
 
     await db_setup()
-
-    # In RQ mode, no in-process event bus or workers are registered here.

@@ -117,9 +117,12 @@ class Config(BaseSettings):
     gliner_pii_model: str = "knowledgator/gliner-pii-small-v1.0"
     gliner_pii_threshold: float = 0.5
     gliner_cache_dir: Path = cache_dir / "gliner"
-    # RQ/Valkey
     valkey_url: str
-    # APScheduler removed; RQ Cron provides scheduling
+    ap_scheduler_sqlite_db_path: Path = Path("/var/lib/clepsy/apscheduler.sqlite3")
+
+    @property
+    def ap_scheduler_db_connection_string(self) -> str:
+        return f"sqlite:////{self.ap_scheduler_sqlite_db_path.as_posix()}"
 
     @property
     def is_dev(self) -> bool:

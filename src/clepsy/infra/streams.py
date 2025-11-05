@@ -5,7 +5,7 @@ from typing import Iterable
 
 from loguru import logger
 
-from clepsy.infra.rq_setup import get_connection
+from clepsy.infra.valkey_client import get_connection
 
 
 SOURCE_EVENTS_STREAM = "source:events"

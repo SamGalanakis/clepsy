@@ -4,13 +4,11 @@ import json
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from PIL import Image
-from rq import Queue
 
 from clepsy.entities import (
     DesktopInputAfkStartEvent,
     DesktopInputScreenshotEvent,
 )
-from clepsy.infra.rq_setup import get_connection
 from clepsy.infra.streams import xadd_source_event
 from clepsy.jobs.desktop import process_desktop_screenshot_job
 
@@ -36,7 +34,8 @@ async def receive_afk_start(
                     if event.timestamp.tzinfo
                     else event.timestamp.replace(tzinfo=timezone.utc)
                 ).isoformat(),
-                "time_since_last_user_activity": str(time_since_last_user_activity),
+                # Encode as seconds to align with Pydantic's timedelta parsing
+                "time_since_last_user_activity": time_since_last_user_activity.total_seconds(),
             }
         )
         _ = xadd_source_event(
@@ -90,7 +89,7 @@ async def receive_data(
             ) from exc
 
         # Add screenshot and convert timestamp
-        # We'll pass raw bytes to the RQ job and reconstruct the image server-side
+        # We'll pass raw bytes to the background job and reconstruct the image server-side
         ts = datetime.fromisoformat(data_dict["timestamp"])  # may be naive or aware
         if ts.tzinfo is None:
             ts = ts.replace(tzinfo=timezone.utc)
@@ -100,15 +99,8 @@ async def receive_data(
             {**data_dict, "screenshot": screenshot_image}
         )
 
-        q = Queue("default", connection=get_connection())  # type: ignore[arg-type]
-        q.enqueue(
-            process_desktop_screenshot_job,
-            data_dict,
-            image_bytes,
-            job_timeout=300,  # allow OCR/VLM time
-            result_ttl=0,  # we don't need the return value persisted
-            failure_ttl=24 * 3600,
-        )
+        # Send to Dramatiq actor
+        process_desktop_screenshot_job.send(data_dict, image_bytes)
 
     except HTTPException:
         raise

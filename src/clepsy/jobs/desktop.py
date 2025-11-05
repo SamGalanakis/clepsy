@@ -1,14 +1,15 @@
 from __future__ import annotations
-# ruff: noqa: I001
 
-import asyncio
+# ruff: noqa: I001
 import io
 import json
 from datetime import datetime, timezone
 from typing import Any
 
+import dramatiq
 from loguru import logger
 from PIL import Image
+from clepsy.infra import dramatiq_setup as _dramatiq_setup  # noqa: F401
 
 from clepsy.db.db import get_db_connection
 from clepsy.db.queries import select_user_settings
@@ -19,6 +20,7 @@ from clepsy.entities import (
     ProcessedDesktopCheckScreenshotEventOCR,
     ProcessedDesktopCheckScreenshotEventVLM,
 )
+from clepsy.modules.pii.sanitize import sanitize_text
 
 
 def ensure_aware(ts: datetime) -> datetime:
@@ -95,37 +97,37 @@ def processed_event_to_payload(evt) -> tuple[str, datetime, dict[str, Any]]:
             raise TypeError(f"Unexpected processed desktop event type: {type(evt)}")
 
 
-def process_desktop_screenshot_job(data: dict[str, Any], image_bytes: bytes) -> None:
-    """RQ job: process a desktop screenshot event and persist a durable source_event row.
+@dramatiq.actor
+async def process_desktop_screenshot_job(
+    data: dict[str, Any], image_bytes: bytes
+) -> None:
+    """Dramatiq async actor: process a desktop screenshot event and publish to stream.
 
-    This replaces in-memory publish/subscribe. It performs OCR/VLM processing using
-    the same logic as the prior DesktopCheckWorker, then stores a pared-down payload
-    needed for aggregation in the source_events table.
+    Performs OCR/VLM processing and publishes a compact payload to the Valkey stream.
     """
+    desktop_evt = build_desktop_event_from_payload(data, image_bytes)
+    async with get_db_connection(include_uuid_func=False) as conn:
+        user_settings = await select_user_settings(conn)
+        if not user_settings:
+            raise RuntimeError("Missing user settings")
 
-    async def inner():
-        desktop_evt = build_desktop_event_from_payload(data, image_bytes)
-        async with get_db_connection(include_uuid_func=False) as conn:
-            user_settings = await select_user_settings(conn)
-            if not user_settings:
-                raise RuntimeError("Missing user settings")
+    # Run the processing (may use OCR/VLM and small LLM passes)
+    processed = await process_desktop_check(desktop_evt, user_settings=user_settings)
 
-        # Run the processing (may use OCR/VLM and small LLM passes)
-        processed = await process_desktop_check(
-            desktop_evt, user_settings=user_settings
-        )
+    # Sanitize PII in text-bearing fields before publishing (synchronously)
+    match processed:
+        case ProcessedDesktopCheckScreenshotEventOCR():
+            sanitized = sanitize_text(processed.image_text)
+            processed = processed.model_copy(update={"image_text": sanitized})
+        case ProcessedDesktopCheckScreenshotEventVLM():
+            sanitized = sanitize_text(processed.llm_description)
+            processed = processed.model_copy(update={"llm_description": sanitized})
 
-        event_type, event_time, payload = processed_event_to_payload(processed)
-        payload_json = json.dumps(payload)
+    event_type, event_time, payload = processed_event_to_payload(processed)
+    payload_json = json.dumps(payload)
 
-        # Publish to Valkey stream rather than DB
-        _ = xadd_source_event(
-            event_type=event_type, timestamp=event_time, payload_json=payload_json
-        )
-        logger.debug("Published desktop processed event to stream: {}", event_type)
-
-    asyncio.run(inner())
-
-
-# Note: AFK events are now persisted inline in the router by writing directly
-# to the Valkey stream; no RQ job needed for the lightweight AFK event.
+    # Publish to Valkey stream
+    _ = xadd_source_event(
+        event_type=event_type, timestamp=event_time, payload_json=payload_json
+    )
+    logger.debug("Published desktop processed event to stream: {}", event_type)

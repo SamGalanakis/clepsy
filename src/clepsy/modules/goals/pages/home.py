@@ -5,8 +5,8 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 import aiosqlite
+from dramatiq.errors import DramatiqError
 from htpy import Element, div, h2, p, span
-from rq import Queue
 
 from clepsy.db.queries import (
     select_goal_progress_current,
@@ -24,7 +24,6 @@ from clepsy.frontend.components import (
     create_standard_content,
 )
 from clepsy.frontend.components.icons import get_icon_svg
-from clepsy.infra.rq_setup import get_connection
 from clepsy.modules.goals.calculate_goals import (
     is_progress_stale,
 )
@@ -144,19 +143,15 @@ async def render_goal_row(
                 )
     has_periods = bool(periods)
 
-    # Kick background refresh via RQ if stale or no current progress
+    # Kick background refresh via Dramatiq if stale or no current progress
     if is_active and (stale or progress_row is None):
         try:
-            q = Queue("default", connection=get_connection())  # type: ignore[arg-type]
-            # Enqueue the async job wrapper; pass ttl seconds as float
             from clepsy.jobs.goals import run_update_current_progress_job
 
-            q.enqueue(
-                run_update_current_progress_job,
-                goal.id,
-                float(ttl_from_db.total_seconds()),
+            run_update_current_progress_job.send(
+                goal.id, float(ttl_from_db.total_seconds())
             )
-        except Exception:  # noqa: BLE001
+        except DramatiqError:
             # Best-effort enqueue; UI will keep polling/allow manual refresh
             pass
 

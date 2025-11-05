@@ -34,8 +34,10 @@ dependencies = [
     "paddlepaddle>=3.2.0",
     "torch>=2.0.0",
     "gliner>=0.2.22",
-    "rq>=2.6.0",
     "valkey[libvalkey]>=6.1.1",
+    "dramatiq>=1.18.0",
+    "apscheduler[sqlalchemy]>=4.0.0.0a6",
+    "redis>=7.0.1",
 ]
 
 [dependency-groups]
@@ -51,7 +53,6 @@ dev = [
     "pytest-sugar>=1.0.0",
     "pytest-emoji>=0.2.0",
     "rich>=13.0.0",
-    "rq-dashboard>=0.8.5",
 ]
 
 [tool.uv]

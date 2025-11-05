@@ -8,10 +8,7 @@
 	"runServices": [
 		"clepsy",
 		"valkey",
-		"rq-worker-default",
-		"rq-dashboard",
-		"rq-worker-aggregation",
-		"rq-cron"
+		"dramatiq-worker"
 	],
 	"features": {
 		"ghcr.io/devcontainers/features/git:1": {},
