@@ -66,11 +66,17 @@ async def aggregate_window(
     else:
         start, end = current_window()
 
-    logger.info("[Dramatiq] aggregate_window start={} end={}", start, end)
+    logger.info(
+        "[Dramatiq] aggregate_window start={} end={} (grace={})",
+        start,
+        end,
+        config.aggregation_grace_period,
+    )
 
-    # Query durable source events and run the existing aggregation pipeline.
-
-    rows = xrange_source_events(start=start, end=end)
+    # Query durable source events with grace on the upper bound to capture late arrivals.
+    # We'll filter strictly by event timestamp within [start, end) afterwards.
+    effective_end = end + config.aggregation_grace_period
+    rows = xrange_source_events(start=start, end=effective_end)
 
     window_span = TimeSpan(start_time=start, end_time=end)
     if not rows:
@@ -82,7 +88,12 @@ async def aggregate_window(
     for row in rows:
         mapped = map_source_event(row)
         if mapped is not None:
-            input_logs.append(mapped)
+            # Filter strictly by event time within [start, end)
+            evt_ts = mapped.timestamp
+            if evt_ts.tzinfo is None:
+                evt_ts = evt_ts.replace(tzinfo=timezone.utc)
+            if start <= evt_ts < end:
+                input_logs.append(mapped)
 
     if not input_logs:
         logger.info(
@@ -90,5 +101,8 @@ async def aggregate_window(
         )
         await do_empty_aggregation()
         return
+
+    # Ensure deterministic ordering by event timestamp
+    input_logs.sort(key=lambda e: e.timestamp)
 
     await do_aggregation(input_logs=input_logs, aggregation_time_span=window_span)

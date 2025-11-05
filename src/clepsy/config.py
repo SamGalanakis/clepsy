@@ -84,7 +84,8 @@ class Config(BaseSettings):
     aggregation_interval: timedelta = timedelta(minutes=10)  # 20
     aggregation_grace_period: timedelta = timedelta(minutes=1)
     db_path: Path = Path("/var/lib/clepsy/db.sqlite3")
-    screenshot_size: tuple[int, int] = (1024, 1024)
+    screenshot_max_size_vlm: tuple[int, int] = (1024, 1024)
+    screenshot_max_size_ocr: tuple[int, int] = (1920, 1080)
     software_version: str = version("clepsy")
     bootstrap_password_file_path: Path = Path("/var/lib/clepsy/bootstrap_password.txt")
     bootstrap_password: SecretStr | None = None
@@ -179,7 +180,7 @@ logger.add(
     sys.stderr,
     level=config.log_level,
     backtrace=True,
-    diagnose=True,
+    diagnose=False,
     enqueue=True,
 )
 
@@ -190,7 +191,7 @@ logger.add(
     rotation="50 MB",
     retention=timedelta(days=7),
     backtrace=True,
-    diagnose=True,
+    diagnose=False,
     level=config.log_level,
     enqueue=True,
 )

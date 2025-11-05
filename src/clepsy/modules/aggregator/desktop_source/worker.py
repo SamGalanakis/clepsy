@@ -172,8 +172,8 @@ async def process_desktop_check_vlm(
 ) -> ProcessedDesktopCheckScreenshotEventVLM:
     screenshot = utils.resize_image_with_thumbnail(
         image=desktop_check_input.screenshot,
-        target_height=config.screenshot_size[0],
-        target_width=config.screenshot_size[1],
+        target_height=config.screenshot_max_size_vlm[0],
+        target_width=config.screenshot_max_size_vlm[1],
         inplace=True,
     )
 

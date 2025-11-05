@@ -320,17 +320,19 @@ async def generate_isolated_timeline(
     max_desktop_screenshot_log_interval_seconds: int,
     max_pause_time_seconds: int,
     aggregation_interval_seconds: int,
+    isolated_timeline_llm_request_timeout_seconds: int = 300,
+    qc_timeline_llm_request_timeout_seconds: int = 300,
 ) -> tuple[dict[str, baml_types.ActivityMetadata], list[baml_types.Event]]:
     inputs = prepare_timeline_aggregator_inputs(
         input_logs=input_logs,
         aggregation_time_span=aggregation_time_span,
     )
 
-    client = create_client_registry(
+    isolated_client = create_client_registry(
         llm_config=text_model_config,
         name="TextClient",
         set_primary=True,
-        request_timeout_seconds=60 * 5,
+        request_timeout_seconds=isolated_timeline_llm_request_timeout_seconds,
     )
 
     if not inputs.logs:
@@ -344,7 +346,7 @@ async def generate_isolated_timeline(
         duration_seconds=aggregation_interval_seconds,
         max_pause_time_seconds=max_pause_time_seconds,
         max_desktop_screenshot_log_interval_seconds=max_desktop_screenshot_log_interval_seconds,
-        baml_options={"client_registry": client, "collector": collector},
+        baml_options={"client_registry": isolated_client, "collector": collector},
     )
 
     reasoning = schema_with_reasoning.reasoning
@@ -371,11 +373,18 @@ async def generate_isolated_timeline(
         qc_policy == E.IsolatedTimelineQCPolicy.WHEN_PROGRAMMATIC_ERRRORS
         and error_strings
     ):
+        qc_client = create_client_registry(
+            llm_config=text_model_config,
+            name="TextClient",
+            set_primary=True,
+            request_timeout_seconds=qc_timeline_llm_request_timeout_seconds,
+        )
+
         qc_result = await b.QualityControlTimeline(
             generated_timeline=timeline,
             duration_seconds=aggregation_interval_seconds,
             max_pause_time_seconds=config.max_pause_time_seconds,
-            baml_options={"client_registry": client, "collector": collector},
+            baml_options={"client_registry": qc_client, "collector": collector},
             logs=inputs.logs,
             errors=error_strings,
         )

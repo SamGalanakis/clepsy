@@ -13,8 +13,8 @@ from clepsy.entities import (
 )
 from clepsy.infra.streams import xadd_source_event
 from clepsy.jobs.desktop import process_desktop_screenshot_job
-from clepsy.utils import pil_image_to_base64
-
+from clepsy import utils
+from clepsy.config import config
 
 router = APIRouter(prefix="/desktop")
 
@@ -69,6 +69,7 @@ async def receive_data(
     try:
         # Read screenshot image
         image_bytes = await screenshot.read()
+
         with io.BytesIO(image_bytes) as image_stream:
             screenshot_image = Image.open(image_stream)
             screenshot_image.load()
@@ -83,7 +84,13 @@ async def receive_data(
                 detail=error_msg,
             )
 
-        # Parse JSON data safely
+        utils.resize_image_with_thumbnail(
+            image=screenshot_image,
+            target_height=config.screenshot_max_size_ocr[0],
+            target_width=config.screenshot_max_size_ocr[1],
+            inplace=True,
+        )
+
         try:
             data_dict = json.loads(data)
         except json.JSONDecodeError as exc:
@@ -113,7 +120,7 @@ async def receive_data(
         }
 
         # Encode image as base64 (PNG) to keep Dramatiq message JSON-serializable
-        image_b64 = pil_image_to_base64(screenshot_image, img_format="PNG")
+        image_b64 = utils.pil_image_to_base64(screenshot_image, img_format="PNG")
 
         # Send to Dramatiq actor with JSON-safe payload and base64 image
         process_desktop_screenshot_job.send(message_dict, image_b64)

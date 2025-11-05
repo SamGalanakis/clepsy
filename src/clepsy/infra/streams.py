@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from typing import Iterable
 
 from loguru import logger
+from valkey.exceptions import ResponseError as StreamResponseError  # type: ignore
 
 from clepsy.infra.valkey_client import get_connection
 
@@ -30,10 +31,20 @@ def xadd_source_event(
         "ts": str(to_ms(timestamp)),
         "payload": payload_json,
     }
-    # Use event-time based ID to enable XRANGE by window using ms bounds
-    msg_id_base = f"{to_ms(timestamp)}-0"
+    # Use event-time based ID to enable XRANGE by window using ms bounds.
+    # Let Valkey pick a monotonically increasing sequence for the same ms to avoid collisions.
+    msg_id_base = f"{to_ms(timestamp)}-*"
     try:
         return conn.xadd(SOURCE_EVENTS_STREAM, entry, id=msg_id_base)  # type: ignore[attr-defined]
+    except StreamResponseError as e:
+        # This happens if the specified ID would be <= the top item (e.g., backfill older timestamps).
+        # Fallback to server-assigned ID to avoid dropping the event; the payload still carries the true event ts.
+        logger.warning(
+            "XADD with event-time ID %s failed (%r); falling back to server-assigned ID (*)",
+            msg_id_base,
+            e,
+        )
+        return conn.xadd(SOURCE_EVENTS_STREAM, entry)  # type: ignore[attr-defined]
     except Exception:
         logger.exception("Failed to XADD source event to stream")
         raise
