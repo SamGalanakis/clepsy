@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import dramatiq
 from dramatiq.brokers.redis import RedisBroker
 
