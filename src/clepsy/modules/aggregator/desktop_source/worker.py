@@ -180,7 +180,6 @@ async def process_desktop_check_vlm(
     active_window = baml_types.WindowInfo(
         title=desktop_check_input.active_window.title,
         app_name=desktop_check_input.active_window.app_name,
-        is_active=desktop_check_input.active_window.is_active,
     )
     desktop_check_input_llm_call = baml_types.DesktopCheckInput(
         screenshot=pil_image_to_baml(screenshot),

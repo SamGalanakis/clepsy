@@ -18,7 +18,6 @@ def make_meeting_then_coding(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Daily Standup - Zoom Meeting",
                 app_name="Zoom",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="Joining the daily standup meeting in Zoom.",
@@ -28,7 +27,6 @@ def make_meeting_then_coding(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Daily Standup - Zoom Meeting",
                 app_name="Zoom",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="In Zoom standup discussing updates.",
@@ -38,7 +36,6 @@ def make_meeting_then_coding(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Daily Standup - Zoom Meeting",
                 app_name="Zoom",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="Ongoing Zoom standup.",
@@ -48,7 +45,6 @@ def make_meeting_then_coding(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Daily Standup - Zoom Meeting",
                 app_name="Zoom",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="Wrapping up Zoom standup.",
@@ -59,7 +55,6 @@ def make_meeting_then_coding(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="team-chat - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=300, top=200, width=800, height=600),
             ),
             llm_description="Post-meeting discussion in Slack (team-chat).",
@@ -69,7 +64,6 @@ def make_meeting_then_coding(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="team-chat - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=300, top=200, width=800, height=600),
             ),
             llm_description="Clarifying action items in Slack.",
@@ -79,7 +73,6 @@ def make_meeting_then_coding(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="team-chat - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=300, top=200, width=800, height=600),
             ),
             llm_description="Sharing links in Slack post-standup.",
@@ -90,7 +83,6 @@ def make_meeting_then_coding(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="feature.py - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Starting feature development in VS Code (feature.py).",

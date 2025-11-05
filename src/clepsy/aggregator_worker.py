@@ -146,7 +146,6 @@ def prepare_timeline_aggregator_inputs(
                     active_window=baml_types.WindowInfo(
                         title=x.active_window.title,
                         app_name=x.active_window.app_name,
-                        is_active=x.active_window.is_active,
                     ),
                 )
             case E.ProcessedDesktopCheckScreenshotEventOCR():
@@ -159,7 +158,6 @@ def prepare_timeline_aggregator_inputs(
                     active_window=baml_types.WindowInfo(
                         title=x.active_window.title,
                         app_name=x.active_window.app_name,
-                        is_active=x.active_window.is_active,
                     ),
                     image_text_post_processed_by_llm=x.image_text_post_processed_by_llm,
                 )

@@ -21,7 +21,6 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Draft Post - WordPress",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User composing blog post in WordPress editor.",
@@ -31,7 +30,6 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Draft Post - WordPress",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User typing blog content.",
@@ -41,7 +39,6 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="New Post - WordPress",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing blog post content.",
@@ -51,7 +48,6 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Draft - WordPress",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User composing article text.",
@@ -61,7 +57,6 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="WordPress Editor",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User creating blog content.",
@@ -71,7 +66,6 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="WordPress",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing post content.",
@@ -82,7 +76,6 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Twitter",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User browsing Twitter feed.",
@@ -92,7 +85,6 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Twitter",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User scrolling through social media.",
@@ -102,7 +94,6 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Facebook",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User browsing Facebook.",
@@ -112,7 +103,6 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="LinkedIn",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User viewing LinkedIn feed.",
@@ -122,7 +112,6 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Twitter",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User browsing social media.",
@@ -132,7 +121,6 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Instagram",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User scrolling Instagram.",
@@ -142,7 +130,6 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Twitter",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User browsing social media feed.",

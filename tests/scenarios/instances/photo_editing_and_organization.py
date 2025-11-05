@@ -18,7 +18,6 @@ def make_photo_editing_and_organization(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="photo.jpg - Adobe Photoshop",
                 app_name="Adobe Photoshop",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Editing photo.jpg in Adobe Photoshop.",
@@ -28,7 +27,6 @@ def make_photo_editing_and_organization(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="photo.jpg - Adobe Photoshop",
                 app_name="Adobe Photoshop",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Adjusting layers and filters in Photoshop.",
@@ -38,7 +36,6 @@ def make_photo_editing_and_organization(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="photo.jpg - Adobe Photoshop",
                 app_name="Adobe Photoshop",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Cropping and color correcting in Photoshop.",
@@ -48,7 +45,6 @@ def make_photo_editing_and_organization(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="photo.jpg - Adobe Photoshop",
                 app_name="Adobe Photoshop",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Final tweaks before organizing files.",
@@ -59,7 +55,6 @@ def make_photo_editing_and_organization(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Pictures",
                 app_name="File Explorer",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="Organizing photos in File Explorer.",
@@ -69,7 +64,6 @@ def make_photo_editing_and_organization(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Pictures",
                 app_name="File Explorer",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="Renaming and moving files in File Explorer.",
@@ -79,7 +73,6 @@ def make_photo_editing_and_organization(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Pictures",
                 app_name="File Explorer",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="Final folder organization in File Explorer.",
@@ -90,7 +83,6 @@ def make_photo_editing_and_organization(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="photo2.jpg - Adobe Photoshop",
                 app_name="Adobe Photoshop",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Editing photo2.jpg in Adobe Photoshop.",

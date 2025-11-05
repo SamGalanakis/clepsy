@@ -17,7 +17,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
                 app_name="Figma",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User creating wireframes for a new mobile app in Figma.",
@@ -27,7 +26,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
                 app_name="Figma",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User creating wireframes for a new mobile app in Figma.",
@@ -37,7 +35,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
                 app_name="Figma",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User creating wireframes for a new mobile app in Figma.",
@@ -47,7 +44,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
                 app_name="Figma",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User creating wireframes for a new mobile app in Figma.",
@@ -57,7 +53,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
                 app_name="Figma",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User creating wireframes for a new mobile app in Figma.",
@@ -67,7 +62,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
                 app_name="Figma",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User creating wireframes for a new mobile app in Figma.",
@@ -77,7 +71,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
                 app_name="Figma",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User creating wireframes for a new mobile app in Figma.",
@@ -87,7 +80,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
                 app_name="Figma",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User creating wireframes for a new mobile app in Figma.",
@@ -97,7 +89,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
                 app_name="Figma",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User creating wireframes for a new mobile app in Figma.",
@@ -107,7 +98,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
                 app_name="Figma",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User creating wireframes for a new mobile app in Figma.",
@@ -117,7 +107,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
                 app_name="Figma",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User creating wireframes for a new mobile app in Figma.",
@@ -128,7 +117,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="design-team - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User checking messages from the design team on Slack.",
@@ -138,7 +126,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="design-team - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User checking messages from the design team on Slack.",
@@ -148,7 +135,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="design-team - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User checking messages from the design team on Slack.",
@@ -158,7 +144,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="design-team - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User checking messages from the design team on Slack.",
@@ -168,7 +153,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="design-team - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User checking messages from the design team on Slack.",
@@ -178,7 +162,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="design-team - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User checking messages from the design team on Slack.",
@@ -188,7 +171,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="design-team - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User checking messages from the design team on Slack.",
@@ -198,7 +180,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="design-team - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User checking messages from the design team on Slack.",
@@ -208,7 +189,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="design-team - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User checking messages from the design team on Slack.",
@@ -218,7 +198,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="design-team - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User checking messages from the design team on Slack.",
@@ -228,7 +207,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="design-team - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User checking messages from the design team on Slack.",
@@ -239,7 +217,6 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
                 app_name="Figma",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User returned to working on the wireframes in Figma.",

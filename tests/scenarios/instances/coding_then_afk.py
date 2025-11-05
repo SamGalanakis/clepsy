@@ -17,7 +17,6 @@ def make_coding_then_afk(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Opening VS Code and loading main.py for implementation work.",
@@ -27,7 +26,6 @@ def make_coding_then_afk(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Editing main.py in VS Code.",
@@ -37,7 +35,6 @@ def make_coding_then_afk(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Actively coding in main.py.",
@@ -47,7 +44,6 @@ def make_coding_then_afk(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Typing and navigating within main.py.",
@@ -57,7 +53,6 @@ def make_coding_then_afk(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Writing code in main.py.",
@@ -67,7 +62,6 @@ def make_coding_then_afk(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Continuing development work in main.py.",
@@ -77,7 +71,6 @@ def make_coding_then_afk(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Working through implementation details in main.py.",
@@ -87,7 +80,6 @@ def make_coding_then_afk(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Editing and scrolling in main.py.",
@@ -97,7 +89,6 @@ def make_coding_then_afk(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Actively coding in main.py.",
@@ -107,7 +98,6 @@ def make_coding_then_afk(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Making changes and reviewing code in main.py.",

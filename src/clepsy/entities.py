@@ -87,7 +87,6 @@ class Bbox(BaseModel):
 class WindowInfo(BaseModel):
     title: str
     app_name: str
-    is_active: bool
     bbox: Bbox
 
 

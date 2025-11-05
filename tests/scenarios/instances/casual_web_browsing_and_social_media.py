@@ -18,7 +18,6 @@ def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="BBC News - Home",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Reading news on BBC News homepage.",
@@ -28,7 +27,6 @@ def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="BBC News - World",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Reading a world news article on BBC News.",
@@ -38,7 +36,6 @@ def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="BBC News - Politics",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Scrolling through politics coverage on BBC News.",
@@ -48,7 +45,6 @@ def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="BBC News - Technology",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Checking technology headlines on BBC News.",
@@ -59,7 +55,6 @@ def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Facebook - News Feed",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Browsing Facebook news feed.",
@@ -69,7 +64,6 @@ def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Facebook - Notifications",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Checking notifications on Facebook.",
@@ -79,7 +73,6 @@ def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Facebook - Messages",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Reading messages on Facebook.",
@@ -90,7 +83,6 @@ def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="YouTube - Tech Reviews",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Watching a tech review video on YouTube.",

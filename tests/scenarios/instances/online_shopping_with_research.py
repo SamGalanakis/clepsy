@@ -18,7 +18,6 @@ def make_online_shopping_with_research(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Laptops - Amazon.com",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Browsing laptops on Amazon.",
@@ -28,7 +27,6 @@ def make_online_shopping_with_research(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Gaming Laptops - Amazon.com",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Viewing gaming laptops category on Amazon.",
@@ -38,7 +36,6 @@ def make_online_shopping_with_research(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Lenovo Legion - Amazon.com",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Inspecting a specific laptop product page on Amazon.",
@@ -48,7 +45,6 @@ def make_online_shopping_with_research(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Compare - Amazon.com",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Comparing laptop options on Amazon.",
@@ -59,7 +55,6 @@ def make_online_shopping_with_research(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Best Laptops 2025 - CNET",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Reading CNET's Best Laptops 2025 article.",
@@ -69,7 +64,6 @@ def make_online_shopping_with_research(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="CNET - Laptop Buying Guide",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Reviewing laptop buying guide on CNET.",
@@ -79,7 +73,6 @@ def make_online_shopping_with_research(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="CNET - Editor's Picks",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Checking editor's picks on CNET.",
@@ -90,7 +83,6 @@ def make_online_shopping_with_research(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Shopping Cart - Amazon.com",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Returned to Amazon to proceed with checkout.",

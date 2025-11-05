@@ -7,11 +7,14 @@ import os
 from pathlib import Path
 import sys
 from typing import Literal
+import warnings
 
 from loguru import logger
 from pydantic import SecretBytes, SecretStr
 from pydantic_settings import BaseSettings
 
+
+warnings.filterwarnings("ignore", message="No ccache found")
 
 logging.getLogger("urllib3").setLevel(logging.INFO)
 logging.getLogger("PIL").setLevel(logging.INFO)
@@ -19,6 +22,13 @@ logging.getLogger("aiosqlite").setLevel(logging.INFO)
 logging.getLogger("aiocache").setLevel(logging.INFO)
 logging.getLogger("asyncio").setLevel(logging.INFO)
 logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+
+logging.getLogger("dramatiq").setLevel(logging.INFO)
+logging.getLogger("dramatiq.worker").setLevel(logging.INFO)
+logging.getLogger("dramatiq.broker").setLevel(logging.INFO)
+logging.getLogger("dramatiq.middleware").setLevel(logging.INFO)
+logging.getLogger("dramatiq.message").setLevel(logging.INFO)
+logging.getLogger("dramatiq.actor").setLevel(logging.INFO)
 
 logging.getLogger("python_multipart.multipart").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)

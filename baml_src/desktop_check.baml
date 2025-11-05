@@ -6,7 +6,6 @@
 class WindowInfo {
   title        string
   app_name     string
-  is_active    bool
 }
 
 
@@ -18,9 +17,8 @@ class WindowInfo {
 
 class DesktopCheckInput {
   screenshot  image
-    @description("Raw screenshot; will be automatically resized on the server side before the prompt is built.")
+
   active_window WindowInfo
-    @description("Foreground window at capture time, if known.")
 }
 
 
@@ -28,7 +26,7 @@ class DesktopCheckInput {
 
 
 template_string EXAMPLE #"
-User is actively coding in VS Code, debugging a project named "ProjectX".
+User is actively coding, debugging a project named "ExcaliberSemantics".
 "#
 
 // Reusable full prompt template for desktop check generation
@@ -40,10 +38,10 @@ a screenshot of a window, along with the title and application name.
 
 
 * Omit any personal or sensitive information.
-* Prefer high-level phrasing (“watching a programming tutorial”) over exact titles.
 * The description should be concise and dense. At most 20 words long, less is better.
 * Do NOT include overly detailed information where it is not needed.
 * If it is a browser, focus only on the shown tab.
+* You do not need to repeat the window title or app name, supplement them based on what you see in the screenshot.
 {{ _.role("user") }}
 
 
@@ -82,7 +80,6 @@ test TestName {
           app_name #"
           hello world
         "#
-          is_active true
       }
     }
   }

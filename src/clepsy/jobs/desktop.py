@@ -59,7 +59,6 @@ def processed_event_to_payload(evt) -> tuple[str, datetime, dict[str, Any]]:
                 "active_window": {
                     "title": evt.active_window.title,
                     "app_name": evt.active_window.app_name,
-                    "is_active": evt.active_window.is_active,
                     "bbox": {
                         "left": evt.active_window.bbox.left,
                         "top": evt.active_window.bbox.top,
@@ -77,7 +76,6 @@ def processed_event_to_payload(evt) -> tuple[str, datetime, dict[str, Any]]:
                 "active_window": {
                     "title": evt.active_window.title,
                     "app_name": evt.active_window.app_name,
-                    "is_active": evt.active_window.is_active,
                     "bbox": {
                         "left": evt.active_window.bbox.left,
                         "top": evt.active_window.bbox.top,

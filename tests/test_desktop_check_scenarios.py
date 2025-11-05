@@ -89,7 +89,6 @@ async def validate_with_llm(
             active_window=baml_types.WindowInfo(
                 title=input_event.active_window.title,
                 app_name=input_event.active_window.app_name,
-                is_active=input_event.active_window.is_active,
             ),
         ),
         baml_options={"client_registry": client},
@@ -105,7 +104,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="test_aggregator_llm.py - clepsy [Dev Container: Existing Dockerfile @ desktop-linux]",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1920, height=1080),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -120,7 +118,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="Spotify",
                 app_name="Spotify",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1920, height=1080),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -135,7 +132,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="aggregator_worker.py - clepsy [Dev Container: Existing Dockerfile @ desktop-linux]",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1920, height=1080),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -150,7 +146,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="NordVPN",
                 app_name="NordVPN",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1920, height=1080),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -165,7 +160,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="League of Legends",
                 app_name="League of Legends",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1920, height=1080),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -180,7 +174,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="Steam",
                 app_name="Steam",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1920, height=1080),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -195,7 +188,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="VLC media player",
                 app_name="VLC media player",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1920, height=1080),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -210,7 +202,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="Steam",
                 app_name="Steam",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1920, height=1080),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -225,7 +216,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="3dprint",
                 app_name="File Explorer",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1920, height=1080),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -240,7 +230,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="Razer Synapse",
                 app_name="Razer Synapse",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1920, height=1080),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -255,7 +244,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="FortiClient - Zero Trust Fabric Agent",
                 app_name="FortiClient",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1920, height=1080),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -270,7 +258,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="Calculator",
                 app_name="Calculator",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1920, height=1080),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -285,7 +272,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="My thesis about pink transparent e",
                 app_name="Notepad",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1920, height=1080),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -300,7 +286,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="Untitled - Paint",
                 app_name="Paint",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1920, height=1080),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -315,7 +300,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="Discord",
                 app_name="Discord",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=2880, height=1620),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -330,7 +314,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="Task Manager",
                 app_name="Task Manager",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1280, height=720),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -345,7 +328,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="Microsoft Store",
                 app_name="Microsoft Store",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=2560, height=1440),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -360,7 +342,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="Docker Desktop",
                 app_name="Docker Desktop",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=2560, height=1440),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -375,7 +356,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="WhatsApp",
                 app_name="WhatsApp",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=1920, height=1080),
             ),
             timestamp=datetime.now(timezone.utc),
@@ -390,7 +370,6 @@ test_scenarios = [
             active_window=WindowInfo(
                 title="Adobe Photoshop",
                 app_name="Adobe Photoshop",
-                is_active=True,
                 bbox=Bbox(left=0, top=0, width=2560, height=1440),
             ),
             timestamp=datetime.now(timezone.utc),

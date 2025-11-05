@@ -22,7 +22,6 @@ def make_llm_stitching_no_match(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Gmail",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User reading and responding to emails in Gmail.",
@@ -32,7 +31,6 @@ def make_llm_stitching_no_match(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Compose Email - Gmail",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User composing an email message.",
@@ -42,7 +40,6 @@ def make_llm_stitching_no_match(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Gmail",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User managing email inbox.",
@@ -52,7 +49,6 @@ def make_llm_stitching_no_match(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Gmail",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User working with emails.",
@@ -63,7 +59,6 @@ def make_llm_stitching_no_match(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User editing video in Premiere Pro.",
@@ -73,7 +68,6 @@ def make_llm_stitching_no_match(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User working on video timeline.",
@@ -83,7 +77,6 @@ def make_llm_stitching_no_match(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User editing video content.",
@@ -93,7 +86,6 @@ def make_llm_stitching_no_match(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User applying effects to video.",
@@ -103,7 +95,6 @@ def make_llm_stitching_no_match(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User editing video project.",
@@ -113,7 +104,6 @@ def make_llm_stitching_no_match(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User working on video editing.",
@@ -123,7 +113,6 @@ def make_llm_stitching_no_match(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User editing video timeline.",
@@ -133,7 +122,6 @@ def make_llm_stitching_no_match(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User working on video project.",

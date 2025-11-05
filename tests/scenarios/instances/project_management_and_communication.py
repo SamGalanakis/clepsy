@@ -17,7 +17,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
@@ -27,7 +26,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
@@ -37,7 +35,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
@@ -47,7 +44,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
@@ -57,7 +53,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
@@ -67,7 +62,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
@@ -77,7 +71,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
@@ -87,7 +80,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
@@ -97,7 +89,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
@@ -107,7 +98,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
@@ -117,7 +107,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User responding to project-related emails in Outlook.",
@@ -127,7 +116,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User responding to project-related emails in Outlook.",
@@ -137,7 +125,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User responding to project-related emails in Outlook.",
@@ -147,7 +134,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User responding to project-related emails in Outlook.",
@@ -157,7 +143,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User responding to project-related emails in Outlook.",
@@ -167,7 +152,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User responding to project-related emails in Outlook.",
@@ -178,7 +162,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project Chat - Microsoft Teams",
                 app_name="Microsoft Teams",
-                is_active=True,
                 bbox=E.Bbox(left=150, top=75, width=1100, height=750),
             ),
             llm_description="User coordinating with team in Microsoft Teams chat.",
@@ -189,7 +172,6 @@ def make_project_management_and_communication(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Project Chat - Microsoft Teams",
                 app_name="Microsoft Teams",
-                is_active=True,
                 bbox=E.Bbox(left=150, top=75, width=1100, height=700),
             ),
             llm_description="User discussing project details in Microsoft Teams.",

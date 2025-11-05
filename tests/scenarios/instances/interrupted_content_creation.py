@@ -16,7 +16,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing a blog post in Google Docs.",
@@ -26,7 +25,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing a blog post in Google Docs.",
@@ -36,7 +34,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing a blog post in Google Docs.",
@@ -46,7 +43,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing a blog post in Google Docs.",
@@ -56,7 +52,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing a blog post in Google Docs.",
@@ -66,7 +61,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing a blog post in Google Docs.",
@@ -76,7 +70,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing a blog post in Google Docs.",
@@ -86,7 +79,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing a blog post in Google Docs.",
@@ -96,7 +88,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing a blog post in Google Docs.",
@@ -106,7 +97,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing a blog post in Google Docs.",
@@ -116,7 +106,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing a blog post in Google Docs.",
@@ -127,7 +116,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User on a video call in Slack.",
@@ -137,7 +125,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User on a video call in Slack.",
@@ -147,7 +134,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User on a video call in Slack.",
@@ -157,7 +143,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User on a video call in Slack.",
@@ -167,7 +152,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User on a video call in Slack.",
@@ -177,7 +161,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User on a video call in Slack.",
@@ -187,7 +170,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User on a video call in Slack.",
@@ -197,7 +179,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User on a video call in Slack.",
@@ -207,7 +188,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User on a video call in Slack.",
@@ -217,7 +197,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User on a video call in Slack.",
@@ -227,7 +206,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
                 app_name="Slack",
-                is_active=True,
                 bbox=E.Bbox(left=200, top=100, width=1000, height=700),
             ),
             llm_description="User on a video call in Slack.",
@@ -238,7 +216,6 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User returned to writing the blog post in Google Docs.",

@@ -16,7 +16,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Sales_Data_Analysis.ipynb - Jupyter Notebook",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User analyzing sales data in a Jupyter Notebook.",
@@ -26,7 +25,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Sales_Data_Analysis.ipynb - Jupyter Notebook",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User analyzing sales data in a Jupyter Notebook.",
@@ -36,7 +34,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Sales_Data_Analysis.ipynb - Jupyter Notebook",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User analyzing sales data in a Jupyter Notebook.",
@@ -46,7 +43,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Sales_Data_Analysis.ipynb - Jupyter Notebook",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User analyzing sales data in a Jupyter Notebook.",
@@ -56,7 +52,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Sales_Data_Analysis.ipynb - Jupyter Notebook",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User analyzing sales data in a Jupyter Notebook.",
@@ -66,7 +61,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Sales_Data_Analysis.ipynb - Jupyter Notebook",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User analyzing sales data in a Jupyter Notebook.",
@@ -76,7 +70,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Sales_Data_Analysis.ipynb - Jupyter Notebook",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User analyzing sales data in a Jupyter Notebook.",
@@ -86,7 +79,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Sales_Data_Analysis.ipynb - Jupyter Notebook",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User analyzing sales data in a Jupyter Notebook.",
@@ -96,7 +88,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Sales_Data_Analysis.ipynb - Jupyter Notebook",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User analyzing sales data in a Jupyter Notebook.",
@@ -106,7 +97,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Sales_Data_Analysis.ipynb - Jupyter Notebook",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User analyzing sales data in a Jupyter Notebook.",
@@ -116,7 +106,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Sales_Data_Analysis.ipynb - Jupyter Notebook",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User analyzing sales data in a Jupyter Notebook.",
@@ -127,7 +116,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User checking and responding to emails in Outlook.",
@@ -137,7 +125,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User checking and responding to emails in Outlook.",
@@ -147,7 +134,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User checking and responding to emails in Outlook.",
@@ -157,7 +143,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User checking and responding to emails in Outlook.",
@@ -167,7 +152,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User checking and responding to emails in Outlook.",
@@ -177,7 +161,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User checking and responding to emails in Outlook.",
@@ -187,7 +170,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User checking and responding to emails in Outlook.",
@@ -197,7 +179,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User checking and responding to emails in Outlook.",
@@ -207,7 +188,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User checking and responding to emails in Outlook.",
@@ -217,7 +197,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User checking and responding to emails in Outlook.",
@@ -227,7 +206,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User checking and responding to emails in Outlook.",
@@ -238,7 +216,6 @@ def make_data_analysis_and_email(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Sales_Data_Analysis.ipynb - Jupyter Notebook",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User returned to analyzing sales data in the Jupyter Notebook.",

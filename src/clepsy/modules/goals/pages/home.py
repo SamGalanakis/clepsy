@@ -24,6 +24,7 @@ from clepsy.frontend.components import (
     create_standard_content,
 )
 from clepsy.frontend.components.icons import get_icon_svg
+from clepsy.jobs.goals import run_update_current_progress_job
 from clepsy.modules.goals.calculate_goals import (
     is_progress_stale,
 )
@@ -146,8 +147,6 @@ async def render_goal_row(
     # Kick background refresh via Dramatiq if stale or no current progress
     if is_active and (stale or progress_row is None):
         try:
-            from clepsy.jobs.goals import run_update_current_progress_job
-
             run_update_current_progress_job.send(
                 goal.id, float(ttl_from_db.total_seconds())
             )

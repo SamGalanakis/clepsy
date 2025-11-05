@@ -22,7 +22,6 @@ def make_llm_stitching_required(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Pull Request #123 - GitHub",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User reviewing a pull request on GitHub.",
@@ -32,7 +31,6 @@ def make_llm_stitching_required(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Pull Request #123 - GitHub",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User reviewing code changes in a pull request.",
@@ -42,7 +40,6 @@ def make_llm_stitching_required(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Pull Request #123 - GitHub",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User examining code diff in pull request.",
@@ -52,7 +49,6 @@ def make_llm_stitching_required(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="Pull Request #123 - GitHub",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User reviewing pull request changes.",
@@ -63,7 +59,6 @@ def make_llm_stitching_required(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="README.md - VS Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing documentation in markdown.",
@@ -73,7 +68,6 @@ def make_llm_stitching_required(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="README.md - VS Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User editing documentation file.",
@@ -83,7 +77,6 @@ def make_llm_stitching_required(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="README.md - VS Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing project documentation.",
@@ -93,7 +86,6 @@ def make_llm_stitching_required(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="README.md - VS Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating README documentation.",
@@ -103,7 +95,6 @@ def make_llm_stitching_required(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="README.md - VS Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing documentation content.",
@@ -113,7 +104,6 @@ def make_llm_stitching_required(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="README.md - VS Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User editing documentation.",
@@ -124,7 +114,6 @@ def make_llm_stitching_required(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="README.md - VS Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing documentation.",
@@ -134,7 +123,6 @@ def make_llm_stitching_required(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="README.md - VS Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating documentation.",
@@ -144,7 +132,6 @@ def make_llm_stitching_required(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="README.md - VS Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User editing documentation file.",
@@ -154,7 +141,6 @@ def make_llm_stitching_required(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="README.md - VS Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User writing project documentation.",
@@ -164,7 +150,6 @@ def make_llm_stitching_required(base_time) -> TestScenario:
             active_window=E.WindowInfo(
                 title="README.md - VS Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User editing documentation content.",
