@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 # ruff: noqa: I001
-import io
 import json
 from datetime import datetime, timezone
 from typing import Any
 
 import dramatiq
 from loguru import logger
-from PIL import Image
 from clepsy.infra import dramatiq_setup as _dramatiq_setup  # noqa: F401
 
 from clepsy.db.db import get_db_connection
@@ -21,6 +19,7 @@ from clepsy.entities import (
     ProcessedDesktopCheckScreenshotEventVLM,
 )
 from clepsy.modules.pii.sanitize import sanitize_text
+from clepsy.utils import base64_to_pil_image
 
 
 def ensure_aware(ts: datetime) -> datetime:
@@ -29,15 +28,12 @@ def ensure_aware(ts: datetime) -> datetime:
     return ts
 
 
-def deserialize_screenshot(image_bytes: bytes) -> Image.Image:
-    with io.BytesIO(image_bytes) as bio:
-        img = Image.open(bio)
-        img.load()
-        return img
+def deserialize_screenshot(image_b64: str):
+    return base64_to_pil_image(image_b64)
 
 
 def build_desktop_event_from_payload(
-    data: dict[str, Any], image_bytes: bytes
+    data: dict[str, Any], image_b64: str
 ) -> DesktopInputScreenshotEvent:
     # Coerce timestamp to aware datetime
     ts = data.get("timestamp")
@@ -47,7 +43,7 @@ def build_desktop_event_from_payload(
         raise ValueError("timestamp is required")
     ts = ensure_aware(ts)
 
-    data = {**data, "timestamp": ts, "screenshot": deserialize_screenshot(image_bytes)}
+    data = {**data, "timestamp": ts, "screenshot": deserialize_screenshot(image_b64)}
     return DesktopInputScreenshotEvent.model_validate(data)
 
 
@@ -98,14 +94,12 @@ def processed_event_to_payload(evt) -> tuple[str, datetime, dict[str, Any]]:
 
 
 @dramatiq.actor
-async def process_desktop_screenshot_job(
-    data: dict[str, Any], image_bytes: bytes
-) -> None:
+async def process_desktop_screenshot_job(data: dict[str, Any], image_b64: str) -> None:
     """Dramatiq async actor: process a desktop screenshot event and publish to stream.
 
     Performs OCR/VLM processing and publishes a compact payload to the Valkey stream.
     """
-    desktop_evt = build_desktop_event_from_payload(data, image_bytes)
+    desktop_evt = build_desktop_event_from_payload(data, image_b64)
     async with get_db_connection(include_uuid_func=False) as conn:
         user_settings = await select_user_settings(conn)
         if not user_settings:

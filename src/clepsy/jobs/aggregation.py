@@ -13,7 +13,7 @@ from clepsy.aggregator_worker import do_aggregation, do_empty_aggregation
 from clepsy.config import config
 from clepsy.entities import TimeSpan
 from clepsy.infra.streams import xrange_source_events
-import asyncio
+from clepsy.infra import dramatiq_setup as _dramatiq_setup  # noqa: F401
 
 
 def current_window(now: Optional[datetime] = None) -> tuple[datetime, datetime]:
@@ -70,7 +70,7 @@ async def aggregate_window(
 
     # Query durable source events and run the existing aggregation pipeline.
 
-    rows = await asyncio.to_thread(xrange_source_events, start=start, end=end)
+    rows = xrange_source_events(start=start, end=end)
 
     window_span = TimeSpan(start_time=start, end_time=end)
     if not rows:

@@ -1,8 +1,10 @@
-from datetime import datetime, timedelta, timezone
+# ruff: noqa: I001
 import io
 import json
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from loguru import logger
 from PIL import Image
 
 from clepsy.entities import (
@@ -11,6 +13,7 @@ from clepsy.entities import (
 )
 from clepsy.infra.streams import xadd_source_event
 from clepsy.jobs.desktop import process_desktop_screenshot_job
+from clepsy.utils import pil_image_to_base64
 
 
 router = APIRouter(prefix="/desktop")
@@ -72,8 +75,9 @@ async def receive_data(
 
         # Clean up read file resources to avoid the "after boundary" warning
         await screenshot.close()
-        if screenshot_image.size[0] < 800 or screenshot_image.size[1] < 800:
+        if screenshot_image.size[0] < 200 or screenshot_image.size[1] < 200:
             error_msg = f"Screenshot size too small: {screenshot_image.size}"
+            logger.warning(error_msg)
             raise HTTPException(
                 status_code=400,
                 detail=error_msg,
@@ -83,28 +87,41 @@ async def receive_data(
         try:
             data_dict = json.loads(data)
         except json.JSONDecodeError as exc:
+            logger.error("Invalid JSON data in screenshot input: {}", exc)
             raise HTTPException(
                 status_code=400,
                 detail="Invalid JSON data",
             ) from exc
 
-        # Add screenshot and convert timestamp
-        # We'll pass raw bytes to the background job and reconstruct the image server-side
-        ts = datetime.fromisoformat(data_dict["timestamp"])  # may be naive or aware
+        # Prepare timestamp for validation and messaging
+        # 1) Parse incoming timestamp and ensure it's timezone-aware in UTC
+        ts = datetime.fromisoformat(data_dict["timestamp"])
         if ts.tzinfo is None:
             ts = ts.replace(tzinfo=timezone.utc)
-        data_dict["timestamp"] = ts
-        # Validate minimal fields now to catch bad requests early
+        ts_utc = ts.astimezone(timezone.utc)
+
+        # 2) Early validate with Pydantic using an aware datetime
         DesktopInputScreenshotEvent.model_validate(
-            {**data_dict, "screenshot": screenshot_image}
+            {**data_dict, "timestamp": ts_utc, "screenshot": screenshot_image}
         )
 
-        # Send to Dramatiq actor
-        process_desktop_screenshot_job.send(data_dict, image_bytes)
+        # 3) For the background job payload, serialize as ISO8601 naive (UTC)
+        #    This avoids timezone-aware datetimes inside Dramatiq messages
+        message_dict = {
+            **data_dict,
+            "timestamp": ts_utc.replace(tzinfo=None).isoformat(),
+        }
+
+        # Encode image as base64 (PNG) to keep Dramatiq message JSON-serializable
+        image_b64 = pil_image_to_base64(screenshot_image, img_format="PNG")
+
+        # Send to Dramatiq actor with JSON-safe payload and base64 image
+        process_desktop_screenshot_job.send(message_dict, image_b64)
 
     except HTTPException:
         raise
     except Exception as e:
+        logger.exception("Error processing screenshot input", exc_info=e)
         raise HTTPException(
             status_code=500,
         ) from e

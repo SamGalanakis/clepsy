@@ -19,9 +19,17 @@ device_source_ttl = 300  # 5 minutes - sources don't change often
 
 caches.set_config(
     {
-        "default": {"cache": "aiocache.SimpleMemoryCache"}  # or Redis, see below
+        "default": {
+            "cache": "aiocache.RedisCache",
+            "endpoint": "valkey",  # service name in Docker
+            "port": 6379,
+            "db": 0,
+            "namespace": "clepsy_aiocache",
+            "serializer": {"class": "aiocache.serializers.PickleSerializer"},
+        }
     }
 )
+
 
 central_cache = caches.get("default")
 

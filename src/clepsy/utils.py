@@ -507,6 +507,10 @@ def pil_image_to_base64(image: Image.Image, img_format: str = "PNG") -> str:
     return img_str.decode("utf-8")
 
 
+def base64_to_pil_image(b64_str: str) -> Image.Image:
+    return Image.open(io.BytesIO(base64.b64decode(b64_str)))
+
+
 def pil_image_to_baml(image: Image.Image) -> BamlImage:
     b64 = pil_image_to_base64(image, img_format="PNG")
     return BamlImage.from_base64(base64=b64, media_type="image/png")
@@ -517,6 +521,29 @@ def datetime_to_iso_8601(dt: datetime, include_tz: bool = False) -> str:
         return dt.isoformat()
     else:
         return dt.replace(tzinfo=None).isoformat()
+
+
+def to_utc_naive_iso(dt: datetime) -> str:
+    """Serialize a datetime as ISO8601 without tzinfo, but normalized to UTC.
+
+    - If dt is naive, assume it's UTC.
+    - If dt is aware, convert to UTC.
+    - Return an ISO string with tzinfo stripped.
+    """
+    base = dt if dt.tzinfo is not None else dt.replace(tzinfo=timezone.utc)
+    return base.astimezone(timezone.utc).replace(tzinfo=None).isoformat()
+
+
+def parse_utc_naive_iso(s: str) -> datetime:
+    """Parse an ISO8601 string produced by to_utc_naive_iso back to aware UTC.
+
+    - If the string is naive, attach UTC tzinfo.
+    - If it has tzinfo, convert to UTC.
+    """
+    dt = datetime.fromisoformat(s)
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
 
 
 def custom_template(pattern: str) -> Callable[[str, dict], str]:

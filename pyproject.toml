@@ -35,9 +35,8 @@ dependencies = [
     "torch>=2.0.0",
     "gliner>=0.2.22",
     "valkey[libvalkey]>=6.1.1",
-    "dramatiq>=1.18.0",
+    "dramatiq[redis,watch]>=1.18.0",
     "apscheduler[sqlalchemy]>=4.0.0.0a6",
-    "redis>=7.0.1",
 ]
 
 [dependency-groups]
