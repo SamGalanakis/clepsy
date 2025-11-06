@@ -60,7 +60,6 @@ def anonymize_text(
 
 DEFAULT_PII_ENTITY_TYPES = [
     # Personal
-    "username",
     "dob",
     "email address",
     "phone number",
