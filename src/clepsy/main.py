@@ -1,5 +1,4 @@
 from contextlib import asynccontextmanager
-import asyncio
 
 # ruff: noqa: I001
 import mimetypes
@@ -13,8 +12,6 @@ import uvicorn
 
 from clepsy import bootstrap
 from clepsy.scheduling import scheduler, init_schedules
-from clepsy.config import config
-from clepsy.infra.valkey_client import get_connection
 from clepsy.auth.auth_middleware import DeviceTokenMiddleware, JWTMiddleware
 from clepsy.modules.account_creation.router import router as account_creation_router
 from clepsy.modules.activities.router import router as activity_router
@@ -34,23 +31,6 @@ async def lifespan(app_: FastAPI):
     logger.info("Starting Clepsy backend...")
     logger.info("Initializing bootstrap...")
     await bootstrap.init()
-    # Ensure Valkey/Redis broker is reachable before enabling scheduled enqueues
-    logger.info("Checking Valkey broker readiness at {}", config.valkey_url)
-    deadline = asyncio.get_event_loop().time() + 20.0
-    while True:
-        try:
-            # run ping in a thread to avoid blocking event loop
-            await asyncio.to_thread(lambda: get_connection().ping())
-            logger.info("Valkey broker is ready")
-            break
-        except Exception as e:  # noqa: BLE001
-            if asyncio.get_event_loop().time() >= deadline:
-                logger.warning(
-                    "Valkey broker not reachable yet; proceeding anyway (will retry on sends). Last error: {}",
-                    repr(e),
-                )
-                break
-            await asyncio.sleep(0.5)
 
     # Start persistent APScheduler (v4) with SQLAlchemy datastore
 

@@ -20,7 +20,8 @@ from clepsy.entities import (
     ProcessedDesktopCheckScreenshotEventVLM,
 )
 from clepsy.modules.pii.sanitize import sanitize_text
-from clepsy.utils import base64_to_pil_image
+from clepsy.utils import retrieve_image_from_redis
+from uuid import UUID
 
 
 def ensure_aware(ts: datetime) -> datetime:
@@ -29,13 +30,13 @@ def ensure_aware(ts: datetime) -> datetime:
     return ts
 
 
-def deserialize_screenshot(image_b64: str):
-    return base64_to_pil_image(image_b64)
-
-
 def build_desktop_event_from_payload(
-    data: dict[str, Any], image_b64: str
-) -> DesktopInputScreenshotEvent:
+    data: dict[str, Any],
+) -> DesktopInputScreenshotEvent | None:
+    """Build a desktop event from payload, retrieving image from Redis.
+
+    Returns None if the image has expired or is missing from Redis.
+    """
     # Coerce timestamp to aware datetime
     ts = data.get("timestamp")
     if isinstance(ts, str):
@@ -44,63 +45,52 @@ def build_desktop_event_from_payload(
         raise ValueError("timestamp is required")
     ts = ensure_aware(ts)
 
-    data = {**data, "timestamp": ts, "screenshot": deserialize_screenshot(image_b64)}
+    # Retrieve image from Redis using event UUID
+
+    event_id = UUID(data["id"])
+    screenshot = retrieve_image_from_redis(event_id)
+
+    if screenshot is None:
+        logger.warning(
+            "Dropping desktop screenshot event {event_id}: image expired or missing from Redis",
+            event_id=event_id,
+        )
+        return None
+
+    data = {**data, "timestamp": ts, "screenshot": screenshot}
     return DesktopInputScreenshotEvent.model_validate(data)
 
 
 def processed_event_to_payload(evt) -> tuple[str, datetime, dict[str, Any]]:
     """Map processed desktop event to a (event_type, event_time, payload_json) triple.
 
-    event_type: one of 'desktop_screenshot_ocr' | 'desktop_screenshot_vlm'
-    payload carries active_window, timestamp, and either image_text or llm_description, plus flags.
+    Uses Pydantic's model_dump to serialize the event with proper mode='json' for ISO timestamps.
     """
     match evt:
         case ProcessedDesktopCheckScreenshotEventOCR():
-            payload = {
-                "active_window": {
-                    "title": evt.active_window.title,
-                    "app_name": evt.active_window.app_name,
-                    "bbox": {
-                        "left": evt.active_window.bbox.left,
-                        "top": evt.active_window.bbox.top,
-                        "width": evt.active_window.bbox.width,
-                        "height": evt.active_window.bbox.height,
-                    },
-                },
-                "timestamp": evt.timestamp.isoformat(),
-                "image_text": evt.image_text,
-                "image_text_post_processed_by_llm": evt.image_text_post_processed_by_llm,
-            }
-            return "desktop_screenshot_ocr", evt.timestamp, payload
+            return "desktop_screenshot_ocr", evt.timestamp, evt.model_dump(mode="json")
         case ProcessedDesktopCheckScreenshotEventVLM():
-            payload = {
-                "active_window": {
-                    "title": evt.active_window.title,
-                    "app_name": evt.active_window.app_name,
-                    "bbox": {
-                        "left": evt.active_window.bbox.left,
-                        "top": evt.active_window.bbox.top,
-                        "width": evt.active_window.bbox.width,
-                        "height": evt.active_window.bbox.height,
-                    },
-                },
-                "timestamp": evt.timestamp.isoformat(),
-                "llm_description": evt.llm_description,
-            }
-            return "desktop_screenshot_vlm", evt.timestamp, payload
+            return "desktop_screenshot_vlm", evt.timestamp, evt.model_dump(mode="json")
         case _:
             raise TypeError(f"Unexpected processed desktop event type: {type(evt)}")
 
 
 @dramatiq.actor
-async def process_desktop_screenshot_job(data: dict[str, Any], image_b64: str) -> None:
+async def process_desktop_screenshot_job(data: dict[str, Any]) -> None:
     """Dramatiq async actor: process a desktop screenshot event and publish to stream.
 
+    Retrieves the image from Redis using the event UUID.
     Performs OCR/VLM processing and publishes a compact payload to the Valkey stream.
     """
     # Ensure DB adapters/converters are registered in this worker process
     await actor_init()
-    desktop_evt = build_desktop_event_from_payload(data, image_b64)
+
+    # Retrieve image from Redis; skip if expired
+    desktop_evt = build_desktop_event_from_payload(data)
+    if desktop_evt is None:
+        # Image expired/missing - log already emitted by build_desktop_event_from_payload
+        return
+
     async with get_db_connection(include_uuid_func=False) as conn:
         user_settings = await select_user_settings(conn)
         if not user_settings:

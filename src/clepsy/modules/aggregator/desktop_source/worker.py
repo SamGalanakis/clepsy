@@ -120,8 +120,7 @@ async def process_desktop_check_using_ocr(
     text_model_config: LLMConfig,
 ) -> ProcessedDesktopCheckScreenshotEventOCR:
     async with paddle_ocr_semaphore:
-        raw_ocr_text = await asyncio.to_thread(
-            ocr_ui_text,
+        raw_ocr_text = ocr_ui_text(
             image=desktop_check_input.screenshot,
             lang_code="en",
             ocr_version="PP-OCRv5",
@@ -133,8 +132,7 @@ async def process_desktop_check_using_ocr(
     n_words = utils.count_words(ocr_text)
 
     if ocr_text:
-        ocr_text = await asyncio.to_thread(
-            anonymize_text,
+        ocr_text = anonymize_text(
             text=ocr_text,
             entity_types=DEFAULT_PII_ENTITY_TYPES,
             threshold=config.gliner_pii_threshold,
@@ -162,6 +160,7 @@ async def process_desktop_check_using_ocr(
         active_window=desktop_check_input.active_window,
         timestamp=desktop_check_input.timestamp,
         image_text_post_processed_by_llm=image_text_post_processed_by_llm,
+        id=desktop_check_input.id,
     )
 
 
@@ -203,4 +202,5 @@ async def process_desktop_check_vlm(
         llm_description=response,
         active_window=desktop_check_input.active_window,
         timestamp=desktop_check_input.timestamp,
+        id=desktop_check_input.id,
     )

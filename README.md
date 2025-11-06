@@ -57,13 +57,13 @@ any potentially sensitive text before being sent to the LLM. Not to be depended 
 
 ## Tech Stack
 
-**Backend:** FastAPI • SQLite • Goose • RQ + Valkey (Cron)
+**Backend:** FastAPI • SQLite • Goose • Dramatiq • APScheduler • Valkey
 
 **Frontend:** [htpy](https://htpy.dev/) • HTMX • Alpine.js • TailwindCSS • [Basecoat UI](https://basecoatui.com/) • D3.js
 
 **LLM & AI:** [BAML](https://github.com/BoundaryML/baml) • PaddleOCR • GLiNER
 
-**Infrastructure:** Docker • Caddy • uv
+**Infrastructure:** Docker • Caddy • uv • Prometheus • Grafana
 
 
 ## License

@@ -2,6 +2,7 @@
 import io
 import json
 from datetime import datetime, timedelta, timezone
+from uuid import UUID
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from loguru import logger
@@ -21,11 +22,13 @@ router = APIRouter(prefix="/desktop")
 
 @router.post("/afk-input")
 async def receive_afk_start(
+    event_id: UUID,
     timestamp: datetime,
     time_since_last_user_activity: timedelta,
 ) -> None:
     try:
         event = DesktopInputAfkStartEvent(
+            id=event_id,
             timestamp=timestamp,
             time_since_last_user_activity=time_since_last_user_activity,
         )
@@ -108,22 +111,22 @@ async def receive_data(
         ts_utc = ts.astimezone(timezone.utc)
 
         # 2) Early validate with Pydantic using an aware datetime
-        DesktopInputScreenshotEvent.model_validate(
+        validated_model = DesktopInputScreenshotEvent.model_validate(
             {**data_dict, "timestamp": ts_utc, "screenshot": screenshot_image}
         )
 
         # 3) For the background job payload, serialize as ISO8601 naive (UTC)
         #    This avoids timezone-aware datetimes inside Dramatiq messages
+        event_id = validated_model.id
         message_dict = {
             **data_dict,
             "timestamp": ts_utc.replace(tzinfo=None).isoformat(),
         }
 
-        # Encode image as base64 (PNG) to keep Dramatiq message JSON-serializable
-        image_b64 = utils.pil_image_to_base64(screenshot_image, img_format="PNG")
+        utils.store_image_in_redis(screenshot_image, event_id=event_id, ttl_seconds=600)
 
-        # Send to Dramatiq actor with JSON-safe payload and base64 image
-        process_desktop_screenshot_job.send(message_dict, image_b64)
+        # Send to Dramatiq actor with just the event data (image stored in Redis)
+        process_desktop_screenshot_job.send(message_dict)
 
     except HTTPException:
         raise

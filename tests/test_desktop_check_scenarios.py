@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from typing import Union
+from uuid import uuid4
 
 from loguru import logger
 from PIL import Image
@@ -100,6 +101,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="vscode_with_multiple_panes",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/vscode.png"),
             active_window=WindowInfo(
                 title="test_aggregator_llm.py - clepsy [Dev Container: Existing Dockerfile @ desktop-linux]",
@@ -114,6 +116,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="spotify_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/spotify.png"),
             active_window=WindowInfo(
                 title="Spotify",
@@ -128,6 +131,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="vscode_coding",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/vscode_coding.png"),
             active_window=WindowInfo(
                 title="aggregator_worker.py - clepsy [Dev Container: Existing Dockerfile @ desktop-linux]",
@@ -142,6 +146,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="nordvpn_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/nordvpn.png"),
             active_window=WindowInfo(
                 title="NordVPN",
@@ -156,6 +161,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="league_client_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/league_client.png"),
             active_window=WindowInfo(
                 title="League of Legends",
@@ -170,6 +176,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="steam_popup_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/steam_popup.png"),
             active_window=WindowInfo(
                 title="Steam",
@@ -184,6 +191,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="vlc_blank_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/vlc_blank.png"),
             active_window=WindowInfo(
                 title="VLC media player",
@@ -198,6 +206,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="steam_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/steam.png"),
             active_window=WindowInfo(
                 title="Steam",
@@ -212,6 +221,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="file_explorer_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/file_explorer.png"),
             active_window=WindowInfo(
                 title="3dprint",
@@ -226,6 +236,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="razer_synapse_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/razer.png"),
             active_window=WindowInfo(
                 title="Razer Synapse",
@@ -240,6 +251,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="forticlient_vpn_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/forticlient_vpn.png"),
             active_window=WindowInfo(
                 title="FortiClient - Zero Trust Fabric Agent",
@@ -254,6 +266,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="calculator_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/calculator.png"),
             active_window=WindowInfo(
                 title="Calculator",
@@ -268,6 +281,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="notepad_elephants_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/notepad_elephants.png"),
             active_window=WindowInfo(
                 title="My thesis about pink transparent e",
@@ -282,6 +296,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="paint_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/paint.png"),
             active_window=WindowInfo(
                 title="Untitled - Paint",
@@ -296,6 +311,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="discord_chat_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/discord-2880x1620-8b18742c6a01.jpg"),
             active_window=WindowInfo(
                 title="Discord",
@@ -310,6 +326,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="task_manager_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/task_manager.png"),
             active_window=WindowInfo(
                 title="Task Manager",
@@ -324,6 +341,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="windows_store_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/windows_store.png"),
             active_window=WindowInfo(
                 title="Microsoft Store",
@@ -338,6 +356,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="docker_desktop_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/docker_desktop.png"),
             active_window=WindowInfo(
                 title="Docker Desktop",
@@ -352,6 +371,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="whatsapp_desktop_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/whatsapp-windows.png"),
             active_window=WindowInfo(
                 title="WhatsApp",
@@ -366,6 +386,7 @@ test_scenarios = [
     DesktopTestScenario(
         name="adobe_photoshop_main_view",
         input_event=DesktopInputScreenshotEvent(
+            id=uuid4(),
             screenshot=Image.open("test_images/Adobe-Photoshop-Screenshot.png"),
             active_window=WindowInfo(
                 title="Adobe Photoshop",

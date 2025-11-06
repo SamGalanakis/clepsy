@@ -91,8 +91,8 @@ class Config(BaseSettings):
     log_file_path: Path = Path("/var/lib/clepsy/logs/app.log")
     master_key_file_path: Path = Path("/var/lib/clepsy/secret.key")
     master_key: SecretBytes = SecretBytes(init_master_key(master_key_file_path))
-    aggregation_interval: timedelta = timedelta(minutes=10)  # 20
-    aggregation_grace_period: timedelta = timedelta(minutes=1)
+    aggregation_interval: timedelta = timedelta(minutes=10)
+    aggregation_grace_period: timedelta = timedelta(minutes=2)
     db_path: Path = Path("/var/lib/clepsy/db.sqlite3")
     screenshot_max_size_vlm: tuple[int, int] = (1024, 1024)
     screenshot_max_size_ocr: tuple[int, int] = (1920, 1080)

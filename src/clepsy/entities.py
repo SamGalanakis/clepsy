@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone, tzinfo
 from enum import StrEnum
 from functools import cached_property
 from typing import Any, ClassVar, Dict, Literal, NamedTuple, Optional, get_args
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from baml_py.errors import BamlError
 from PIL import Image
@@ -109,7 +109,7 @@ class DBActivity(Activity):
 
 
 class Event(BaseModel):
-    id: UUID = Field(default_factory=uuid4)
+    id: UUID
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     event_type: ClassVar[str] = "event"  # Overwrite in subclasses
 

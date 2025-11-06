@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from time import perf_counter
 from typing import Callable
 
 from gliner import GLiNER
@@ -35,7 +36,14 @@ def anonymize_text(
     if entity_types is None:
         entity_types = []
 
+    start = perf_counter()
     entities = model.predict_entities(text, labels=entity_types, threshold=threshold)
+    duration = perf_counter() - start
+    logger.info(
+        "GLiNER inference completed in {duration:.2f}s for {length} characters",
+        duration=duration,
+        length=len(text),
+    )
 
     # Sort by position to replace from end to start
     entities.sort(key=lambda x: x["start"], reverse=True)

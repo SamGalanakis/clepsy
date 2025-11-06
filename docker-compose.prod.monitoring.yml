@@ -1,0 +1,53 @@
+services:
+  clepsy:
+    environment:
+      GRAFANA_ENABLED: "true"
+
+  valkey-exporter:
+    image: oliver006/redis_exporter:latest
+    command: --redis.addr=valkey:6379
+    depends_on:
+      valkey:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - web
+
+  prometheus:
+    image: prom/prometheus:latest
+    networks:
+      - web
+    command: --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./ops/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      valkey-exporter:
+        condition: service_started
+      dramatiq-worker:
+        condition: service_started
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    networks:
+      - web
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./ops/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./ops/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+    depends_on:
+      prometheus:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  grafana_data:
+  prometheus_data:

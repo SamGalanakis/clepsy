@@ -17,6 +17,7 @@ from clepsy.entities import GoalPeriod
 from clepsy.jobs.aggregation import aggregate_window
 from clepsy.jobs.sessions import run_sessionization_job
 from clepsy.jobs.goals import run_update_previous_full_period_result_job
+from clepsy.infra.valkey_client import get_connection
 
 logger = logging.getLogger("apscheduler")
 
@@ -58,35 +59,57 @@ async def init_schedules(sched: AsyncScheduler) -> None:
     """Register core recurring schedules on an initialized scheduler.
 
     Must be called after entering the scheduler's async context manager.
+    Uses a Redis lock to ensure only one worker initializes schedules.
     """
-    # Register resolvable task IDs to avoid pickling callables
-    await sched.configure_task(  # type: ignore[attr-defined]
-        func_or_task_id=TASK_ID_SESSIONIZATION, func=run_sessionization_job.send
-    )
-    await sched.configure_task(  # type: ignore[attr-defined]
-        func_or_task_id=TASK_ID_AGGREGATION, func=aggregate_window.send
-    )
-    await sched.configure_task(  # type: ignore[attr-defined]
-        func_or_task_id=TASK_ID_GOAL_PREV_FULL_PERIOD,
-        func=run_update_previous_full_period_result_job.send,
-    )
 
-    await sched.add_schedule(  # type: ignore[attr-defined]
-        TASK_ID_SESSIONIZATION,
-        trigger=IntervalTrigger(
-            seconds=int(config.session_window_length.total_seconds())
-        ),
-        id="sessionization",
-        conflict_policy=ConflictPolicy.replace,
-    )
-    await sched.add_schedule(  # type: ignore[attr-defined]
-        TASK_ID_AGGREGATION,
-        trigger=IntervalTrigger(
-            seconds=int(config.aggregation_interval.total_seconds())
-        ),
-        id="aggregation",
-        conflict_policy=ConflictPolicy.replace,
-    )
+    conn = get_connection()
+    lock_key = "scheduler:init_lock"
+    lock_acquired = False
+
+    try:
+        # Try to acquire lock with 10 second timeout (first worker wins)
+        lock_acquired = conn.set(lock_key, "1", nx=True, ex=10)
+
+        if not lock_acquired:
+            logger.info("Another worker is initializing schedules, skipping...")
+            return
+
+        logger.info("Acquired scheduler init lock, registering schedules...")
+
+        # Register resolvable task IDs to avoid pickling callables
+        await sched.configure_task(  # type: ignore[attr-defined]
+            func_or_task_id=TASK_ID_SESSIONIZATION, func=run_sessionization_job.send
+        )
+        await sched.configure_task(  # type: ignore[attr-defined]
+            func_or_task_id=TASK_ID_AGGREGATION, func=aggregate_window.send
+        )
+        await sched.configure_task(  # type: ignore[attr-defined]
+            func_or_task_id=TASK_ID_GOAL_PREV_FULL_PERIOD,
+            func=run_update_previous_full_period_result_job.send,
+        )
+
+        await sched.add_schedule(  # type: ignore[attr-defined]
+            TASK_ID_SESSIONIZATION,
+            trigger=IntervalTrigger(
+                seconds=int(config.session_window_length.total_seconds())
+            ),
+            id="sessionization",
+            conflict_policy=ConflictPolicy.replace,
+        )
+        await sched.add_schedule(  # type: ignore[attr-defined]
+            TASK_ID_AGGREGATION,
+            trigger=IntervalTrigger(
+                seconds=int(config.aggregation_interval.total_seconds())
+            ),
+            id="aggregation",
+            conflict_policy=ConflictPolicy.replace,
+        )
+
+        logger.info("Successfully registered schedules")
+    finally:
+        # Release lock if we acquired it
+        if lock_acquired:
+            conn.delete(lock_key)
 
 
 # ---- Goal cron helpers (reused from main branch with adjustments) ----

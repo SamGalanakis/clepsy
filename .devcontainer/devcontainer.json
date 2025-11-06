@@ -8,7 +8,10 @@
 	"runServices": [
 		"clepsy",
 		"valkey",
-		"dramatiq-worker"
+		"dramatiq-worker",
+		"valkey-exporter",
+		"prometheus",
+		"grafana"
 	],
 	"features": {
 		"ghcr.io/devcontainers/features/git:1": {},

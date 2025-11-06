@@ -11,5 +11,4 @@ broker = RedisBroker(url=config.valkey_url)
 asyncio_middleware = dramatiq.middleware.AsyncIO()
 
 broker.add_middleware(asyncio_middleware)
-
 dramatiq.set_broker(broker)
