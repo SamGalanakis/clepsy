@@ -136,7 +136,7 @@ class JWTMiddleware:
         elif authenticated and not user_settings:
             logger.warning("User is authenticated but no user settings found")
             logger.info(
-                "Authenticated user missing settings; path=%s. Routing based on onboarding allowances.",
+                "Authenticated user missing settings; path={}. Routing based on onboarding allowances.",
                 path,
             )
             # Allow specific paths while onboarding
@@ -146,14 +146,14 @@ class JWTMiddleware:
             )
             if allowed:
                 logger.info(
-                    "Allowing access during initialization to path=%s (allowed prefix)",
+                    "Allowing access during initialization to path={} (allowed prefix)",
                     path,
                 )
                 response = await call_next(request)
             else:
                 # Redirect authenticated user without settings to the wizard
                 logger.info(
-                    "Redirecting authenticated-but-uninitialized user to /s/create-account from path=%s",
+                    "Redirecting authenticated-but-uninitialized user to /s/create-account from path={}",
                     path,
                 )
                 response = await self.redirect_to_registration(is_htmx)
@@ -162,7 +162,7 @@ class JWTMiddleware:
             if to_authenticate:
                 # Only log for paths we protect to avoid noise on assets etc.
                 logger.info(
-                    "Unauthenticated request to protected path=%s (reason=%s); redirecting to /s/login",
+                    "Unauthenticated request to protected path={} (reason={}); redirecting to /s/login",
                     path,
                     auth_reason,
                 )
