@@ -7,11 +7,14 @@ import os
 from pathlib import Path
 import sys
 from typing import Literal
+import warnings
 
 from loguru import logger
 from pydantic import SecretBytes, SecretStr
 from pydantic_settings import BaseSettings
 
+
+warnings.filterwarnings("ignore", message="No ccache found")
 
 logging.getLogger("urllib3").setLevel(logging.INFO)
 logging.getLogger("PIL").setLevel(logging.INFO)
@@ -19,7 +22,13 @@ logging.getLogger("aiosqlite").setLevel(logging.INFO)
 logging.getLogger("aiocache").setLevel(logging.INFO)
 logging.getLogger("asyncio").setLevel(logging.INFO)
 logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
-logging.getLogger("apscheduler").setLevel(logging.WARNING)
+
+logging.getLogger("dramatiq").setLevel(logging.INFO)
+logging.getLogger("dramatiq.worker").setLevel(logging.INFO)
+logging.getLogger("dramatiq.broker").setLevel(logging.INFO)
+logging.getLogger("dramatiq.middleware").setLevel(logging.INFO)
+logging.getLogger("dramatiq.message").setLevel(logging.INFO)
+logging.getLogger("dramatiq.actor").setLevel(logging.INFO)
 
 logging.getLogger("python_multipart.multipart").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
@@ -53,7 +62,7 @@ def decode_key_file(data: bytes) -> bytes | None:
         # pad if needed
         b64 += "=" * (-len(b64) % 4)
         return base64.b64decode(b64, validate=True)
-    except Exception:
+    except (UnicodeDecodeError, binascii.Error, ValueError):
         logger.exception("Failed to decode key file")
         return None
 
@@ -82,11 +91,11 @@ class Config(BaseSettings):
     log_file_path: Path = Path("/var/lib/clepsy/logs/app.log")
     master_key_file_path: Path = Path("/var/lib/clepsy/secret.key")
     master_key: SecretBytes = SecretBytes(init_master_key(master_key_file_path))
-    aggregation_interval: timedelta = timedelta(minutes=10)  # 20
-    aggregation_grace_period: timedelta = timedelta(minutes=1)
+    aggregation_interval: timedelta = timedelta(minutes=10)
+    aggregation_grace_period: timedelta = timedelta(minutes=2)
     db_path: Path = Path("/var/lib/clepsy/db.sqlite3")
-    ap_scheduler_sqlite_db_path: Path = Path("/var/lib/clepsy/apscheduler.sqlite3")
-    screenshot_size: tuple[int, int] = (1024, 1024)
+    screenshot_max_size_vlm: tuple[int, int] = (1024, 1024)
+    screenshot_max_size_ocr: tuple[int, int] = (1920, 1080)
     software_version: str = version("clepsy")
     bootstrap_password_file_path: Path = Path("/var/lib/clepsy/bootstrap_password.txt")
     bootstrap_password: SecretStr | None = None
@@ -119,6 +128,8 @@ class Config(BaseSettings):
     gliner_pii_model: str = "knowledgator/gliner-pii-small-v1.0"
     gliner_pii_threshold: float = 0.5
     gliner_cache_dir: Path = cache_dir / "gliner"
+    valkey_url: str
+    ap_scheduler_sqlite_db_path: Path = Path("/var/lib/clepsy/apscheduler.sqlite3")
 
     @property
     def ap_scheduler_db_connection_string(self) -> str:
@@ -179,7 +190,7 @@ logger.add(
     sys.stderr,
     level=config.log_level,
     backtrace=True,
-    diagnose=True,
+    diagnose=False,
     enqueue=True,
 )
 
@@ -190,7 +201,7 @@ logger.add(
     rotation="50 MB",
     retention=timedelta(days=7),
     backtrace=True,
-    diagnose=True,
+    diagnose=False,
     level=config.log_level,
     enqueue=True,
 )

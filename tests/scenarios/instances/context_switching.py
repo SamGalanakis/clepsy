@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import List
+from uuid import uuid4
 
 import baml_client.types as baml_types
 from clepsy import utils
@@ -11,86 +12,87 @@ from ..types import TestScenario
 
 def make_context_switching(base_time) -> TestScenario:
     # 30s cadence within an app; switch at 5:00 (VSCode → Chrome) and 10:00 (Chrome → VSCode)
+    STATIC_ID = uuid4()
     input_logs: List[E.AggregationInputEvent] = [
         # Backend dev in VSCode (0:00 → 4:55)
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=0),
             active_window=E.WindowInfo(
                 title="backend.py - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Working on backend API endpoints in VS Code (SQLAlchemy integration).",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=30),
             active_window=E.WindowInfo(
                 title="backend.py - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Editing backend API code in backend.py.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1, seconds=0),
             active_window=E.WindowInfo(
                 title="backend.py - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Continuing backend implementation in VS Code.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4, seconds=55),
             active_window=E.WindowInfo(
                 title="backend.py - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Finalizing changes before switching contexts.",
         ),
         # React research (5:00 → 9:55)
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5, seconds=0),
             active_window=E.WindowInfo(
                 title="React Docs - Components and Props",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="Researching React components and props in Chrome.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5, seconds=30),
             active_window=E.WindowInfo(
                 title="React Docs - State and Lifecycle",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="Reading React state and lifecycle docs.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9, seconds=55),
             active_window=E.WindowInfo(
                 title="React Docs - Hooks Overview",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="Reviewing React hooks overview.",
         ),
         # Frontend dev in VSCode (10:00)
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=10, seconds=0),
             active_window=E.WindowInfo(
                 title="frontend.js - Visual Studio Code",
                 app_name="Visual Studio Code",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Building React components in VS Code.",

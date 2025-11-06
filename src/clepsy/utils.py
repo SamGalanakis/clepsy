@@ -5,7 +5,8 @@ import math
 import os
 import re
 from typing import Callable, Sequence, TypeVar
-from uuid import uuid4
+from uuid import UUID, uuid4
+import zlib
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from baml_py import FunctionLog, Image as BamlImage
@@ -24,6 +25,7 @@ from clepsy.entities import (
     ViewMode,
 )
 from clepsy.human_readable_pw import generate_typable_password
+from clepsy.infra.valkey_client import get_connection
 
 
 def count_words(text: str) -> int:
@@ -507,6 +509,81 @@ def pil_image_to_base64(image: Image.Image, img_format: str = "PNG") -> str:
     return img_str.decode("utf-8")
 
 
+def base64_to_pil_image(b64_str: str) -> Image.Image:
+    return Image.open(io.BytesIO(base64.b64decode(b64_str)))
+
+
+def store_image_in_redis(
+    image: Image.Image, event_id: UUID, ttl_seconds: int = 600
+) -> None:
+    """Store a compressed image in Redis with a TTL.
+
+    Args:
+        image: PIL Image to store
+        event_id: UUID to use as the Redis key
+        ttl_seconds: Time-to-live in seconds (default 10 minutes)
+    """
+
+    # Serialize image to PNG bytes
+    buffered = io.BytesIO()
+    image.save(buffered, format="PNG")
+    image_bytes = buffered.getvalue()
+
+    # Compress with zlib
+    compressed = zlib.compress(image_bytes, level=6)
+
+    # Store in Redis with TTL
+    conn = get_connection()
+    key = f"image:{event_id}"
+    conn.setex(key, ttl_seconds, compressed)
+
+    logger.debug(
+        "Stored image {event_id} in Redis: {original} bytes -> {compressed} bytes ({ratio:.1f}% compression)",
+        event_id=event_id,
+        original=len(image_bytes),
+        compressed=len(compressed),
+        ratio=(1 - len(compressed) / len(image_bytes)) * 100,
+    )
+
+
+def retrieve_image_from_redis(event_id: UUID) -> Image.Image | None:
+    """Retrieve and decompress an image from Redis.
+
+    Args:
+        event_id: UUID key to retrieve
+
+    Returns:
+        PIL Image if found, None if expired or missing
+    """
+
+    conn = get_connection()
+    key = f"image:{event_id}"
+    compressed_data = conn.get(key)
+
+    if compressed_data is None:
+        logger.warning(
+            "Image {event_id} not found in Redis (expired or missing)",
+            event_id=event_id,
+        )
+        return None
+
+    # Type guard: ensure we have bytes (decode_responses=False ensures this)
+    assert isinstance(
+        compressed_data, bytes
+    ), f"Expected bytes from Redis, got {type(compressed_data)}"
+
+    # Decompress and load image
+    image_bytes = zlib.decompress(compressed_data)
+    image = Image.open(io.BytesIO(image_bytes))
+    image.load()  # Force load into memory before BytesIO goes out of scope
+
+    # Delete from Redis after successful retrieval
+    conn.delete(key)
+
+    logger.debug("Retrieved and deleted image {event_id} from Redis", event_id=event_id)
+    return image
+
+
 def pil_image_to_baml(image: Image.Image) -> BamlImage:
     b64 = pil_image_to_base64(image, img_format="PNG")
     return BamlImage.from_base64(base64=b64, media_type="image/png")
@@ -517,6 +594,29 @@ def datetime_to_iso_8601(dt: datetime, include_tz: bool = False) -> str:
         return dt.isoformat()
     else:
         return dt.replace(tzinfo=None).isoformat()
+
+
+def to_utc_naive_iso(dt: datetime) -> str:
+    """Serialize a datetime as ISO8601 without tzinfo, but normalized to UTC.
+
+    - If dt is naive, assume it's UTC.
+    - If dt is aware, convert to UTC.
+    - Return an ISO string with tzinfo stripped.
+    """
+    base = dt if dt.tzinfo is not None else dt.replace(tzinfo=timezone.utc)
+    return base.astimezone(timezone.utc).replace(tzinfo=None).isoformat()
+
+
+def parse_utc_naive_iso(s: str) -> datetime:
+    """Parse an ISO8601 string produced by to_utc_naive_iso back to aware UTC.
+
+    - If the string is naive, attach UTC tzinfo.
+    - If it has tzinfo, convert to UTC.
+    """
+    dt = datetime.fromisoformat(s)
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
 
 
 def custom_template(pattern: str) -> Callable[[str, dict], str]:

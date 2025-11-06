@@ -1,7 +1,6 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from functools import lru_cache
+from time import perf_counter
 from typing import Any, List
 
 from loguru import logger
@@ -27,8 +26,11 @@ def get_ocr(lang_code: str = "en", ocr_version: str = "PP-OCRv5") -> PaddleOCR:
     return PaddleOCR(
         lang=lang_code,
         ocr_version=ocr_version,
-        use_textline_orientation=True,
+        use_textline_orientation=False,
         use_doc_unwarping=False,
+        enable_mkldnn=True,  # force CPU accel
+        cpu_threads=4,  # tune 2–8
+        rec_batch_num=32,  # avoid version-default ambiguity
     )
 
 
@@ -100,18 +102,26 @@ def ocr_ui_text(
 
     numpydata = np.array(image_rgb)
     try:
+        start = perf_counter()
         result = ocr.predict(
             input=numpydata,
-            use_doc_orientation_classify=False,  # screenshots aren't rotated
+            use_doc_orientation_classify=False,
             use_doc_unwarping=False,
             use_textline_orientation=False,
-            text_det_limit_side_len=1920,
             text_det_limit_type="max",
+            text_det_limit_side_len=960,  # doc default; try 736 after verifying recall
             text_det_thresh=0.3,
-            text_det_box_thresh=0.55,
+            text_det_box_thresh=0.60,
             text_det_unclip_ratio=1.6,
-            text_rec_score_thresh=0.85,
+            text_rec_score_thresh=0.80,
             return_word_box=False,
+        )
+        duration = perf_counter() - start
+        logger.info(
+            "PaddleOCR predict completed in {duration:.2f}s for {width}x{height} image",
+            duration=duration,
+            width=image_rgb.width,
+            height=image_rgb.height,
         )
     except Exception as exc:  # noqa: BLE001
         logger.exception(
