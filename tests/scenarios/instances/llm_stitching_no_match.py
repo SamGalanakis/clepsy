@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import List
+from uuid import uuid4
 
 import baml_client.types as baml_types
 import clepsy.entities as E
@@ -8,6 +9,7 @@ from ..types import TestScenario
 
 
 def make_llm_stitching_no_match(base_time) -> TestScenario:
+    STATIC_ID = uuid4()
     """
     Test scenario where LLM should NOT stitch activities.
 
@@ -18,122 +20,122 @@ def make_llm_stitching_no_match(base_time) -> TestScenario:
     input_logs: List[E.AggregationInputEvent] = [
         # 0:00 → 2:00: Email communication
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time,
             active_window=E.WindowInfo(
                 title="Inbox - Gmail",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User reading and responding to emails in Gmail.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=30),
             active_window=E.WindowInfo(
                 title="Compose Email - Gmail",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User composing an email message.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1),
             active_window=E.WindowInfo(
                 title="Inbox - Gmail",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User managing email inbox.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1, seconds=30),
             active_window=E.WindowInfo(
                 title="Gmail",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User working with emails.",
         ),
         # 2:00 → 10:00: Video editing work
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=2),
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User editing video in Premiere Pro.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=3),
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User working on video timeline.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4),
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User editing video content.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5),
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User applying effects to video.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=6),
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User editing video project.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=7),
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User working on video editing.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=8),
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User editing video timeline.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9),
             active_window=E.WindowInfo(
                 title="Project.mp4 - Adobe Premiere",
                 app_name="Adobe Premiere Pro",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User working on video project.",

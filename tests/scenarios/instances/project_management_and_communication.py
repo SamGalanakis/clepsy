@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import List
+from uuid import uuid4
 
 import baml_client.types as baml_types
 from clepsy import utils
@@ -10,186 +11,187 @@ from ..types import TestScenario
 
 
 def make_project_management_and_communication(base_time) -> TestScenario:
+    STATIC_ID = uuid4()
     input_logs: List[E.AggregationInputEvent] = [
         # Asana in Chrome: 0:00 → 4:55 at 30s cadence, then a 5s gap before switch
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time,
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=30),
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1),
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1, seconds=30),
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=2),
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=2, seconds=30),
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=3),
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=3, seconds=30),
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4),
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4, seconds=30),
             active_window=E.WindowInfo(
                 title="Project Plan - Asana",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="User updating the project plan in Asana.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=7, seconds=30),
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User responding to project-related emails in Outlook.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=8),
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User responding to project-related emails in Outlook.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=8, seconds=30),
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User responding to project-related emails in Outlook.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9),
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User responding to project-related emails in Outlook.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9, seconds=30),
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User responding to project-related emails in Outlook.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9, seconds=55),
             active_window=E.WindowInfo(
                 title="Inbox - Outlook",
                 app_name="Microsoft Outlook",
-                is_active=True,
                 bbox=E.Bbox(left=100, top=50, width=1200, height=800),
             ),
             llm_description="User responding to project-related emails in Outlook.",
         ),
         # Teams: open at 10:00
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=10),
             active_window=E.WindowInfo(
                 title="Project Chat - Microsoft Teams",
                 app_name="Microsoft Teams",
-                is_active=True,
                 bbox=E.Bbox(left=150, top=75, width=1100, height=750),
             ),
             llm_description="User coordinating with team in Microsoft Teams chat.",
         ),
         # Teams: open at 10:00
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=10),
             active_window=E.WindowInfo(
                 title="Project Chat - Microsoft Teams",
                 app_name="Microsoft Teams",
-                is_active=True,
                 bbox=E.Bbox(left=150, top=75, width=1100, height=700),
             ),
             llm_description="User discussing project details in Microsoft Teams.",

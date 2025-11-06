@@ -6,7 +6,12 @@
 	"shutdownAction": "stopCompose",
 	"service": "clepsy",
 	"runServices": [
-		"clepsy"
+		"clepsy",
+		"valkey",
+		"dramatiq-worker",
+		"valkey-exporter",
+		"prometheus",
+		"grafana"
 	],
 	"features": {
 		"ghcr.io/devcontainers/features/git:1": {},

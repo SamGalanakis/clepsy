@@ -1,5 +1,6 @@
-import asyncio
 from contextlib import asynccontextmanager
+
+# ruff: noqa: I001
 import mimetypes
 
 from fastapi import APIRouter, FastAPI, Response
@@ -9,7 +10,8 @@ from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware
 import uvicorn
 
-from clepsy import bootstrap, scheduler as clepsy_scheduler
+from clepsy import bootstrap
+from clepsy.scheduling import scheduler, init_schedules
 from clepsy.auth.auth_middleware import DeviceTokenMiddleware, JWTMiddleware
 from clepsy.modules.account_creation.router import router as account_creation_router
 from clepsy.modules.activities.router import router as activity_router
@@ -18,11 +20,9 @@ from clepsy.modules.goals.router import router as goals_router
 from clepsy.modules.home.router import router as home_router
 from clepsy.modules.insights.router import router as insights_router
 from clepsy.modules.login.router import router as login_router
-from clepsy.modules.monitoring.router import router as monitoring_router
 from clepsy.modules.sources.router import router as sources_router
 from clepsy.modules.tags.router import router as tags_router
 from clepsy.modules.user_settings.router import router as user_settings_router
-from clepsy.workers import worker_manager
 
 
 @asynccontextmanager
@@ -31,22 +31,14 @@ async def lifespan(app_: FastAPI):
     logger.info("Starting Clepsy backend...")
     logger.info("Initializing bootstrap...")
     await bootstrap.init()
-    loop = asyncio.get_running_loop()
-    logger.info("Starting worker manager...")
-    loop.create_task(worker_manager.start_all())
-    logger.info("Starting event bus...")
-    loop.create_task(bootstrap.event_bus.start())
-    logger.info("Starting scheduler...")
-    async with clepsy_scheduler.scheduler:
-        # Configure known task callables before (or immediately as) the scheduler starts
-        # so that persisted schedules can resolve their functions.
-        await clepsy_scheduler.init_schedules()
-        await clepsy_scheduler.scheduler.start_in_background()
-        app_.state.scheduler = clepsy_scheduler.scheduler
 
+    # Start persistent APScheduler (v4) with SQLAlchemy datastore
+
+    async with scheduler:
+        await init_schedules(scheduler)
+        await scheduler.start_in_background()
+        app_.state.scheduler = scheduler
         yield
-
-    await worker_manager.stop_all()
 
 
 app = FastAPI(title="Clepsy backend", lifespan=lifespan)
@@ -83,7 +75,6 @@ website_router.include_router(activity_router)
 website_router.include_router(goals_router)
 website_router.include_router(account_creation_router)
 website_router.include_router(insights_router)
-website_router.include_router(monitoring_router)
 website_router.include_router(tags_router)
 
 

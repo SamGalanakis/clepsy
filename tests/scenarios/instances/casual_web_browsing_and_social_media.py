@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import List
+from uuid import uuid4
 
 import baml_client.types as baml_types
 from clepsy import utils
@@ -11,86 +12,87 @@ from ..types import TestScenario
 
 def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
     # Screenshot cadence: 30s within a domain, 5s at domain switches (BBC → Facebook at 5:00, Facebook → YouTube at 10:00)
+    STATIC_ID = uuid4()
     input_logs: List[E.AggregationInputEvent] = [
         # BBC News (0:00 → 4:55)
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=0),
             active_window=E.WindowInfo(
                 title="BBC News - Home",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Reading news on BBC News homepage.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=30),
             active_window=E.WindowInfo(
                 title="BBC News - World",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Reading a world news article on BBC News.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1, seconds=0),
             active_window=E.WindowInfo(
                 title="BBC News - Politics",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Scrolling through politics coverage on BBC News.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4, seconds=55),
             active_window=E.WindowInfo(
                 title="BBC News - Technology",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Checking technology headlines on BBC News.",
         ),
         # Facebook (5:00 → 9:55)
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5, seconds=0),
             active_window=E.WindowInfo(
                 title="Facebook - News Feed",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Browsing Facebook news feed.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5, seconds=30),
             active_window=E.WindowInfo(
                 title="Facebook - Notifications",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Checking notifications on Facebook.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9, seconds=55),
             active_window=E.WindowInfo(
                 title="Facebook - Messages",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Reading messages on Facebook.",
         ),
         # YouTube (10:00)
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=10, seconds=0),
             active_window=E.WindowInfo(
                 title="YouTube - Tech Reviews",
                 app_name="Google Chrome",
-                is_active=True,
                 bbox=E.Bbox(left=50, top=25, width=1400, height=900),
             ),
             llm_description="Watching a tech review video on YouTube.",

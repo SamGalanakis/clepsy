@@ -1,38 +1,29 @@
-import asyncio
+from datetime import timezone
 
 from fastapi import APIRouter, HTTPException
 
-from clepsy.config import config
 from clepsy.entities import MobileAppUsageEvent
-from clepsy.modules.pii.pii import (
-    DEFAULT_PII_ENTITY_TYPES,
-    anonymize_text,
-)
-from clepsy.queues import event_bus
+from clepsy.jobs.mobile import persist_mobile_app_usage_job
 
 
 router = APIRouter(prefix="/mobile")
 
 
-async def anonymize_mobile_app_usage_event(
-    event: MobileAppUsageEvent,
-) -> MobileAppUsageEvent:
-    if event.notification_text:
-        event.notification_text = await asyncio.to_thread(
-            anonymize_text,
-            text=event.notification_text,
-            entity_types=DEFAULT_PII_ENTITY_TYPES,
-            threshold=config.gliner_pii_threshold,
-        )
-
-    return event
-
-
 @router.post("/app-usage")
 async def receive_mobile_app_usage(event: MobileAppUsageEvent) -> dict | None:
     try:
-        event = await anonymize_mobile_app_usage_event(event)
-        await event_bus.publish(event)
+        # Validate schema, then dispatch actor (job performs anonymization)
+        MobileAppUsageEvent.model_validate(event.model_dump())
+
+        # Serialize timestamp as ISO8601 naive in UTC for message safety
+        ts = event.timestamp
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        ts_utc = ts.astimezone(timezone.utc)
+        payload = event.model_dump()
+        payload["timestamp"] = ts_utc.replace(tzinfo=None).isoformat()
+
+        persist_mobile_app_usage_job.send(payload)
         return None
     except HTTPException:
         raise

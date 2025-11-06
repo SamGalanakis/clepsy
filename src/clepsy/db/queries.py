@@ -281,6 +281,9 @@ def set_clause_query(table_name: str, columns: tuple[str]) -> str:
     return f"UPDATE {table_name} SET {','.join([f'{col} = :{col}' for col in columns])}"
 
 
+# (source_events moved to Valkey Streams; DB helpers removed)
+
+
 async def insert_user_settings(
     conn: aiosqlite.Connection,
     timezone: str,
@@ -742,15 +745,12 @@ async def update_user_settings(
 async def insert_activity_events(
     conn: aiosqlite.Connection, events: Sequence[ActivityEventInsert]
 ) -> None:
-    sql = simple_insert_query(
-        "activity_events",
-        (
-            "activity_id",
-            "event_time",
-            "event_type",
-            "aggregation_id",
-            "last_manual_action_time",
-        ),
+    # Use INSERT OR IGNORE to provide idempotency when a unique index exists
+    # on (activity_id, event_time, event_type). This prevents duplicate events
+    # from causing IntegrityError on retries or replays.
+    sql = (
+        "INSERT OR IGNORE INTO activity_events (activity_id,event_time,event_type,aggregation_id,last_manual_action_time) "
+        "VALUES (:activity_id,:event_time,:event_type,:aggregation_id,:last_manual_action_time);"
     )
 
     dicts = [

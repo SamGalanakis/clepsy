@@ -87,27 +87,6 @@ def create_custom_sidebar(
                             ]
                         ],
                         li[
-                            details(id="submenu-monitoring")[
-                                summary(aria_controls="submenu-monitoring-content")[
-                                    get_icon_svg("pulse"),
-                                    "Monitoring",
-                                ],
-                                ul(id="submenu-monitoring-content")[
-                                    li[
-                                        a(
-                                            href="/s/monitoring/workers",
-                                            hx_boost=True,
-                                            hx_target="#content",
-                                            hx_swap="outerHTML",
-                                        )[
-                                            get_icon_svg("pickaxe"),
-                                            span["Workers"],
-                                        ]
-                                    ]
-                                ],
-                            ]
-                        ],
-                        li[
                             details(id="submenu-settings")[
                                 summary(aria_controls="submenu-settings-content")[
                                     settings_svg, "Settings"

@@ -19,7 +19,9 @@ services:
       - caddy_config:/config
       - static_assets:/srv/static:ro
     networks: [web]
-    depends_on: [clepsy]
+    depends_on:
+      clepsy:
+        condition: service_healthy
 
 
 volumes:
