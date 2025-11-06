@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import List
+from uuid import uuid4
 
 import baml_client.types as baml_types
 from clepsy import utils
@@ -11,9 +12,11 @@ from ..types import TestScenario
 
 def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
     # Screenshot cadence: 30s within a domain, 5s at domain switches (BBC → Facebook at 5:00, Facebook → YouTube at 10:00)
+    STATIC_ID = uuid4()
     input_logs: List[E.AggregationInputEvent] = [
         # BBC News (0:00 → 4:55)
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=0),
             active_window=E.WindowInfo(
                 title="BBC News - Home",
@@ -23,6 +26,7 @@ def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
             llm_description="Reading news on BBC News homepage.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=30),
             active_window=E.WindowInfo(
                 title="BBC News - World",
@@ -32,6 +36,7 @@ def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
             llm_description="Reading a world news article on BBC News.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1, seconds=0),
             active_window=E.WindowInfo(
                 title="BBC News - Politics",
@@ -41,6 +46,7 @@ def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
             llm_description="Scrolling through politics coverage on BBC News.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4, seconds=55),
             active_window=E.WindowInfo(
                 title="BBC News - Technology",
@@ -51,6 +57,7 @@ def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
         ),
         # Facebook (5:00 → 9:55)
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5, seconds=0),
             active_window=E.WindowInfo(
                 title="Facebook - News Feed",
@@ -60,6 +67,7 @@ def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
             llm_description="Browsing Facebook news feed.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5, seconds=30),
             active_window=E.WindowInfo(
                 title="Facebook - Notifications",
@@ -69,6 +77,7 @@ def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
             llm_description="Checking notifications on Facebook.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9, seconds=55),
             active_window=E.WindowInfo(
                 title="Facebook - Messages",
@@ -79,6 +88,7 @@ def make_casual_web_browsing_and_social_media(base_time) -> TestScenario:
         ),
         # YouTube (10:00)
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=10, seconds=0),
             active_window=E.WindowInfo(
                 title="YouTube - Tech Reviews",

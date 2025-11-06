@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import List
+from uuid import uuid4
 
 import baml_client.types as baml_types
 from clepsy import utils
@@ -9,9 +10,11 @@ from ..types import ManualReconciliationCase, TestScenario
 
 
 def make_interrupted_content_creation(base_time) -> TestScenario:
+    STATIC_ID = uuid4()
     input_logs: List[E.AggregationInputEvent] = [
         # Google Docs in Chrome: 0:00 → 4:55 at 30s cadence, then a 5s gap before switch
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time,
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
@@ -21,6 +24,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User writing a blog post in Google Docs.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=30),
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
@@ -30,6 +34,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User writing a blog post in Google Docs.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1),
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
@@ -39,6 +44,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User writing a blog post in Google Docs.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1, seconds=30),
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
@@ -48,6 +54,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User writing a blog post in Google Docs.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=2),
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
@@ -57,6 +64,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User writing a blog post in Google Docs.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=2, seconds=30),
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
@@ -66,6 +74,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User writing a blog post in Google Docs.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=3),
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
@@ -75,6 +84,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User writing a blog post in Google Docs.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=3, seconds=30),
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
@@ -84,6 +94,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User writing a blog post in Google Docs.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4),
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
@@ -93,6 +104,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User writing a blog post in Google Docs.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4, seconds=30),
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
@@ -102,6 +114,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User writing a blog post in Google Docs.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4, seconds=55),
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",
@@ -112,6 +125,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
         ),
         # Slack: 5:00 → 9:55 at 30s cadence
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5),
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
@@ -121,6 +135,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User on a video call in Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5, seconds=30),
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
@@ -130,6 +145,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User on a video call in Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=6),
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
@@ -139,6 +155,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User on a video call in Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=6, seconds=30),
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
@@ -148,6 +165,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User on a video call in Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=7),
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
@@ -157,6 +175,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User on a video call in Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=7, seconds=30),
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
@@ -166,6 +185,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User on a video call in Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=8),
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
@@ -175,6 +195,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User on a video call in Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=8, seconds=30),
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
@@ -184,6 +205,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User on a video call in Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9),
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
@@ -193,6 +215,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User on a video call in Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9, seconds=30),
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
@@ -202,6 +225,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
             llm_description="User on a video call in Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9, seconds=55),
             active_window=E.WindowInfo(
                 title="Video Call - Slack",
@@ -212,6 +236,7 @@ def make_interrupted_content_creation(base_time) -> TestScenario:
         ),
         # Return to Google Docs at 10:00
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=10),
             active_window=E.WindowInfo(
                 title="My Blog Post - Google Docs",

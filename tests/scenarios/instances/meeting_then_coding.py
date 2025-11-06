@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import List
+from uuid import uuid4
 
 import baml_client.types as baml_types
 from clepsy import utils
@@ -10,10 +11,12 @@ from ..types import ManualReconciliationCase, TestScenario
 
 
 def make_meeting_then_coding(base_time) -> TestScenario:
+    STATIC_ID = uuid4()
     # Screenshot cadence: 30s within app, 5s at switches (Zoom → Slack at 5:00, Slack → VSCode at 10:00)
     input_logs: List[E.AggregationInputEvent] = [
         # Zoom standup (0:00 → 4:55)
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=0),
             active_window=E.WindowInfo(
                 title="Daily Standup - Zoom Meeting",
@@ -23,6 +26,7 @@ def make_meeting_then_coding(base_time) -> TestScenario:
             llm_description="Joining the daily standup meeting in Zoom.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=30),
             active_window=E.WindowInfo(
                 title="Daily Standup - Zoom Meeting",
@@ -32,6 +36,7 @@ def make_meeting_then_coding(base_time) -> TestScenario:
             llm_description="In Zoom standup discussing updates.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1, seconds=0),
             active_window=E.WindowInfo(
                 title="Daily Standup - Zoom Meeting",
@@ -41,6 +46,7 @@ def make_meeting_then_coding(base_time) -> TestScenario:
             llm_description="Ongoing Zoom standup.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4, seconds=55),
             active_window=E.WindowInfo(
                 title="Daily Standup - Zoom Meeting",
@@ -51,6 +57,7 @@ def make_meeting_then_coding(base_time) -> TestScenario:
         ),
         # Slack follow-up (5:00 → 9:55)
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5, seconds=0),
             active_window=E.WindowInfo(
                 title="team-chat - Slack",
@@ -60,6 +67,7 @@ def make_meeting_then_coding(base_time) -> TestScenario:
             llm_description="Post-meeting discussion in Slack (team-chat).",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5, seconds=30),
             active_window=E.WindowInfo(
                 title="team-chat - Slack",
@@ -69,6 +77,7 @@ def make_meeting_then_coding(base_time) -> TestScenario:
             llm_description="Clarifying action items in Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9, seconds=55),
             active_window=E.WindowInfo(
                 title="team-chat - Slack",
@@ -79,6 +88,7 @@ def make_meeting_then_coding(base_time) -> TestScenario:
         ),
         # Coding in VSCode (10:00)
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=10, seconds=0),
             active_window=E.WindowInfo(
                 title="feature.py - Visual Studio Code",

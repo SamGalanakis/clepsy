@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import List
+from uuid import uuid4
 
 import baml_client.types as baml_types
 from clepsy import utils
@@ -11,8 +12,10 @@ from ..types import TestScenario
 
 def make_coding_then_afk(base_time) -> TestScenario:
     # Screenshot events every 30 seconds within the same app; no logs after 5:00 to indicate AFK
+    STATIC_ID = uuid4()
     input_logs: List[E.AggregationInputEvent] = [
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=0),
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
@@ -22,6 +25,7 @@ def make_coding_then_afk(base_time) -> TestScenario:
             llm_description="Opening VS Code and loading main.py for implementation work.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=30),
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
@@ -31,6 +35,7 @@ def make_coding_then_afk(base_time) -> TestScenario:
             llm_description="Editing main.py in VS Code.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1, seconds=0),
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
@@ -40,6 +45,7 @@ def make_coding_then_afk(base_time) -> TestScenario:
             llm_description="Actively coding in main.py.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1, seconds=30),
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
@@ -49,6 +55,7 @@ def make_coding_then_afk(base_time) -> TestScenario:
             llm_description="Typing and navigating within main.py.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=2, seconds=0),
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
@@ -58,6 +65,7 @@ def make_coding_then_afk(base_time) -> TestScenario:
             llm_description="Writing code in main.py.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=2, seconds=30),
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
@@ -67,6 +75,7 @@ def make_coding_then_afk(base_time) -> TestScenario:
             llm_description="Continuing development work in main.py.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=3, seconds=0),
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
@@ -76,6 +85,7 @@ def make_coding_then_afk(base_time) -> TestScenario:
             llm_description="Working through implementation details in main.py.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=3, seconds=30),
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
@@ -85,6 +95,7 @@ def make_coding_then_afk(base_time) -> TestScenario:
             llm_description="Editing and scrolling in main.py.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4, seconds=0),
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",
@@ -94,6 +105,7 @@ def make_coding_then_afk(base_time) -> TestScenario:
             llm_description="Actively coding in main.py.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4, seconds=30),
             active_window=E.WindowInfo(
                 title="main.py - Visual Studio Code",

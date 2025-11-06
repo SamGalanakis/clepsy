@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import List
+from uuid import uuid4
 
 import baml_client.types as baml_types
 from clepsy import utils
@@ -10,9 +11,11 @@ from ..types import ManualReconciliationCase, TestScenario
 
 
 def make_interrupted_design_work(base_time) -> TestScenario:
+    STATIC_ID = uuid4()
     input_logs: List[E.AggregationInputEvent] = [
         # Figma: 0:00 → 4:55 at 30s cadence, then a 5s gap before switch
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time,
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
@@ -22,6 +25,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User creating wireframes for a new mobile app in Figma.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=30),
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
@@ -31,6 +35,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User creating wireframes for a new mobile app in Figma.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1),
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
@@ -40,6 +45,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User creating wireframes for a new mobile app in Figma.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1, seconds=30),
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
@@ -49,6 +55,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User creating wireframes for a new mobile app in Figma.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=2),
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
@@ -58,6 +65,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User creating wireframes for a new mobile app in Figma.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=2, seconds=30),
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
@@ -67,6 +75,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User creating wireframes for a new mobile app in Figma.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=3),
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
@@ -76,6 +85,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User creating wireframes for a new mobile app in Figma.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=3, seconds=30),
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
@@ -85,6 +95,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User creating wireframes for a new mobile app in Figma.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4),
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
@@ -94,6 +105,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User creating wireframes for a new mobile app in Figma.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4, seconds=30),
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
@@ -103,6 +115,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User creating wireframes for a new mobile app in Figma.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4, seconds=55),
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",
@@ -113,6 +126,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
         ),
         # Slack: 5:00 → 9:55 at 30s cadence
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5),
             active_window=E.WindowInfo(
                 title="design-team - Slack",
@@ -122,6 +136,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User checking messages from the design team on Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5, seconds=30),
             active_window=E.WindowInfo(
                 title="design-team - Slack",
@@ -131,6 +146,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User checking messages from the design team on Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=6),
             active_window=E.WindowInfo(
                 title="design-team - Slack",
@@ -140,6 +156,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User checking messages from the design team on Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=6, seconds=30),
             active_window=E.WindowInfo(
                 title="design-team - Slack",
@@ -149,6 +166,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User checking messages from the design team on Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=7),
             active_window=E.WindowInfo(
                 title="design-team - Slack",
@@ -158,6 +176,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User checking messages from the design team on Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=7, seconds=30),
             active_window=E.WindowInfo(
                 title="design-team - Slack",
@@ -167,6 +186,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User checking messages from the design team on Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=8),
             active_window=E.WindowInfo(
                 title="design-team - Slack",
@@ -176,6 +196,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User checking messages from the design team on Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=8, seconds=30),
             active_window=E.WindowInfo(
                 title="design-team - Slack",
@@ -185,6 +206,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User checking messages from the design team on Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9),
             active_window=E.WindowInfo(
                 title="design-team - Slack",
@@ -194,6 +216,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User checking messages from the design team on Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9, seconds=30),
             active_window=E.WindowInfo(
                 title="design-team - Slack",
@@ -203,6 +226,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
             llm_description="User checking messages from the design team on Slack.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9, seconds=55),
             active_window=E.WindowInfo(
                 title="design-team - Slack",
@@ -213,6 +237,7 @@ def make_interrupted_design_work(base_time) -> TestScenario:
         ),
         # Return to Figma at 10:00
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=10),
             active_window=E.WindowInfo(
                 title="Mobile App Wireframes - Figma",

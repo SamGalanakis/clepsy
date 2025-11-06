@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import List
+from uuid import uuid4
 
 import baml_client.types as baml_types
 import clepsy.entities as E
@@ -14,9 +15,11 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
     The stitchable activity is "Writing Article" but the new activity
     is "Composing Blog Content" - semantically the same but worded differently.
     """
+    STATIC_ID = uuid4()
     input_logs: List[E.AggregationInputEvent] = [
         # 0:00 → 3:00: Writing/composing content
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time,
             active_window=E.WindowInfo(
                 title="Draft Post - WordPress",
@@ -26,6 +29,7 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             llm_description="User composing blog post in WordPress editor.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=30),
             active_window=E.WindowInfo(
                 title="Draft Post - WordPress",
@@ -35,6 +39,7 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             llm_description="User typing blog content.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1),
             active_window=E.WindowInfo(
                 title="New Post - WordPress",
@@ -44,6 +49,7 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             llm_description="User writing blog post content.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1, seconds=30),
             active_window=E.WindowInfo(
                 title="Draft - WordPress",
@@ -53,6 +59,7 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             llm_description="User composing article text.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=2),
             active_window=E.WindowInfo(
                 title="WordPress Editor",
@@ -62,6 +69,7 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             llm_description="User creating blog content.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=2, seconds=30),
             active_window=E.WindowInfo(
                 title="WordPress",
@@ -72,6 +80,7 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
         ),
         # 3:00 → 10:00: Social media browsing
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=3),
             active_window=E.WindowInfo(
                 title="Twitter",
@@ -81,6 +90,7 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             llm_description="User browsing Twitter feed.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4),
             active_window=E.WindowInfo(
                 title="Twitter",
@@ -90,6 +100,7 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             llm_description="User scrolling through social media.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5),
             active_window=E.WindowInfo(
                 title="Facebook",
@@ -99,6 +110,7 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             llm_description="User browsing Facebook.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=6),
             active_window=E.WindowInfo(
                 title="LinkedIn",
@@ -108,6 +120,7 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             llm_description="User viewing LinkedIn feed.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=7),
             active_window=E.WindowInfo(
                 title="Twitter",
@@ -117,6 +130,7 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             llm_description="User browsing social media.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=8),
             active_window=E.WindowInfo(
                 title="Instagram",
@@ -126,6 +140,7 @@ def make_llm_stitching_match_writing(base_time) -> TestScenario:
             llm_description="User scrolling Instagram.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9),
             active_window=E.WindowInfo(
                 title="Twitter",

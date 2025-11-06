@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import List
+from uuid import uuid4
 
 import baml_client.types as baml_types
 from clepsy import utils
@@ -10,10 +11,12 @@ from ..types import TestScenario
 
 
 def make_photo_editing_and_organization(base_time) -> TestScenario:
+    STATIC_ID = uuid4()
     # Screenshot cadence: 30s within app; 5s at switches (Photoshop → Explorer at 5:00, Explorer → Photoshop at 10:00)
     input_logs: List[E.AggregationInputEvent] = [
         # Photoshop editing (0:00 → 4:55)
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=0),
             active_window=E.WindowInfo(
                 title="photo.jpg - Adobe Photoshop",
@@ -23,6 +26,7 @@ def make_photo_editing_and_organization(base_time) -> TestScenario:
             llm_description="Editing photo.jpg in Adobe Photoshop.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(seconds=30),
             active_window=E.WindowInfo(
                 title="photo.jpg - Adobe Photoshop",
@@ -32,6 +36,7 @@ def make_photo_editing_and_organization(base_time) -> TestScenario:
             llm_description="Adjusting layers and filters in Photoshop.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=1, seconds=0),
             active_window=E.WindowInfo(
                 title="photo.jpg - Adobe Photoshop",
@@ -41,6 +46,7 @@ def make_photo_editing_and_organization(base_time) -> TestScenario:
             llm_description="Cropping and color correcting in Photoshop.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=4, seconds=55),
             active_window=E.WindowInfo(
                 title="photo.jpg - Adobe Photoshop",
@@ -51,6 +57,7 @@ def make_photo_editing_and_organization(base_time) -> TestScenario:
         ),
         # File Explorer organization (5:00 → 9:55)
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5, seconds=0),
             active_window=E.WindowInfo(
                 title="Pictures",
@@ -60,6 +67,7 @@ def make_photo_editing_and_organization(base_time) -> TestScenario:
             llm_description="Organizing photos in File Explorer.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=5, seconds=30),
             active_window=E.WindowInfo(
                 title="Pictures",
@@ -69,6 +77,7 @@ def make_photo_editing_and_organization(base_time) -> TestScenario:
             llm_description="Renaming and moving files in File Explorer.",
         ),
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=9, seconds=55),
             active_window=E.WindowInfo(
                 title="Pictures",
@@ -79,6 +88,7 @@ def make_photo_editing_and_organization(base_time) -> TestScenario:
         ),
         # Back to Photoshop (10:00)
         E.ProcessedDesktopCheckScreenshotEventVLM(
+            id=STATIC_ID,
             timestamp=base_time + timedelta(minutes=10, seconds=0),
             active_window=E.WindowInfo(
                 title="photo2.jpg - Adobe Photoshop",
