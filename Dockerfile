@@ -80,7 +80,7 @@ RUN --mount=type=cache,target=/var/cache/apt,id=apt-cache,sharing=locked \
     mkdir -p /var/lib/apt/lists/partial && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-      tzdata ca-certificates locales sqlite3 libgl1 libglib2.0-0 && \
+      tzdata ca-certificates locales sqlite3 rsync libgl1 libglib2.0-0 && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
