@@ -27,7 +27,7 @@ jobs:
           enable-cache: true
 
       - name: Run prek on host
-        run: uvx prek run
+        run: uvx prek run --all-files
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
