@@ -7,8 +7,8 @@ ENV LC_CTYPE=C.utf8 \
     PATH="/venv/bin:$PATH"
 
 # Reproducible installs (no upgrade)
-RUN --mount=type=cache,target=/var/cache/apt \
-    --mount=type=cache,target=/var/lib/apt \
+RUN --mount=type=cache,target=/var/cache/apt,id=apt-cache,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,id=apt-lib,sharing=locked \
     mkdir -p /var/lib/apt/lists/partial && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
@@ -75,8 +75,8 @@ ENV LC_CTYPE=C.utf8 \
     HOME=/home/appuser
 
 # Minimal runtime deps only (no sudo)
-RUN --mount=type=cache,target=/var/cache/apt \
-    --mount=type=cache,target=/var/lib/apt \
+RUN --mount=type=cache,target=/var/cache/apt,id=apt-cache,sharing=locked \
+        --mount=type=cache,target=/var/lib/apt,id=apt-lib,sharing=locked \
     mkdir -p /var/lib/apt/lists/partial && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
