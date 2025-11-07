@@ -23,6 +23,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Run prek on host
+        run: uvx prek run
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -35,13 +43,6 @@ jobs:
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Run prek inside container
-        run: |
-          docker run --rm \
-            -v "$PWD":/app \
-            -w /app \
-            clepsy-dev:ci uvx prek run
 
       - name: Pre-build production image (cached)
         uses: docker/build-push-action@v5
