@@ -31,6 +31,15 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo docker image prune -af
+          df -h
+
       - name: Build builder image (cached)
         uses: docker/build-push-action@v5
         with:
@@ -39,7 +48,7 @@ jobs:
           load: true
           push: false
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
 
 
       - name: Pre-build production image (cached)
@@ -51,7 +60,7 @@ jobs:
           load: true
           push: false
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
 
       - name: Build test image (compose)
         run: docker compose -f docker-compose.prod.yml -f docker-compose.prod.ci.yml build clepsy

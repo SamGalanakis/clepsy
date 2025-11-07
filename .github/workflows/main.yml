@@ -42,7 +42,7 @@ jobs:
           load: true
           push: false
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
 
       - name: Pre-build production image (cached)
         uses: docker/build-push-action@v5
@@ -53,7 +53,7 @@ jobs:
           load: true
           push: false
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
 
       - name: Build test image (compose)
         run: docker compose -f docker-compose.prod.yml -f docker-compose.prod.ci.yml build clepsy
