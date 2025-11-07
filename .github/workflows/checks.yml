@@ -38,8 +38,8 @@ jobs:
           android: true
           dotnet: true
           tool-cache: false
-          swap-storage: true
-          large-packages: true
+          swap-storage: false
+          large-packages: false
 
 
       - name: Prepare production secrets for compose
