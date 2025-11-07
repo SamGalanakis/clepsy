@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/var/cache/apt,id=apt-cache,sharing=locked \
       curl build-essential sqlite3 && \
     rm -rf /var/lib/apt/lists/*
 # Goose (db migrations)
-RUN curl -fsnt.com/pressly/goose/master/install.sh | sh
+RUN curl -fsSL https://raw.githubusercontent.com/pressly/goose/master/install.sh | sh
 
 WORKDIR /app
 
