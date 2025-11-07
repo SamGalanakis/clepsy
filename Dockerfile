@@ -100,15 +100,15 @@ COPY --from=builder /app/src/ ./src/
 COPY --from=builder /app/migrations/ ./migrations/
 COPY --from=builder /app/static/ ./static/
 
-# Install the project into the prebuilt venv without re-resolving deps
-RUN --mount=type=cache,target=/root/.cache/uv,id=uv-cache \
-    uv pip install --no-deps .
-
-# Permissions: only where we need writes
+# Prepare writable paths for the runtime user
 RUN install -d -o appuser -g 1000 /var/lib/clepsy /var/lib/clepsy/logs \
     /var/lib/clepsy-caches /home/appuser/.cache /home/appuser/.cache/uv && \
     chown -R appuser:1000 /app /venv /home/appuser && \
     chmod +x /app/entrypoint.sh
 
 USER appuser:1000
+
+# Install the project into the prebuilt venv without re-resolving deps
+RUN --mount=type=cache,target=/home/appuser/.cache/uv,id=uv-cache \
+    uv pip install --no-deps .
 ENTRYPOINT ["/app/entrypoint.sh"]

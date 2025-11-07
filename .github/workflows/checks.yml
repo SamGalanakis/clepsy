@@ -42,10 +42,6 @@ jobs:
           large-packages: false
 
 
-      - name: Prepare production secrets for compose
-        run: |
-          echo "ci-placeholder-password" > clepsy_password.txt
-
       - name: Build test image
         uses: docker/build-push-action@v5
         with:
@@ -60,7 +56,7 @@ jobs:
 
       - name: Run unit tests inside compose service (excluding LLM and PII tests)
         run: >-
-          docker compose -f docker-compose.prod.yml run
+          docker compose -f docker-compose.prod.yml -f docker-compose.ci.override.yml run
           --no-deps
           -v ${{ github.workspace }}/tests:/app/tests
           --rm --entrypoint "/bin/sh" clepsy
