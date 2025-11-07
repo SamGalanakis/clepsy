@@ -1,100 +1,111 @@
+# ---------- Base toolchain (root) ----------
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS base
 
-ENV LC_CTYPE=C.utf8
-ENV UV_PROJECT_ENVIRONMENT="/venv"
-ENV UV_PYTHON_PREFERENCE=system
-ENV PATH="$UV_PROJECT_ENVIRONMENT/bin:$PATH"
+ENV LC_CTYPE=C.utf8 \
+    UV_PROJECT_ENVIRONMENT="/venv" \
+    UV_PYTHON_PREFERENCE=system \
+    PATH="/venv/bin:$PATH"
 
-# System deps (with apt cache mounts)
+# Reproducible installs (no upgrade)
 RUN --mount=type=cache,target=/var/cache/apt \
     --mount=type=cache,target=/var/lib/apt \
     apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install --no-install-recommends -y \
-      tzdata \
-      ca-certificates \
-      locales \
-      sudo \
-      gpg \
-      curl \
-      git \
-      build-essential \
-      gettext \
-      rsync \
-      wget \
-      sqlite3 \
-      libgl1 \
-      libglib2.0-0 && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+      tzdata ca-certificates locales \
+      curl git build-essential gettext wget sqlite3 \
+      libgl1 libglib2.0-0 && \
     rm -rf /var/lib/apt/lists/*
 
 # Goose (db migrations)
 RUN curl -fsSL https://raw.githubusercontent.com/pressly/goose/master/install.sh | sh
 
 WORKDIR /app
-ENV PORT=8000
-EXPOSE 8000
 
-# ---------- 1) Cache PROD deps (no project install) ----------
+# ---------- 1) Cache PROD deps ----------
 FROM base AS prod-deps
-ENV ENVIRONMENT=prod
-WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv-cache \
     uv sync --frozen --no-dev --no-install-project
 
-# ---------- 2) Cache DEV deps (no project install) ----------
+# ---------- 2) Cache DEV deps ----------
 FROM base AS dev-deps
-ENV ENVIRONMENT=dev
-WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv-cache \
     uv sync --frozen --group dev --no-install-project
 
-# ---------- 3) Builder: install project using cached dev deps ----------
+# ---------- 3) Builder (root) ----------
 FROM base AS builder
-ENV ENVIRONMENT=dev
-WORKDIR /app
 COPY --from=dev-deps /venv /venv
-COPY src/ /app/src/
-COPY migrations/ /app/migrations/
-COPY baml_src/ /app/baml_src/
-COPY static/ /app/static/
+COPY src/ ./src/
+COPY migrations/ ./migrations/
+COPY baml_src/ ./baml_src/
+COPY static/ ./static/
 COPY pyproject.toml uv.lock ./
 
-# Install project into the pre-populated venv (fast due to cache)
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv-cache \
     uv sync --frozen --group dev
 
-# Build assets / codegen (use cached uv env)
+# Assets / codegen
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv-cache \
-    uv run tailwindcss -i ./src/clepsy/frontend/css/app.css -o ./static/app.css
-RUN --mount=type=cache,target=/root/.cache/uv,id=uv-cache \
+    uv run tailwindcss -i ./src/clepsy/frontend/css/app.css -o ./static/app.css && \
     uv run baml-cli generate
 
-# ---------- 4) Tests (optional) ----------
-FROM builder AS tests
-ENV ENVIRONMENT=prod
-COPY tests/ /app/tests/
-COPY test_images/ /app/test_images/
-RUN --mount=type=cache,target=/root/.cache/uv,id=uv-cache \
-    uv run python -m compileall src/clepsy
-RUN --mount=type=cache,target=/root/.cache/uv,id=uv-cache \
-    uv run python -m compileall tests
+ARG USERNAME=appuser
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+RUN groupadd -g $USER_GID $USERNAME && useradd -m -u $USER_UID -g $USER_GID $USERNAME
 
-# ---------- 5) Production image ----------
-FROM base AS production
-LABEL org.opencontainers.image.description="Clepsy backend server image"
-ENV ENVIRONMENT=prod
+# give write access where dev needs it, then switch
+RUN chown -R $USERNAME:$USER_GID /app /venv
+USER $USERNAME:$USER_GID
+
+
+# Optional compile checks
+# RUN uv run python -m compileall src/clepsy
+
+# ---------- 4) Production runtime (non-root) ----------
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS production
+
+ENV LC_CTYPE=C.utf8 \
+    UV_PROJECT_ENVIRONMENT="/venv" \
+    UV_PYTHON_PREFERENCE=system \
+    PATH="/venv/bin:$PATH" \
+    ENVIRONMENT=prod \
+    HOME=/home/appuser
+
+# Minimal runtime deps only (no sudo)
+RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt \
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+      tzdata ca-certificates locales sqlite3 libgl1 libglib2.0-0 && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-COPY pyproject.toml uv.lock entrypoint.sh ./
-COPY --from=prod-deps /venv /venv
-COPY --from=builder /app/src/ /app/src/
-COPY --from=builder /app/migrations/ /app/migrations/
-COPY --from=builder /app/static/ /app/static/
+# Create unprivileged user late
+ARG USERNAME=appuser
+ARG USER_UID=1000
+ARG USER_GID=${USER_UID}
+RUN groupadd --gid ${USER_GID} ${USERNAME} && \
+    useradd  --uid ${USER_UID} --gid ${USER_GID} -m -d /home/${USERNAME} ${USERNAME}
 
-# Install just the project against cached prod deps
+# Bring in venv and app
+COPY --from=prod-deps /venv /venv
+COPY --from=base /usr/local/bin/goose /usr/local/bin/goose
+COPY pyproject.toml uv.lock entrypoint.sh ./
+COPY --from=builder /app/src/ ./src/
+COPY --from=builder /app/migrations/ ./migrations/
+COPY --from=builder /app/static/ ./static/
+
+# Install the project against prod deps
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv-cache \
     uv sync --frozen --no-dev
 
-RUN chmod +x /app/entrypoint.sh
+# Permissions: only where we need writes
+RUN install -d -o ${USERNAME} -g ${USER_GID} /var/lib/clepsy /var/lib/clepsy-caches && \
+    chown -R ${USERNAME}:${USER_GID} /app /venv && \
+    chmod +x /app/entrypoint.sh
+
+USER ${USERNAME}:${USER_GID}
+ENTRYPOINT ["/app/entrypoint.sh"]

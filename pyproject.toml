@@ -26,7 +26,7 @@ dependencies = [
     "pyjwt>=2.10.1",
     "cryptography>=44.0.2",
     "python-dateutil>=2.9.0",
-    "baml-py==0.212.0",
+    "baml-py==0.213.0",
     "loguru>=0.7.3",
     "argon2-cffi>=25.1.0",
     "sqlalchemy>=2.0.43",
