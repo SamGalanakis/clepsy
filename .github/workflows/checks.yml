@@ -1,0 +1,58 @@
+# .github/workflows/checks.yml
+name: Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+    types: [opened, synchronize, reopened]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    env:
+      DOMAIN: ci.local
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Run prek on host
+        run: uvx prek run
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+
+      - name: Prepare production secrets for compose
+        run: |
+          echo "ci-placeholder-password" > clepsy_password.txt
+
+      - name: Build test image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          target: production
+          tags: clepsy:ci
+          load: true
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=min
+
+      - name: Run unit tests inside compose service (excluding LLM and PII tests)
+        run: >-
+          docker compose -f docker-compose.prod.yml run
+          --no-deps
+          -v ${{ github.workspace }}/tests:/app/tests
+          --rm --entrypoint "/bin/sh" clepsy
+          -c "goose up && uv run pytest -m 'not llm and not pii'"
