@@ -9,6 +9,7 @@ ENV LC_CTYPE=C.utf8 \
 # Reproducible installs (no upgrade)
 RUN --mount=type=cache,target=/var/cache/apt \
     --mount=type=cache,target=/var/lib/apt \
+    mkdir -p /var/lib/apt/lists/partial && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
       tzdata ca-certificates locales \
@@ -76,6 +77,7 @@ ENV LC_CTYPE=C.utf8 \
 # Minimal runtime deps only (no sudo)
 RUN --mount=type=cache,target=/var/cache/apt \
     --mount=type=cache,target=/var/lib/apt \
+    mkdir -p /var/lib/apt/lists/partial && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
       tzdata ca-certificates locales sqlite3 libgl1 libglib2.0-0 && \
