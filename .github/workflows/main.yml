@@ -15,15 +15,8 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  prek:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: j178/prek-action@v1
-
   test:
     runs-on: ubuntu-latest
-    needs: prek
     env:
       DOMAIN: ci.local
     steps:
@@ -33,11 +26,35 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Prepare production secrets for compose
-        run: |
-          echo "ci-placeholder-password" > clepsy_password.txt
+      - name: Build builder image (cached)
+        uses: docker/build-push-action@v5
+        with:
+          target: builder
+          tags: clepsy-dev:ci
+          load: true
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Build test image
+      - name: Run prek inside container
+        run: |
+          docker run --rm \
+            -v "$PWD":/app \
+            -w /app \
+            clepsy-dev uvx prek run
+
+      - name: Pre-build production image (cached)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: production
+          tags: clepsy-prod:ci
+          load: true
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build test image (compose)
         run: docker compose -f docker-compose.prod.yml -f docker-compose.prod.ci.yml build clepsy
 
       - name: Run unit tests inside compose service (excluding LLM and PII tests)
