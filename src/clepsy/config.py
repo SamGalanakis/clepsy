@@ -101,7 +101,6 @@ class Config(BaseSettings):
     bootstrap_password: SecretStr | None = None
     api_host: str = "0.0.0.0"
     max_desktop_screenshot_log_interval_seconds: int = 30
-    api_port: int = int(os.environ["PORT"])
     cache_dir: Path = cache_dir
     jwt_secret: SecretStr = SecretStr(
         os.getenv("JWT_SECRET", binascii.hexlify(os.urandom(24)).decode())
