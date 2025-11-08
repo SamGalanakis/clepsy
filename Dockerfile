@@ -109,6 +109,6 @@ RUN install -d -o appuser -g 1000 /var/lib/clepsy /var/lib/clepsy/logs \
 USER appuser:1000
 
 # Install the project into the prebuilt venv without re-resolving deps
-RUN --mount=type=cache,target=/home/appuser/.cache/uv,id=uv-cache \
+RUN --mount=type=cache,target=/home/appuser/.cache/uv,id=uv-cache,uid=1000,gid=1000 \
     uv pip install --no-deps .
 ENTRYPOINT ["/app/entrypoint.sh"]
