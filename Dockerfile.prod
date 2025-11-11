@@ -45,5 +45,6 @@ RUN --mount=type=cache,target=/root/.cache/uv,id=uv-cache \
     uv sync --locked --no-dev --compile-bytecode
 
 RUN baml-cli generate
+RUN uv run tailwindcss -i ./src/clepsy/frontend/css/app.css -o ./static/app.css
 
 ENV DEBIAN_FRONTEND=
