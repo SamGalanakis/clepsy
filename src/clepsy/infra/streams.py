@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from datetime import datetime, timezone
 from typing import Iterable
 
@@ -40,7 +38,7 @@ def xadd_source_event(
         # This happens if the specified ID would be <= the top item (e.g., backfill older timestamps).
         # Fallback to server-assigned ID to avoid dropping the event; the payload still carries the true event ts.
         logger.warning(
-            "XADD with event-time ID %s failed (%r); falling back to server-assigned ID (*)",
+            "XADD with event-time ID {} failed ({}); falling back to server-assigned ID (*)",
             msg_id_base,
             e,
         )

@@ -1,0 +1,54 @@
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+
+common:
+  path_prefix: /loki
+  replication_factor: 1
+  ring:
+    instance_addr: 127.0.0.1
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2024-01-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+storage_config:
+  filesystem:
+    directory: /loki/chunks
+  tsdb_shipper:
+    active_index_directory: /loki/index
+    cache_location: /loki/index_cache
+
+compactor:
+  working_directory: /loki/compactor
+  # optional but useful knobs:
+  # compaction_interval: 5m
+  # retention_enabled: true
+  # retention_delete_delay: 2h
+  # delete_request_store: filesystem  # only if you plan to use delete API
+
+limits_config:
+  ingestion_rate_mb: 16
+  ingestion_burst_size_mb: 32
+  max_streams_per_user: 0
+  max_global_streams_per_user: 0
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+
+ruler:
+  enable_api: true
+  alertmanager_url: http://alertmanager:9093
+  storage:
+    type: local
+    local:
+      directory: /loki/rules
+  rule_path: /loki/rules-tmp

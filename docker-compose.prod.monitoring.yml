@@ -30,6 +30,33 @@ services:
         condition: service_started
     restart: unless-stopped
 
+  loki:
+    image: grafana/loki:latest
+    networks:
+      - web
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yml
+    volumes:
+      - ./ops/loki-config.yml:/etc/loki/local-config.yml:ro
+      - loki_data:/loki
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:latest
+    networks:
+      - web
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./ops/promtail-config.yml:/etc/promtail/config.yml:ro
+      - ./ops/promtail-data:/data
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      loki:
+        condition: service_started
+    restart: unless-stopped
+
   grafana:
     image: grafana/grafana:latest
     networks:
@@ -46,8 +73,11 @@ services:
     depends_on:
       prometheus:
         condition: service_started
+      loki:
+        condition: service_started
     restart: unless-stopped
 
 volumes:
   grafana_data:
   prometheus_data:
+  loki_data:

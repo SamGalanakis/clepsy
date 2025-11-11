@@ -27,6 +27,18 @@ It works by monitoring your devices, having a LLM process all the information an
 
 [See setup guide](docs/SETUP.md)
 
+### Monitoring
+
+To run the monitoring stack, which includes Prometheus for metrics and Loki for logging, use the following command:
+
+```bash
+docker compose -f docker-compose.prod.yml -f docker-compose.prod.local.yml -f docker-compose.prod.monitoring.yml up --build
+```
+
+- **Grafana:** [http://localhost:3000](http://localhost:3000) (admin/admin)
+- **Prometheus:** [http://localhost:9090](http://localhost:9090)
+- **Loki:** Logs are viewable within Grafana.
+
 
 ## Architecture
 ![architecture](docs/media/architecture.png)
