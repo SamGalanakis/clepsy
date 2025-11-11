@@ -34,38 +34,18 @@ for d in /var/lib/clepsy /var/lib/clepsy/logs /shared-static /var/lib/clepsy-cac
 	fix_dir "$d"
 done
 
-# If arguments are provided, run them under target user and exit
-if [ "$#" -gt 0 ]; then
-	exec gosu "${PUID}:${PGID}" "$@"
-fi
+exec gosu "${PUID}:${PGID}" "$@"
 
-MODE="${CLEPSY_MODE:-dev}"
 
-# Refresh shared static if present
-if [ -d "/shared-static" ]; then
-	log "Refreshing shared static assets..."
-	rsync -a --delete --no-perms --no-owner --no-group /app/static/ /shared-static/ || true
-fi
+log "Refreshing shared static assets..."
+rsync -a --delete --no-perms --no-owner --no-group /app/static/ /shared-static/ || true
 
-if [ "$MODE" = "prod" ]; then
-	log "[prod] Running migrations"
-	gosu "${PUID}:${PGID}" goose up || true
-	log "[prod] Starting server"
-	exec gosu "${PUID}:${PGID}" uvicorn clepsy.main:app \
-		--host 0.0.0.0 \
-		--port 8000 \
-		--workers 2 \
-		--proxy-headers \
-		--forwarded-allow-ips="*"
-else
-	log "[dev] Server launch disabled by default; set CLEPSY_RUN_SERVER=1 to start"
-	if [ "${CLEPSY_RUN_SERVER:-0}" = "1" ]; then
-		exec gosu "${PUID}:${PGID}" uvicorn clepsy.main:app \
-			--host 0.0.0.0 \
-			--port 8000 \
-			--workers 2 \
-			--proxy-headers \
-			--forwarded-allow-ips="*"
-	fi
-	exec tail -f /dev/null
-fi
+log "[prod] Running migrations"
+gosu "${PUID}:${PGID}" goose up || true
+log "[prod] Starting server"
+exec gosu "${PUID}:${PGID}" uvicorn clepsy.main:app \
+	--host 0.0.0.0 \
+	--port 8000 \
+	--workers 2 \
+	--proxy-headers \
+	--forwarded-allow-ips="*"
