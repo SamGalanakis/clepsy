@@ -34,6 +34,7 @@ COPY src/ ./src/
 COPY migrations/ ./migrations/
 COPY static/ ./static/
 COPY scripts/ ./scripts/
+COPY baml_src/ ./baml_src/
 
 
 COPY scripts/ ./
