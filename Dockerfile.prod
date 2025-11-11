@@ -1,0 +1,47 @@
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS production
+
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    LC_CTYPE=C.utf8 \
+    UV_PROJECT_ENVIRONMENT="/venv" \
+    UV_PYTHON_PREFERENCE=system \
+    PATH="/venv/bin:$PATH" \
+    UV_COMPILE_BYTECODE=0 \
+    ENVIRONMENT=prod \
+    UV_LINK_MODE=copy
+
+# Minimal runtime deps only (no sudo)
+RUN --mount=type=cache,target=/var/cache/apt,id=apt-cache,sharing=locked \
+        --mount=type=cache,target=/var/lib/apt,id=apt-lib,sharing=locked \
+    mkdir -p /var/lib/apt/lists/partial && \
+    apt-get update && \
+    apt-get install --no-install-recommends -y \
+                     rsync  tzdata curl build-essential sqlite3 gosu adduser libgl1 libglib2.0-0 && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://raw.githubusercontent.com/pressly/goose/master/install.sh | sh
+
+
+WORKDIR /app
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project --no-dev
+
+COPY pyproject.toml uv.lock ./
+COPY src/ ./src/
+COPY migrations/ ./migrations/
+COPY static/ ./static/
+COPY scripts/ ./scripts/
+
+
+COPY scripts/ ./
+RUN chmod +x /app/scripts/entrypoint.sh /app/scripts/worker_entrypoint.sh /app/scripts/fix_permissions.sh
+
+# Install the project into the prebuilt venv without re-resolving deps
+RUN --mount=type=cache,target=/root/.cache/uv,id=uv-cache \
+    uv sync --locked --no-dev --compile-bytecode
+
+
+ENV DEBIAN_FRONTEND=

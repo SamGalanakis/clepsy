@@ -7,7 +7,6 @@ from .select import create_multiselect, create_single_select
 from .sidebar import create_custom_sidebar
 from .slider import create_slider
 from .text import (
-    create_markdown_editor,
     create_text_area,
     create_text_input,
 )
@@ -35,7 +34,6 @@ __all__ = [
     "create_base_page",
     "create_custom_sidebar",
     "create_text_area",
-    "create_markdown_editor",
     "create_text_input",
     "create_single_select",
     "create_multiselect",

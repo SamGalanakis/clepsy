@@ -3,21 +3,21 @@ from htpy import Element, div, form, h2
 from clepsy.entities import UserSettings
 from clepsy.frontend.components import (
     create_button,
-    create_markdown_editor,
     create_standard_content,
+    create_text_area,
 )
 
 
 async def create_productivity_page(user_settings: UserSettings) -> Element:
     form_inner_content = div(class_="card p-6 space-y-6")[
         h2(class_="text-lg font-semibold text-on-surface-strong mb-4")["Productivity"],
-        create_markdown_editor(
+        create_text_area(
             element_id="productivity-prompt",
             name="productivity_prompt",
             value=user_settings.productivity_prompt or "",
             placeholder="e.g., How productive was I...",
             title="Productivity Level Prompt",
-            height="150px",
+            rows=6,
         ),
     ]
     form_with_buttons = form(

@@ -87,6 +87,20 @@ def init_master_key(path: Path) -> bytes:
 cache_dir = Path("/var/lib/clepsy-caches")
 
 
+def load_jwt_secret(path: Path) -> str:
+    """Load JWT secret from file or environment variable."""
+    env_secret = os.getenv("JWT_SECRET")
+    if env_secret:
+        logger.info("Using JWT secret from environment variable.")
+        return env_secret
+
+    if path.is_file():
+        logger.info(f"Loading JWT secret from file: {path}")
+        return path.read_text().strip()
+
+    raise FileNotFoundError("JWT secret file not found and JWT_SECRET env var not set.")
+
+
 class Config(BaseSettings):
     log_file_path: Path = Path("/var/lib/clepsy/logs/app.log")
     master_key_file_path: Path = Path("/var/lib/clepsy/secret.key")
@@ -102,9 +116,8 @@ class Config(BaseSettings):
     api_host: str = "0.0.0.0"
     max_desktop_screenshot_log_interval_seconds: int = 30
     cache_dir: Path = cache_dir
-    jwt_secret: SecretStr = SecretStr(
-        os.getenv("JWT_SECRET", binascii.hexlify(os.urandom(24)).decode())
-    )
+    jwt_secret_file_path: Path = Path("/var/lib/clepsy/jwt_secret.txt")
+    jwt_secret: SecretStr = SecretStr(load_jwt_secret(jwt_secret_file_path))
     jwt_algorithm: str = "HS256"
     environment: Literal["dev", "prod"]
     boundary_project_id: str | None = os.getenv("BOUNDARY_PROJECT_ID")
@@ -129,6 +142,7 @@ class Config(BaseSettings):
     gliner_cache_dir: Path = cache_dir / "gliner"
     valkey_url: str
     ap_scheduler_sqlite_db_path: Path = Path("/var/lib/clepsy/apscheduler.sqlite3")
+    monitoring_enabled: bool = False
 
     @property
     def ap_scheduler_db_connection_string(self) -> str:

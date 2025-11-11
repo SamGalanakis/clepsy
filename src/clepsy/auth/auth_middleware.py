@@ -107,9 +107,9 @@ class JWTMiddleware:
             request.state.authenticated = True
 
             return True, decoded_token, None
-        except Exception as e:
+        except Exception:
             if to_authenticate:
-                logger.debug(f"Invalid token, {e}")
+                logger.exception("Invalid jwt token")
             return False, None, "invalid_token"
 
     async def __call__(self, request: Request, call_next):

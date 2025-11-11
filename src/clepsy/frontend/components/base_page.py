@@ -80,7 +80,6 @@ def create_base_page(
     ]
 
     styles = [
-        link(rel="stylesheet", href="https://unpkg.com/easymde/dist/easymde.min.css"),
         link(rel="stylesheet", href="/static/app.css", type="text/css"),
     ]
 
