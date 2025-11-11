@@ -1,7 +1,7 @@
 services:
   clepsy:
     environment:
-      GRAFANA_ENABLED: "true"
+      MONITORING_ENABLED: "true"
 
   valkey-exporter:
     image: oliver006/redis_exporter:latest

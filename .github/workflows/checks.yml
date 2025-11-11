@@ -46,8 +46,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile
-          target: production
+          file: Dockerfile.prod
           tags: clepsy:ci
           load: true
           push: false

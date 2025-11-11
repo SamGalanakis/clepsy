@@ -25,9 +25,9 @@ from clepsy.frontend.components import (
     common_timezones_list,
     create_button,
     create_generic_modal,
-    create_markdown_editor,
     create_single_select,
     create_standard_content,
+    create_text_area,
     create_text_input,
 )
 
@@ -233,13 +233,13 @@ async def create_productivity_page(user_settings: UserSettings) -> Element:
 
     form_inner_content = div(class_="card p-6 space-y-6")[
         h2(class_="text-lg font-semibold text-on-surface-strong mb-4")["Productivity"],
-        create_markdown_editor(
+        create_text_area(
             element_id="productivity-prompt",
             name="productivity_prompt",
             value=user_settings.productivity_prompt or "",
             placeholder="e.g., How productive was I...",
             title="Productivity Level Prompt",
-            height="150px",
+            rows=6,
         ),
     ]
 

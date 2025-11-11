@@ -18,7 +18,7 @@ services:
       - static_assets:/shared-static
       - caches:/var/lib/clepsy-caches
       - paddlex-cache:/root/.paddlex
-    entrypoint: ["/app/entrypoint.sh"]
+    entrypoint: ["/app/scripts/entrypoint.sh"]
     ports:
       - "${CLEPSY_PORT:-8000}:8000"
     environment:
@@ -55,7 +55,7 @@ services:
     image: ghcr.io/samgalanakis/clepsy:latest
     container_name: dramatiq-worker
     networks: [web]
-    entrypoint: ["/app/worker_entrypoint.sh"]
+    entrypoint: ["/app/scripts/worker_entrypoint.sh"]
     environment:
       CLEPSY_UID: "${CLEPSY_UID:-1000}"
       CLEPSY_GID: "${CLEPSY_GID:-1000}"
