@@ -32,8 +32,8 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8000/healthz"]
       interval: 10s
-      timeout: 180s
-      retries: 3
+      timeout: 2s
+      retries: 30
     depends_on:
       valkey:
         condition: service_healthy
