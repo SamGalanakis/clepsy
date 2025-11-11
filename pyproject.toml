@@ -30,7 +30,6 @@ dependencies = [
     "loguru>=0.7.3",
     "argon2-cffi>=25.1.0",
     "sqlalchemy>=2.0.43",
-    "paddlepaddle>=3.2.0",
     "torch>=2.0.0",
     "gliner>=0.2.22",
     "valkey[libvalkey]>=6.1.1",
@@ -38,9 +37,8 @@ dependencies = [
     "apscheduler[sqlalchemy]>=4.0.0.0a6",
     "prometheus-client>=0.20.0",
     "prometheus-fastapi-instrumentator>=7.1.0",
-    "opencv-python-headless>=4.12.0.88",
-    "paddleocr>=3.3.1",
     "opencv-contrib-python-headless>=4.12.0.88",
+    "paddleocr>=3.3.1",
 ]
 
 [dependency-groups]
@@ -76,7 +74,6 @@ explicit = true
 
 [tool.uv.sources]
 torch = { index = "pytorch" }
-paddlepaddle = { index = "paddlepaddle" }
 
 
 

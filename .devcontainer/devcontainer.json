@@ -18,7 +18,8 @@
 		"ghcr.io/devcontainers/features/github-cli:1": {}
 	},
 	"workspaceFolder": "/app",
-	"remoteUser": "appuser",
+	"remoteUser": "root",
+	"containerUser": "root",
 	"customizations": {
 		"vscode": {
 			"extensions": [
