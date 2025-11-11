@@ -683,7 +683,12 @@ async def do_aggregation(
             )
         )
 
-    async with get_db_connection(start_transaction=True, commit_on_exit=True) as conn:
+    logger.info(
+        "[aggregator] Starting DEFERRED transaction for persisting aggregation results"
+    )
+    async with get_db_connection(
+        start_transaction=True, commit_on_exit=True, transaction_type="DEFERRED"
+    ) as conn:
         aggregation_id = await insert_aggregation(
             aggregation=E.Aggregation(
                 start_time=aggregation_time_span.start_time,
@@ -729,6 +734,8 @@ async def do_aggregation(
                     for activity_id, kv_pairs in core_output.activities_to_update
                 )
             )
+
+    logger.info("[aggregator] DEFERRED transaction committed successfully")
 
     formatted_function_logs = "\n".join(
         [utils.format_function_log(x) for x in collector.logs]
