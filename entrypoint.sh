@@ -3,49 +3,40 @@ set -euo pipefail
 
 log() { printf '[clepsy-entrypoint] %s\n' "$*"; }
 
-PUID="${CLEPSY_UID:-1000}"
-PGID="${CLEPSY_GID:-1000}"
+# Assume these are provided in the environment
+PUID="${CLEPSY_UID}"
+PGID="${CLEPSY_GID}"
 
-# Ensure gosu exists
-command -v gosu >/dev/null 2>&1 || { echo "gosu not found"; exit 1; }
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Create group/user if needed
-if ! getent group "${PGID}" >/dev/null; then
-	addgroup --gid "${PGID}" clepsygrp >/dev/null 2>&1 || true
+log() { printf '[clepsy-entrypoint] %s\n' "$*"; }
+
+# Assume these are provided in the environment
+PUID="${CLEPSY_UID}"
+PGID="${CLEPSY_GID}"
+
+# Run shared permission/user setup
+/app/scripts/fix_permissions.sh
+
+
+
+# Require shared static mount
+if [ ! -d "/shared-static" ]; then
+	echo "[clepsy-entrypoint] Error: /shared-static mount is required (bind or named volume)." >&2
+	exit 1
 fi
-if ! id -u "${PUID}" >/dev/null 2>&1; then
-	adduser --disabled-password --gecos "" --uid "${PUID}" --gid "${PGID}" clepsyusr >/dev/null 2>&1 || true
-fi
 
-fix_dir() {
-	local d="$1"
-	[ -d "$d" ] || return 0
-	local want="${PUID}:${PGID}"
-	local have
-	have=$(stat -c '%u:%g' "$d" || echo "")
-	if [ "$have" != "$want" ]; then
-		chown -R "$want" "$d" || true
-		chmod -R ug+rwX "$d" || true
-	fi
-}
-
-# Fix common mount points and caches (include bind mounts and venv)
-for d in /var/lib/clepsy /var/lib/clepsy/logs /shared-static /var/lib/clepsy-caches /app /venv /home/clepsyusr /home/clepsyusr/.cache /home/clepsyusr/.cache/uv; do
-	fix_dir "$d"
-done
-
-exec gosu "${PUID}:${PGID}" "$@"
-
-
+# Default behavior: refresh static, run migrations, start server
 log "Refreshing shared static assets..."
-rsync -a --delete --no-perms --no-owner --no-group /app/static/ /shared-static/ || true
+rsync -a --delete --no-perms --no-owner --no-group /app/static/ /shared-static/
 
 log "[prod] Running migrations"
 gosu "${PUID}:${PGID}" goose up || true
 log "[prod] Starting server"
 exec gosu "${PUID}:${PGID}" uvicorn clepsy.main:app \
-	--host 0.0.0.0 \
-	--port 8000 \
-	--workers 2 \
-	--proxy-headers \
-	--forwarded-allow-ips="*"
+    --host 0.0.0.0 \
+    --port 8000 \
+    --workers 2 \
+    --proxy-headers \
+    --forwarded-allow-ips="*"
