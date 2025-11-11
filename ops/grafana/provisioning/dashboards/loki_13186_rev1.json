@@ -1,0 +1,139 @@
+{
+  "title": "Loki Dashboard",
+  "uid": "liz0yRCZz",
+  "timezone": "",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "description": "Loki dashboard with quick search and timeline.",
+  "style": "dark",
+  "tags": [],
+  "refresh": "30s",
+  "annotations": {
+    "list": [
+      {
+        "type": "dashboard",
+        "name": "Annotations & Alerts",
+        "enable": true,
+        "hide": true,
+        "builtIn": 1,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "datasource": "-- Grafana --"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 6,
+      "title": "Timeline",
+      "type": "graph",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 0 },
+      "lines": true,
+      "bars": false,
+      "points": false,
+      "stack": false,
+      "fill": 1,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "legend": { "show": true },
+      "xaxis": { "mode": "time", "show": true },
+      "yaxes": [
+        { "format": "short", "logBase": 1, "show": true },
+        { "format": "short", "logBase": 1, "show": false }
+      ],
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (container) (count_over_time({project=\"$project\", service=\"$service\", container=~\"$container\"} |= \"$search\" [$__interval]))",
+          "legendFormat": "{{container}}",
+          "datasource": { "type": "loki", "uid": "loki" }
+        }
+      ],
+      "options": { "dataLinks": [] }
+    },
+    {
+      "id": 2,
+      "title": "Logs",
+      "type": "logs",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 25, "w": 24, "x": 0, "y": 6 },
+      "maxDataPoints": 5000,
+      "options": {
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{project=\"$project\", service=\"$service\", container=~\"$container\"} |= \"$search\"",
+          "datasource": { "type": "loki", "uid": "loki" }
+        }
+      ]
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "project",
+        "label": "Project",
+        "type": "query",
+        "hide": 0,
+        "multi": false,
+        "includeAll": false,
+        "refresh": 1,
+        "sort": 0,
+        "skipUrlSync": false,
+        "datasource": { "type": "loki", "uid": "loki" },
+        "query": "label_values({project=~\".+\"}, project)",
+        "current": {}
+      },
+      {
+        "name": "service",
+        "label": "Service",
+        "type": "query",
+        "hide": 0,
+        "multi": false,
+        "includeAll": false,
+        "allValue": ".*",
+        "refresh": 1,
+        "sort": 1,
+        "skipUrlSync": false,
+        "datasource": { "type": "loki", "uid": "loki" },
+        "query": "label_values({project=\"$project\"}, service)",
+        "current": {}
+      },
+      {
+        "name": "container",
+        "label": "Container",
+        "type": "query",
+        "hide": 0,
+        "multi": false,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 1,
+        "sort": 2,
+        "skipUrlSync": false,
+        "datasource": { "type": "loki", "uid": "loki" },
+        "query": "label_values({project=\"$project\", service=\"$service\"}, container)",
+        "current": {}
+      },
+      {
+        "name": "search",
+        "label": "Search",
+        "type": "textbox",
+        "hide": 0,
+        "skipUrlSync": false,
+        "query": "",
+        "current": { "selected": false, "text": "", "value": "" },
+        "options": [ { "selected": true, "text": "", "value": "" } ]
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {
+    "refresh_intervals": ["10s","30s","1m","5m","15m","30m","1h","2h","1d"]
+  }
+}
