@@ -16,7 +16,6 @@ echo "Setup completed for workspace: $workspace_folder_basename"
 
 
 
-uv sync
 uvx prek install --install-hooks
 
 uv run tailwindcss -i ./src/clepsy/frontend/css/app.css -o ./static/app.css

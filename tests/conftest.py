@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from clepsy.entities import (
@@ -6,6 +8,10 @@ from clepsy.entities import (
 )
 
 from .llm_configs import gemini_2_5
+
+
+# Set test environment variables before config is loaded
+os.environ.setdefault("JWT_SECRET", "test-jwt-secret-for-tests")
 
 
 @pytest.fixture

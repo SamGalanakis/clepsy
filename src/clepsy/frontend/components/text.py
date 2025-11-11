@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from htpy import Element, div, input as htpy_input, label, p, script, textarea
+from htpy import Element, div, input as htpy_input, label, p, textarea
 
 
 def create_text_input(
@@ -103,84 +103,3 @@ def create_text_area(
         content.append(p(class_="text-muted-foreground text-sm")[description])
 
     return div(class_=container_classes)[content]
-
-
-def create_markdown_editor(
-    element_id: str | None,
-    name: str,
-    title: str,
-    placeholder: str = "",
-    value: str = "",
-    required: bool = False,
-    readonly: bool = False,
-    disabled: bool = False,
-    x_model: str | None = None,
-    height: str = "300px",
-    toolbar_config: list | None = None,
-    base_classes_override: str | None = None,
-    extra_classes: str | None = None,
-    attrs: Optional[dict[str, Any]] = None,
-) -> Element:
-    default_toolbar = [
-        "bold",
-        "italic",
-        "heading",
-        "|",
-        "quote",
-        "unordered-list",
-        "ordered-list",
-        "|",
-        #     "link",
-        #     "image",
-        #     "|",
-        "preview",
-        #      "side-by-side",
-        #     "fullscreen",
-        #      "|",
-        #      "guide",
-    ]
-    toolbar = toolbar_config or default_toolbar
-
-    init_script = f"""
-  this.editor = new EasyMDE({{
-    element: $refs.textarea,
-    placeholder: `{placeholder}`,
-    toolbar: {toolbar},
-    forceSync: true,
-    status: false,
-    spellChecker: false,
-    hideIcons: ['guide'],
-    showIcons: ['code', 'table'],
-    minHeight: '{height}',
-
-    renderingConfig: {{ codeSyntaxHighlighting: true }},
-    {"readOnly: 'nocursor'," if disabled else ("readOnly: true," if readonly else "")}
-  }});
-"""
-
-    outer_div = (
-        base_classes_override
-        or "flex w-full flex-col gap-1 text-on-surface dark:text-on-surface-dark"
-    )
-    return div(
-        class_=f"{outer_div} {extra_classes or ''}".strip(),
-        x_data=True,
-        x_init=init_script,
-        **(attrs or {}),
-    )[
-        label(for_=element_id, class_="w-fit pl-0.5 text-sm")[title],
-        script(src="https://unpkg.com/easymde/dist/easymde.min.js"),
-        div(class_="markdown-editor-wrapper")[
-            textarea(
-                id=element_id,
-                name=name,
-                x_model=x_model,
-                required=required,
-                readonly=readonly,
-                disabled=disabled,
-                value=value,
-                x_ref="textarea",
-                class_="prose hidden",
-            )[value],
-        ],
-    ]

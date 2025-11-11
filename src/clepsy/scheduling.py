@@ -62,6 +62,18 @@ async def init_schedules(sched: AsyncScheduler) -> None:
     Uses a Redis lock to ensure only one worker initializes schedules.
     """
 
+    # Register task callables on ALL workers (must be done locally on each worker)
+    await sched.configure_task(  # type: ignore[attr-defined]
+        func_or_task_id=TASK_ID_SESSIONIZATION, func=run_sessionization_job.send
+    )
+    await sched.configure_task(  # type: ignore[attr-defined]
+        func_or_task_id=TASK_ID_AGGREGATION, func=aggregate_window.send
+    )
+    await sched.configure_task(  # type: ignore[attr-defined]
+        func_or_task_id=TASK_ID_GOAL_PREV_FULL_PERIOD,
+        func=run_update_previous_full_period_result_job.send,
+    )
+
     conn = get_connection()
     lock_key = "scheduler:init_lock"
     lock_acquired = False
@@ -76,18 +88,7 @@ async def init_schedules(sched: AsyncScheduler) -> None:
 
         logger.info("Acquired scheduler init lock, registering schedules...")
 
-        # Register resolvable task IDs to avoid pickling callables
-        await sched.configure_task(  # type: ignore[attr-defined]
-            func_or_task_id=TASK_ID_SESSIONIZATION, func=run_sessionization_job.send
-        )
-        await sched.configure_task(  # type: ignore[attr-defined]
-            func_or_task_id=TASK_ID_AGGREGATION, func=aggregate_window.send
-        )
-        await sched.configure_task(  # type: ignore[attr-defined]
-            func_or_task_id=TASK_ID_GOAL_PREV_FULL_PERIOD,
-            func=run_update_previous_full_period_result_job.send,
-        )
-
+        # Only the lock holder creates the schedules in the database
         await sched.add_schedule(  # type: ignore[attr-defined]
             TASK_ID_SESSIONIZATION,
             trigger=IntervalTrigger(

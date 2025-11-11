@@ -23,6 +23,8 @@ from clepsy.modules.login.router import router as login_router
 from clepsy.modules.sources.router import router as sources_router
 from clepsy.modules.tags.router import router as tags_router
 from clepsy.modules.user_settings.router import router as user_settings_router
+from prometheus_fastapi_instrumentator import Instrumentator
+from clepsy.config import config
 
 
 @asynccontextmanager
@@ -42,6 +44,10 @@ async def lifespan(app_: FastAPI):
 
 
 app = FastAPI(title="Clepsy backend", lifespan=lifespan)
+
+if config.monitoring_enabled:
+    Instrumentator().instrument(app).expose(app)
+
 
 mimetypes.add_type("application/javascript", ".js")
 

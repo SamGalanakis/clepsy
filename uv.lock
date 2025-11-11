@@ -367,6 +367,7 @@ dependencies = [
     { name = "openai" },
     { name = "opencv-contrib-python-headless" },
     { name = "paddleocr" },
+    { name = "paddlepaddle" },
     { name = "pillow" },
     { name = "prometheus-client" },
     { name = "prometheus-fastapi-instrumentator" },
@@ -422,6 +423,7 @@ requires-dist = [
     { name = "openai", specifier = ">=1.61.1" },
     { name = "opencv-contrib-python-headless", specifier = ">=4.12.0.88" },
     { name = "paddleocr", specifier = ">=3.3.1" },
+    { name = "paddlepaddle", specifier = ">=3.2.1" },
     { name = "pillow", specifier = ">=11.0.0" },
     { name = "prometheus-client", specifier = ">=0.20.0" },
     { name = "prometheus-fastapi-instrumentator", specifier = ">=7.1.0" },
@@ -1480,6 +1482,18 @@ wheels = [
 ]
 
 [[package]]
+name = "opt-einsum"
+version = "3.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7d/bf/9257e53a0e7715bc1127e15063e831f076723c6cd60985333a1c18878fb8/opt_einsum-3.3.0.tar.gz", hash = "sha256:59f6475f77bbc37dcf7cd748519c0ec60722e91e63ca114e68821c0c54a46549", size = 73951, upload-time = "2020-07-19T22:40:32.141Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bc/19/404708a7e54ad2798907210462fd950c3442ea51acc8790f3da48d2bee8b/opt_einsum-3.3.0-py3-none-any.whl", hash = "sha256:2455e59e3947d3c275477df7f5205b30635e266fe6dc300e3d9f9646bfcea147", size = 65486, upload-time = "2020-07-19T22:40:30.301Z" },
+]
+
+[[package]]
 name = "packaging"
 version = "25.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1501,6 +1515,31 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/bb/a2/adc09b0eee58a6c1f297b95fe4b38476533508dd7b28de4e60520202ea54/paddleocr-3.3.1.tar.gz", hash = "sha256:27f65a3ca1249186965a6583b3e20d069fa129218cc8f407d99422f94be0e029", size = 2501511, upload-time = "2025-10-29T11:50:00.737Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/49/f9/a558a2c506674c0fed9a6ecd03717e88148398fdde9b7c7fa94e1ef4784f/paddleocr-3.3.1-py3-none-any.whl", hash = "sha256:b9401ad605cc29840458b63173ea91c01bab548323f96f0b8f0d09a5aad4f9cb", size = 86703, upload-time = "2025-10-29T11:49:59.226Z" },
+]
+
+[[package]]
+name = "paddlepaddle"
+version = "3.2.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+    { name = "networkx" },
+    { name = "numpy" },
+    { name = "opt-einsum" },
+    { name = "pillow" },
+    { name = "protobuf" },
+    { name = "safetensors" },
+    { name = "typing-extensions" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fc/d8/81076b4029e119664eb29a8592e74fe0d5203298055dd4fda4addd4f61ae/paddlepaddle-3.2.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:5190d3680bf0678a337f710a76f3235833c449a274cac38a9d60cab2d8fb0acf", size = 99491247, upload-time = "2025-10-30T13:35:06.146Z" },
+    { url = "https://files.pythonhosted.org/packages/e0/de/9debc4622c60ba6a2cd54f613befa88d70f598ba0eac688aa85f1ef6e84a/paddlepaddle-3.2.1-cp312-cp312-manylinux1_x86_64.whl", hash = "sha256:71cc81e8dfc5a42722ec6680ed2eaf5695128f4bf8f4072c30a1f3f37ee89900", size = 189263031, upload-time = "2025-10-31T03:12:48.465Z" },
+    { url = "https://files.pythonhosted.org/packages/97/63/6b8298a19e7fb056966df1a53e8f80ec53e7679bc658e08c743d4ecdf051/paddlepaddle-3.2.1-cp312-cp312-manylinux2014_aarch64.whl", hash = "sha256:9af09e9953ffe85e732559fb422e59667d36e3fba07db90ca56e94178e374762", size = 88127153, upload-time = "2025-10-30T13:57:05.336Z" },
+    { url = "https://files.pythonhosted.org/packages/32/68/fb93a38c567291c3d8a336d3fdf8306a5d378dec3deeb23f2d732a71cf81/paddlepaddle-3.2.1-cp312-cp312-win_amd64.whl", hash = "sha256:d634bb3df4ab6a6bfbb1d66c84e7f22a653c17f70f5c606356705f043453ec3a", size = 101708076, upload-time = "2025-10-30T13:18:06.973Z" },
+    { url = "https://files.pythonhosted.org/packages/e2/c8/f2a289e835e04a225fb593b5816a01145b83cdbda1d9b0c51d06b4069f87/paddlepaddle-3.2.1-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:8411ccb1e4e89426459529d76cf6cb3b07877a950a6685dadda2d8ca2a087b5a", size = 99489975, upload-time = "2025-10-30T13:38:11.586Z" },
+    { url = "https://files.pythonhosted.org/packages/cc/b0/6e7be06af2678209102cd251af0314c9b2a5eba68cba3545576691e37b01/paddlepaddle-3.2.1-cp313-cp313-manylinux1_x86_64.whl", hash = "sha256:49ba669e91e91878b344e849adfc56eabfef78e072f52a4ef697f16ba75e0a3c", size = 189263243, upload-time = "2025-10-31T03:16:44.372Z" },
+    { url = "https://files.pythonhosted.org/packages/4e/a2/2e8a73e16168729b201ea13d58008a365c08ec706f805f636e3c7f5b3e22/paddlepaddle-3.2.1-cp313-cp313-manylinux2014_aarch64.whl", hash = "sha256:4e80019c1ceea3784a3e478bc2f0ec6ccee3c2520b4e1372a6adad089c6b537c", size = 88124112, upload-time = "2025-10-30T14:00:04.442Z" },
+    { url = "https://files.pythonhosted.org/packages/a3/6f/042d73453ad01a2e3dd4adeae4870e25679d9eaa340d70bd54cd409cb982/paddlepaddle-3.2.1-cp313-cp313-win_amd64.whl", hash = "sha256:d16fd322246c4a580ca512971840ac8c16126a77d59a7bceee165d8f2196a6b2", size = 101708504, upload-time = "2025-10-30T13:21:18.125Z" },
 ]
 
 [[package]]

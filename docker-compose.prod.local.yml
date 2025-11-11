@@ -1,0 +1,18 @@
+# Local override for docker-compose.prod.yml
+# Build production images locally instead of pulling from registry
+#
+# Usage:
+#   docker compose -f docker-compose.prod.yml -f docker-compose.prod.local.yml up --build
+
+services:
+  clepsy:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    image: clepsy:local
+
+  dramatiq-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    image: clepsy:local
