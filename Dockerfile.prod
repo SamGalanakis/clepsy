@@ -43,5 +43,6 @@ RUN chmod +x /app/scripts/entrypoint.sh /app/scripts/worker_entrypoint.sh /app/s
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv-cache \
     uv sync --locked --no-dev --compile-bytecode
 
+RUN baml-cli generate
 
 ENV DEBIAN_FRONTEND=
