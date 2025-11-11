@@ -166,7 +166,9 @@ async def get_goal_row(_: Request, goal_id: int) -> Response:
 
 @router.get("/row/{goal_id}/refresh")
 async def refresh_goal_row(_: Request, goal_id: int) -> Response:
-    async with get_db_connection(commit_on_exit=True, start_transaction=True) as conn:
+    async with get_db_connection(
+        commit_on_exit=True, start_transaction=True, transaction_type="DEFERRED"
+    ) as conn:
         gwrs = await select_goals_with_latest_definition(conn, last_successes_limit=8)
         gwr = next((g for g in gwrs if g.goal.id == goal_id), None)
         if not gwr:

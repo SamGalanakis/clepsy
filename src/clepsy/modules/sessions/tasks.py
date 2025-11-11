@@ -828,7 +828,12 @@ async def finalize_carry_over_sessions_and_save(
     )
 
     # Save sessionization run
-    async with get_db_connection(start_transaction=True) as conn:
+    logger.info(
+        "[sessionization] Starting DEFERRED transaction for saving sessionization results"
+    )
+    async with get_db_connection(
+        start_transaction=True, transaction_type="DEFERRED"
+    ) as conn:
         sessionization_run = SessionizationRun(
             candidate_creation_start=candidate_creation_interval_start,
             candidate_creation_end=candidate_creation_interval_end,
@@ -1339,7 +1344,13 @@ async def run_sessionization():
 
             case _:
                 raise ValueError("Unexpected result from deal_with_island")
-    async with get_db_connection(start_transaction=True) as conn:
+
+    logger.info(
+        "[sessionization-isolated] Starting DEFERRED transaction for saving sessionization results"
+    )
+    async with get_db_connection(
+        start_transaction=True, transaction_type="DEFERRED"
+    ) as conn:
         sessionization_run = SessionizationRun(
             candidate_creation_start=candidate_creation_interval_start,
             candidate_creation_end=candidate_creation_interval_end,
@@ -1440,3 +1451,5 @@ async def run_sessionization():
 
         # Step 6: Cleanup delete_candidate_sessions_without_activities
         await delete_candidate_sessions_without_activities(conn)
+
+    logger.info("[sessionization-isolated] DEFERRED transaction committed successfully")

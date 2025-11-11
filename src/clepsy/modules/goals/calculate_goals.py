@@ -567,7 +567,13 @@ async def update_current_progress_job(goal_id: int, ttl: timedelta) -> None:
     - Check goal_progress_current.updated_at for that definition; if present and fresh (now - updated_at <= ttl), log and return.
     - Otherwise, compute current progress and upsert.
     """
-    async with get_db_connection(commit_on_exit=True, start_transaction=True) as conn:
+    logger.info(
+        "[goals] Starting DEFERRED transaction for updating current progress (goal_id={})",
+        goal_id,
+    )
+    async with get_db_connection(
+        commit_on_exit=True, start_transaction=True, transaction_type="DEFERRED"
+    ) as conn:
         # Early-exit freshness check for the latest definition's current-progress row
         latest_updated_at = await select_latest_progress_updated_at_for_goal(
             conn, goal_id=goal_id
@@ -601,6 +607,8 @@ async def update_current_progress_job(goal_id: int, ttl: timedelta) -> None:
             now_utc=now_utc,
         )
 
+    logger.info("[goals] DEFERRED transaction committed for goal_id={}", goal_id)
+
 
 async def update_previous_full_period_goal_result_job(goal_id: int) -> None:
     """Compute and insert the last completed period's goal result.
@@ -612,7 +620,13 @@ async def update_previous_full_period_goal_result_job(goal_id: int) -> None:
     logger.info(
         f"[goals] Recomputing previous full-period result for goal_id={goal_id}"
     )
-    async with get_db_connection(commit_on_exit=True, start_transaction=True) as conn:
+    logger.info(
+        "[goals] Starting DEFERRED transaction for previous period update (goal_id={})",
+        goal_id,
+    )
+    async with get_db_connection(
+        commit_on_exit=True, start_transaction=True, transaction_type="DEFERRED"
+    ) as conn:
         # Find the currently latest definition to recover base goal shape (period/tz/op)
         latest_def_id = await select_latest_goal_definition_id_for_goal(
             conn, goal_id=goal_id
@@ -714,3 +728,8 @@ async def update_previous_full_period_goal_result_job(goal_id: int) -> None:
             eval_state=full_res.eval_state,
             eval_state_reason=full_res.eval_state_reason,
         )
+
+    logger.info(
+        "[goals] DEFERRED transaction committed for previous period (goal_id={})",
+        goal_id,
+    )
