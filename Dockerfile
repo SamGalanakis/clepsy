@@ -4,6 +4,8 @@ ARG APP_GID=1000
 # ---------- Base toolchain (root) ----------
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS base
 ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
     LC_CTYPE=C.utf8 \
     UV_PROJECT_ENVIRONMENT="/venv" \
     UV_PYTHON_PREFERENCE=system \
@@ -67,6 +69,8 @@ ARG APP_UID
 ARG APP_GID
 
 ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
     LC_CTYPE=C.utf8 \
     UV_PROJECT_ENVIRONMENT="/venv" \
     UV_PYTHON_PREFERENCE=system \
@@ -89,12 +93,13 @@ WORKDIR /app
 # Bring in venv and app
 COPY --from=prod-deps /venv /venv
 COPY --from=base /usr/local/bin/goose /usr/local/bin/goose
-COPY pyproject.toml uv.lock entrypoint.sh ./
+COPY pyproject.toml uv.lock entrypoint.sh worker_entrypoint.sh ./
+COPY scripts/fix_permissions.sh ./scripts/
 COPY --from=builder /app/src/ ./src/
 COPY --from=builder /app/migrations/ ./migrations/
 COPY --from=builder /app/static/ ./static/
 
-RUN chmod +x /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh /app/worker_entrypoint.sh /app/scripts/fix_permissions.sh
 
 # Install the project into the prebuilt venv without re-resolving deps
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv-cache \
