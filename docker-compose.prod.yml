@@ -13,6 +13,7 @@ services:
     image: ghcr.io/samgalanakis/clepsy:latest
     container_name: clepsy
     networks: [web]
+    user: "${CLEPSY_UID:-0}:${CLEPSY_GID:-0}"
     volumes:
       - db_data:/var/lib/clepsy
       - static_assets:/shared-static
@@ -33,8 +34,8 @@ services:
       timeout: 2s
       retries: 10
     depends_on:
-        valkey:
-          condition: service_healthy
+      valkey:
+        condition: service_healthy
 
   valkey:
     image: valkey/valkey:9.0.0
@@ -53,6 +54,7 @@ services:
     image: ghcr.io/samgalanakis/clepsy:latest
     container_name: dramatiq-worker
     networks: [web]
+    user: "${CLEPSY_UID:-0}:${CLEPSY_GID:-0}"
     command: bash -lc "mkdir -p /tmp/dramatiq-prometheus && rm -rf /tmp/dramatiq-prometheus/* && uv run dramatiq clepsy.jobs.desktop clepsy.jobs.mobile clepsy.jobs.aggregation clepsy.jobs.sessions clepsy.jobs.goals --processes 2 --threads 4"
     environment:
       VALKEY_URL: redis://valkey:6379/0

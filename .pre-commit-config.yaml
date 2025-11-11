@@ -12,6 +12,7 @@ repos:
   rev: v4.6.0
   hooks:
     - id: check-added-large-files
+      args: [--maxkb=1024]
     - id: check-merge-conflict
     - id: debug-statements
     - id: end-of-file-fixer
