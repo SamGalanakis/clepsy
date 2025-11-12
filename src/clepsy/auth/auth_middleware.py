@@ -208,7 +208,7 @@ class DeviceTokenMiddleware:
             token_bytes = self._b64_to_bytes(token)
         except Exception as e:
             logger.warning(
-                f"Desktop source sent malformed bearer token to {request.url.path}: {e}"
+                f"Source sent malformed bearer token to {request.url.path}: {e}"
             )
             raise HTTPException(
                 status_code=403, detail="Invalid bearer token format"
@@ -222,14 +222,12 @@ class DeviceTokenMiddleware:
 
         if source is None:
             logger.warning(
-                f"Desktop source attempted to connect with invalid token to {request.url.path}. "
-                "This usually means the desktop client needs to be re-paired."
+                f"Source attempted to connect with invalid token to {request.url.path}. "
+                "This usually means the source needs to be re-paired."
             )
             raise HTTPException(status_code=403, detail="Invalid token")
         if getattr(source, "status", None) != SourceStatus.ACTIVE:
-            logger.warning(
-                f"Desktop source {source.id} attempted to connect but is disabled"
-            )
+            logger.warning(f"Source {source.id} attempted to connect but is disabled")
             raise HTTPException(status_code=403, detail="Source disabled")
 
         # Attach to request for handlers to use
