@@ -58,6 +58,8 @@ services:
       prometheus_multiproc_dir: /tmp/dramatiq-prometheus
       dramatiq_prom_db: /tmp/dramatiq-prometheus
       CLEPSY_MODE: dev
+    env_file:
+      - .env
     volumes:
       - .:/app
       - db_data_dev:/var/lib/clepsy

@@ -1127,14 +1127,49 @@ async def run_sessionization():
             logger.error(error_message)
             return None
 
-        new_activity_specs = await select_specs_with_tags_in_time_range(
-            conn,
-            start=candidate_creation_interval_start,
-            end=candidate_creation_interval_end,
+    # Fetch specs from previous window's overlap region FIRST (before early exit check)
+    specs_not_finalized: list[DBActivitySpecWithTags] = []
+    if previous_run and previous_run.overlap_start is not None:
+        if previous_run.finalized_horizon is None:
+            error_message = (
+                "Inconsistent previous run: overlap_start is set but finalized_horizon is None. "
+                "Aborting sessionization run."
+            )
+            logger.error(error_message)
+            return None
+
+        logger.info(
+            "Fetching overlap activities from previous window: {} -> {}",
+            previous_run.finalized_horizon,
+            previous_run.candidate_creation_end,
+        )
+        async with get_db_connection() as conn:
+            specs_not_finalized = await select_specs_with_tags_in_time_range(
+                conn,
+                start=previous_run.finalized_horizon,
+                end=previous_run.candidate_creation_end,
+            )
+        logger.info(
+            "Overlap region: {} -> {} | overlap activity specs: {} | unique activities: {}",
+            previous_run.finalized_horizon,
+            previous_run.candidate_creation_end,
+            len(specs_not_finalized),
+            len({spec.activity_id for spec in specs_not_finalized}),
+        )
+    else:
+        logger.info(
+            "No overlap region from previous window (first run or no unfinalized activities)"
         )
 
+    # Fetch new activities in current window
+    new_activity_specs = await select_specs_with_tags_in_time_range(
+        conn,
+        start=candidate_creation_interval_start,
+        end=candidate_creation_interval_end,
+    )
+
     logger.info(
-        "Candidate window {} -> {} | new activity specs: {} | unique activities: {}",
+        "Current window: {} -> {} | new activity specs: {} | unique activities: {}",
         candidate_creation_interval_start,
         candidate_creation_interval_end,
         len(new_activity_specs),
@@ -1146,33 +1181,11 @@ async def run_sessionization():
         key=lambda spec: spec.end_time(horizon=candidate_creation_interval_end),
     )
 
-    # Fetch specs from previous window's overlap region (if any)
-    specs_not_finalized: list[DBActivitySpecWithTags] = []
-    if previous_run and previous_run.overlap_start is not None:
-        if previous_run.finalized_horizon is None:
-            error_message = (
-                "Inconsistent previous run: overlap_start is set but finalized_horizon is None. "
-                "Aborting sessionization run."
-            )
-            logger.error(error_message)
-            return None
-
-        async with get_db_connection() as conn:
-            specs_not_finalized = await select_specs_with_tags_in_time_range(
-                conn,
-                start=previous_run.finalized_horizon,
-                end=previous_run.candidate_creation_end,
-            )
-
-    logger.info(
-        "Overlap specs from previous window: {} | unique activities: {}",
-        len(specs_not_finalized),
-        len({spec.activity_id for spec in specs_not_finalized}),
-    )
-
-    # EARLY EXIT: No new activities in current window
-    if not new_activity_specs_sorted:
-        logger.info("No new activity specs in current window")
+    # EARLY EXIT: No new activities AND no overlap activities to process
+    if not new_activity_specs_sorted and not specs_not_finalized:
+        logger.info(
+            "No activities to process (new activities: 0, overlap activities: 0) - early exit"
+        )
         await finalize_carry_over_sessions_and_save(
             carry_over_candidate_session_specs=carry_over_candidate_session_specs,
             specs_not_finalized=specs_not_finalized,
@@ -1182,8 +1195,36 @@ async def run_sessionization():
             overlap_start=None,
             right_tail_end=None,
         )
-        logger.info("Sessionization complete (no new activities)")
+        logger.info("Sessionization complete (no new or overlap activities)")
         return
+
+    # EARLY EXIT: No new activities but overlap activities exist - process them
+    if not new_activity_specs_sorted:
+        logger.info(
+            "No new activities in current window, but {} overlap activities need processing",
+            len(specs_not_finalized),
+        )
+        await finalize_carry_over_sessions_and_save(
+            carry_over_candidate_session_specs=carry_over_candidate_session_specs,
+            specs_not_finalized=specs_not_finalized,
+            candidate_creation_interval_start=candidate_creation_interval_start,
+            candidate_creation_interval_end=candidate_creation_interval_end,
+            finalized_horizon=None,
+            overlap_start=None,
+            right_tail_end=None,
+        )
+        logger.info(
+            "Sessionization complete (processed {} overlap activities, no new activities)",
+            len(specs_not_finalized),
+        )
+        return
+
+    logger.info(
+        "Processing sessionization | new activities: {} | overlap activities: {} | total to process: {}",
+        len(new_activity_specs_sorted),
+        len(specs_not_finalized),
+        len(new_activity_specs_sorted) + len(specs_not_finalized),
+    )
 
     # Extract islands from new activity specs
     islands = extract_valid_islands(

@@ -52,7 +52,6 @@ template_string FormatMobileAppUsageLog(log: MobileAppUsageEvent) #"
 Mobile App Usage Log
 Time: {{ log.timestamp.minutes}}m{{ log.timestamp.seconds}}s
 App Label: {{ log.app_label }}
-Package Name: {{ log.package_name }}
 {% if log.activity_name %}Activity Name: {{ log.activity_name }}{% endif %}
 {% if log.media_summary %}Media: {{ log.media_summary }}{% endif %}
 {% if log.notification_text %}Notification: {{ log.notification_text }}{% endif %}
@@ -82,19 +81,19 @@ Text from OCR extraction: {{ log.image_text }}
 
 
 
-template_string FormattedLogsList( logs: TimelineLog[] ) #"
-{%- for log in logs %}
-{{ loop.index }}. {%- if log.kind == "mobile_app_usage" %}
-{{ FormatMobileAppUsageLog(log) }}
-{%- elif log.kind == "desktop_screenshot_vlm" %}
-{{ FormatDesktopCheckScreenshotVLMLog(log) }}
-{%- elif log.kind == "desktop_screenshot_ocr" %}
-{{ FormatDesktopCheckScreenshotOCRLog(log) }}
-{%- endif %}
+template_string FormattedLogsList(logs: TimelineLog[]) #"
+{% for log in logs %}
+{{ loop.index }}.
+{% if log.kind == "mobile_app_usage" %}
+  {{ FormatMobileAppUsageLog(log) }}
+{% elif log.kind == "desktop_screenshot_vlm" %}
+  {{ FormatDesktopCheckScreenshotVLMLog(log) }}
+{% elif log.kind == "desktop_screenshot_ocr" %}
+  {{ FormatDesktopCheckScreenshotOCRLog(log) }}
+{% endif %}
 
-{%- endfor %}
+{% endfor %}
 "#
-
 class Event {
   activity_id string
   @description("Must match activity id. Should be a lower-snake-case slug")
