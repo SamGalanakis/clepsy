@@ -533,7 +533,7 @@ def store_image_in_redis(
     compressed = zlib.compress(image_bytes, level=6)
 
     # Store in Redis with TTL
-    conn = get_connection()
+    conn = get_connection(decode_responses=False)
     key = f"image:{event_id}"
     conn.setex(key, ttl_seconds, compressed)
 
@@ -556,7 +556,7 @@ def retrieve_image_from_redis(event_id: UUID) -> Image.Image | None:
         PIL Image if found, None if expired or missing
     """
 
-    conn = get_connection()
+    conn = get_connection(decode_responses=False)
     key = f"image:{event_id}"
     compressed_data = conn.get(key)
 

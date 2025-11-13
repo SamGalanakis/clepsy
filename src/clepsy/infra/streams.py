@@ -23,7 +23,7 @@ def xadd_source_event(
 
     Returns the message ID assigned by Valkey.
     """
-    conn = get_connection()
+    conn = get_connection(decode_responses=True)
     entry = {  # bytes-safe; valkey will handle encoding
         "type": event_type,
         "ts": str(to_ms(timestamp)),
@@ -53,7 +53,7 @@ def xrange_source_events(*, start: datetime, end: datetime) -> list[dict]:
 
     Returns a list of {"id": str, "event_type": str, "payload_json": str} dicts.
     """
-    conn = get_connection()
+    conn = get_connection(decode_responses=True)
     start_id = f"{to_ms(start)}-0"
     end_id = f"{to_ms(end)}-999999"
     try:
@@ -63,22 +63,15 @@ def xrange_source_events(*, start: datetime, end: datetime) -> list[dict]:
         raise
     out: list[dict] = []
     for msg_id, fields in entries:
-        # fields is a dict-like of bytes->bytes (decode_responses=False)
-        etype = fields.get(b"type")
-        payload = fields.get(b"payload")
+        etype = fields.get("type")
+        payload = fields.get("payload")
         if etype is None or payload is None:
             continue
         out.append(
             {
-                "id": msg_id.decode()
-                if isinstance(msg_id, (bytes, bytearray))
-                else str(msg_id),
-                "event_type": etype.decode()
-                if isinstance(etype, (bytes, bytearray))
-                else str(etype),
-                "payload_json": payload.decode()
-                if isinstance(payload, (bytes, bytearray))
-                else str(payload),
+                "id": str(msg_id),
+                "event_type": str(etype),
+                "payload_json": str(payload),
             }
         )
     return out

@@ -74,7 +74,7 @@ async def init_schedules(sched: AsyncScheduler) -> None:
         func=run_update_previous_full_period_result_job.send,
     )
 
-    conn = get_connection()
+    conn = get_connection(decode_responses=True)
     lock_key = "scheduler:init_lock"
     lock_acquired = False
 

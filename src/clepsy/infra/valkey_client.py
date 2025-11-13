@@ -7,10 +7,8 @@ import valkey as redis  # type: ignore
 from clepsy.config import config
 
 
-@lru_cache(maxsize=1)
-def get_connection() -> "redis.Redis":
-    """Get a process-wide Valkey/Redis connection.
+@lru_cache(maxsize=2)
+def get_connection(*, decode_responses: bool) -> "redis.Redis":
+    """Get a process-wide Valkey/Redis connection for the given response mode."""
 
-    Uses VALKEY_URL from config. Compatible with redis-py API.
-    """
-    return redis.from_url(config.valkey_url, decode_responses=False)  # type: ignore[attr-defined]
+    return redis.from_url(config.valkey_url, decode_responses=decode_responses)  # type: ignore[attr-defined]
