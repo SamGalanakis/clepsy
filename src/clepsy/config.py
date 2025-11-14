@@ -144,6 +144,7 @@ class Config(BaseSettings):
     gliner_cache_dir: Path = cache_dir / "gliner"
     valkey_url: str
     monitoring_enabled: bool = False
+    preserve_dev_streams: bool = False
 
     @property
     def is_dev(self) -> bool:

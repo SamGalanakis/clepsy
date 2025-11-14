@@ -95,14 +95,18 @@ async def ensure_core_schedules(now: datetime) -> None:
         schedule_key=AGGREGATION_SCHEDULE_KEY,
         job_type=JobType.AGGREGATION_WINDOW,
         cron_expr=cron_expr_for_interval(config.aggregation_interval),
-        next_run_at=align_interval_forward(now, config.aggregation_interval),
+        next_run_at=align_interval_forward(
+            now, config.aggregation_interval + config.aggregation_grace_period
+        ),
     )
 
     session_job = ScheduledJob(
         schedule_key=SESSIONIZATION_SCHEDULE_KEY,
         job_type=JobType.SESSIONIZATION,
         cron_expr=cron_expr_for_interval(config.session_window_length),
-        next_run_at=align_interval_forward(now, config.session_window_length),
+        next_run_at=align_interval_forward(
+            now, config.session_window_length + config.aggregation_grace_period
+        ),
     )
 
     async with get_db_connection(

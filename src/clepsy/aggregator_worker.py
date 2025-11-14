@@ -484,6 +484,10 @@ async def aggregator_core(
     text_model_config: E.LLMConfig,
     collector: Collector,
 ) -> E.AggregatorCoreOutput:
+    specific_aggregation_interval_seconds = int(
+        aggregation_time_span.duration.total_seconds()
+    )
+
     (
         generated_timeline_activities,
         generated_timeline_events,
@@ -495,7 +499,7 @@ async def aggregator_core(
         qc_policy=E.IsolatedTimelineQCPolicy.ALWAYS,
         max_desktop_screenshot_log_interval_seconds=config.max_desktop_screenshot_log_interval_seconds,
         max_pause_time_seconds=config.max_pause_time_seconds,
-        aggregation_interval_seconds=config.aggregation_interval_minutes * 60,
+        aggregation_interval_seconds=specific_aggregation_interval_seconds,
     )
 
     (

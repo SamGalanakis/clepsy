@@ -1,13 +1,56 @@
+# ruff: noqa: I001
+
+"""Utilities for interacting with the Valkey source events stream."""
+
 from datetime import datetime, timezone
 from typing import Iterable
 
 from loguru import logger
-from valkey.exceptions import ResponseError as StreamResponseError  # type: ignore
+from valkey.exceptions import (
+    LockNotOwnedError,
+    ResponseError as StreamResponseError,
+)  # type: ignore
 
 from clepsy.infra.valkey_client import get_connection
 
 
 SOURCE_EVENTS_STREAM = "source:events"
+DEV_STREAM_FLUSH_LOCK_KEY = "dev:source_stream:flush_lock"
+
+
+def flush_valkey() -> None:
+    try:
+        conn = get_connection(decode_responses=True)
+        lock = conn.lock(DEV_STREAM_FLUSH_LOCK_KEY, timeout=10, blocking_timeout=0)  # type: ignore[attr-defined]
+    except Exception:
+        logger.debug("[dev] Failed to acquire dev flush lock")
+        return
+
+    acquired = False
+    try:
+        acquired = lock.acquire(blocking=False)
+        if not acquired:
+            logger.debug(
+                "[dev] Source events stream flush already handled by other worker",
+            )
+            return
+
+        conn.flushall()
+        logger.info(
+            "[dev] Flushed Valkey completely!",
+        )
+    except Exception:
+        logger.exception("[dev] Failed to flush Valkey")
+    finally:
+        if acquired:
+            try:
+                lock.release()
+            except LockNotOwnedError:
+                logger.debug(
+                    "[dev] Flush lock key already cleared; skipping release",
+                )
+            except Exception:
+                logger.exception("[dev] Failed to release dev flush lock")
 
 
 def to_ms(ts: datetime) -> int:

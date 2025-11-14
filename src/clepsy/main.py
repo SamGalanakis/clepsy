@@ -25,6 +25,7 @@ from clepsy.modules.tags.router import router as tags_router
 from clepsy.modules.user_settings.router import router as user_settings_router
 from prometheus_fastapi_instrumentator import Instrumentator
 from clepsy.config import config
+from clepsy.infra.streams import flush_valkey
 
 
 @asynccontextmanager
@@ -32,6 +33,10 @@ async def lifespan(app_: FastAPI):
     # ---- startup -------------------------------------------------
     logger.info("Starting Clepsy backend...")
     logger.info("Initializing bootstrap...")
+    if config.is_dev and not config.preserve_dev_streams:
+        logger.info("Flushing valkey...")
+        flush_valkey()
+
     await bootstrap.init()
 
     await initialize_scheduler()
