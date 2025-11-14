@@ -4,7 +4,8 @@ from __future__ import annotations
 import asyncio
 from collections import defaultdict
 from datetime import datetime
-from typing import NamedTuple
+from typing import Any, NamedTuple
+import sqlite3
 
 import aiosqlite
 from baml_py import Collector
@@ -683,59 +684,14 @@ async def do_aggregation(
             )
         )
 
-    logger.info(
-        "[aggregator] Starting DEFERRED transaction for persisting aggregation results"
+    await persist_aggregation_results(
+        aggregation_time_span=aggregation_time_span,
+        aggregation_events_time_span=aggregation_events_time_span,
+        core_output=core_output,
+        activity_extras=activity_extras,
     )
-    async with get_db_connection(
-        start_transaction=True, commit_on_exit=True, transaction_type="DEFERRED"
-    ) as conn:
-        aggregation_id = await insert_aggregation(
-            aggregation=E.Aggregation(
-                start_time=aggregation_time_span.start_time,
-                end_time=aggregation_time_span.end_time,
-                first_timestamp=aggregation_events_time_span.start_time,
-                last_timestamp=aggregation_events_time_span.end_time,
-            ),
-            conn=conn,
-        )
 
-        events_to_insert: list[E.ActivityEventInsert] = []
-        for ev in (
-            core_output.stitched_activities_events
-            + core_output.unstitched_activities_close_events
-        ):
-            events_to_insert.append(
-                E.ActivityEventInsert(
-                    activity_id=ev.activity_id,
-                    event_time=ev.event_time,
-                    event_type=ev.event_type,
-                    aggregation_id=aggregation_id,
-                    last_manual_action_time=None,
-                )
-            )
-
-        if core_output.new_activities:
-            await persist_new_activities(
-                new_activities=core_output.new_activities,
-                new_events=core_output.new_activity_events,
-                conn=conn,
-                activity_extras=activity_extras,
-                events_to_insert=events_to_insert,
-                aggregation_time_span=aggregation_time_span,
-                aggregation_id=aggregation_id,
-            )
-        elif events_to_insert:
-            await insert_activity_events(conn, events_to_insert)
-
-        if core_output.activities_to_update:
-            await asyncio.gather(
-                *(
-                    update_activity(conn, activity_id, kv_pairs)
-                    for activity_id, kv_pairs in core_output.activities_to_update
-                )
-            )
-
-    logger.info("[aggregator] DEFERRED transaction committed successfully")
+    logger.info("[aggregator] Aggregation results persisted")
 
     formatted_function_logs = "\n".join(
         [utils.format_function_log(x) for x in collector.logs]
@@ -745,6 +701,73 @@ async def do_aggregation(
         "Aggregation completed. Function logs:\n{}",
         formatted_function_logs,
     )
+
+
+async def persist_aggregation_results(
+    *,
+    aggregation_time_span: E.TimeSpan,
+    aggregation_events_time_span: E.TimeSpan,
+    core_output: Any,
+    activity_extras: list[Any],
+) -> None:
+    logger.info(
+        "[aggregator] Starting IMMEDIATE transaction for persisting aggregation results"
+    )
+    try:
+        async with get_db_connection(
+            start_transaction=True, commit_on_exit=True, transaction_type="IMMEDIATE"
+        ) as conn:
+            aggregation_id = await insert_aggregation(
+                aggregation=E.Aggregation(
+                    start_time=aggregation_time_span.start_time,
+                    end_time=aggregation_time_span.end_time,
+                    first_timestamp=aggregation_events_time_span.start_time,
+                    last_timestamp=aggregation_events_time_span.end_time,
+                ),
+                conn=conn,
+            )
+
+            events_to_insert: list[E.ActivityEventInsert] = []
+            for ev in (
+                core_output.stitched_activities_events
+                + core_output.unstitched_activities_close_events
+            ):
+                events_to_insert.append(
+                    E.ActivityEventInsert(
+                        activity_id=ev.activity_id,
+                        event_time=ev.event_time,
+                        event_type=ev.event_type,
+                        aggregation_id=aggregation_id,
+                        last_manual_action_time=None,
+                    )
+                )
+
+            if core_output.new_activities:
+                await persist_new_activities(
+                    new_activities=core_output.new_activities,
+                    new_events=core_output.new_activity_events,
+                    conn=conn,
+                    activity_extras=activity_extras,
+                    events_to_insert=events_to_insert,
+                    aggregation_time_span=aggregation_time_span,
+                    aggregation_id=aggregation_id,
+                )
+            elif events_to_insert:
+                await insert_activity_events(conn, events_to_insert)
+
+            if core_output.activities_to_update:
+                await asyncio.gather(
+                    *(
+                        update_activity(conn, activity_id, kv_pairs)
+                        for activity_id, kv_pairs in core_output.activities_to_update
+                    )
+                )
+    except (sqlite3.OperationalError, aiosqlite.OperationalError) as exc:
+        if "database is locked" in str(exc).lower():
+            logger.warning(
+                "[aggregator] Database locked while persisting aggregation; will retry"
+            )
+        raise
 
 
 async def do_empty_aggregation():

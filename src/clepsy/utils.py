@@ -409,7 +409,7 @@ def get_bootstrap_password() -> str:
     password = generate_bootstrap_password()
     write_bootstrap_password_file(password)
     logger.info(
-        "Generated new Clepsy bootstrap password at %s. Retrieve it from the container volume and rotate it after login.",
+        "Generated new Clepsy bootstrap password at {}. Retrieve it from the container volume and rotate it after login.",
         config.bootstrap_password_file_path,
     )
     return password
@@ -617,6 +617,18 @@ def parse_utc_naive_iso(s: str) -> datetime:
     if dt.tzinfo is None:
         return dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(timezone.utc)
+
+
+def ensure_utc(dt: datetime) -> datetime:
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def datetime_to_eta(dt: datetime) -> int:
+    """Convert a datetime to epoch milliseconds for Dramatiq ETA scheduling."""
+
+    return int(ensure_utc(dt).timestamp() * 1000)
 
 
 def custom_template(pattern: str) -> Callable[[str, dict], str]:

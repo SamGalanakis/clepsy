@@ -2,8 +2,10 @@ import asyncio
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+import sqlite3
 from typing import List, Optional
 
+import aiosqlite
 from loguru import logger
 
 from baml_client import b
@@ -828,44 +830,104 @@ async def finalize_carry_over_sessions_and_save(
     )
 
     # Save sessionization run
-    logger.info(
-        "[sessionization] Starting DEFERRED transaction for saving sessionization results"
+    sessionization_run = SessionizationRun(
+        candidate_creation_start=candidate_creation_interval_start,
+        candidate_creation_end=candidate_creation_interval_end,
+        finalized_horizon=finalized_horizon,
+        overlap_start=overlap_start,
+        right_tail_end=right_tail_end,
     )
-    async with get_db_connection(
-        start_transaction=True, transaction_type="DEFERRED"
-    ) as conn:
-        sessionization_run = SessionizationRun(
-            candidate_creation_start=candidate_creation_interval_start,
-            candidate_creation_end=candidate_creation_interval_end,
-            finalized_horizon=finalized_horizon,
-            overlap_start=overlap_start,
-            right_tail_end=right_tail_end,
-        )
-        sessionization_id = await insert_sessionization_run(
-            conn, sessionization_run=sessionization_run
-        )
 
-        if candidate_session_ids_to_delete:
-            await delete_candidate_sessions_by_ids(
-                conn, candidate_session_ids=candidate_session_ids_to_delete
+    await persist_sessionization_run_results(
+        sessionization_run=sessionization_run,
+        sessions_to_create=sessions_to_create,
+        candidate_session_ids_to_delete=candidate_session_ids_to_delete,
+    )
+
+
+async def persist_sessionization_run_results(
+    *,
+    sessionization_run: SessionizationRun,
+    sessions_to_create: list[SessionSpec],
+    candidate_session_ids_to_delete: list[int],
+    candidate_session_specs_to_create: list[CandidateSessionSpec] | None = None,
+    new_mappings_existing_candidate_sessions: list[CandidateSessionToActivity]
+    | None = None,
+    activity_ids_to_delete_from_candidate_sessions: list[int] | None = None,
+) -> None:
+    logger.info(
+        "[sessionization] Starting IMMEDIATE transaction for saving sessionization results"
+    )
+    try:
+        async with get_db_connection(
+            start_transaction=True, commit_on_exit=True, transaction_type="IMMEDIATE"
+        ) as conn:
+            sessionization_id = await insert_sessionization_run(
+                conn, sessionization_run=sessionization_run
             )
 
-        if sessions_to_create:
-            session_ids = await insert_sessions(
-                conn,
-                sessions=[spec.session for spec in sessions_to_create],
-                sessionization_run_id=sessionization_id,
-            )
-            session_to_activities = []
-            for spec, sid in zip(sessions_to_create, session_ids):
-                for aid in spec.activity_ids:
-                    session_to_activities.append(
-                        SessionToActivity(session_id=sid, activity_id=aid)
+            if candidate_session_ids_to_delete:
+                await delete_candidate_sessions_by_ids(
+                    conn, candidate_session_ids=candidate_session_ids_to_delete
+                )
+
+            if activity_ids_to_delete_from_candidate_sessions:
+                await delete_candidate_session_to_activity_by_activity_ids(
+                    conn,
+                    activity_ids=activity_ids_to_delete_from_candidate_sessions,
+                )
+
+            candidate_mappings: list[CandidateSessionToActivity] = []
+            candidate_specs = candidate_session_specs_to_create or []
+            if candidate_specs:
+                candidate_sessions = [spec.session for spec in candidate_specs]
+                candidate_session_ids = await insert_candidate_sessions(
+                    conn,
+                    sessions=candidate_sessions,
+                    sessionization_run_id=sessionization_id,
+                )
+
+                for spec, cid in zip(candidate_specs, candidate_session_ids):
+                    for aid in spec.activity_ids:
+                        candidate_mappings.append(
+                            CandidateSessionToActivity(
+                                candidate_session_id=cid, activity_id=aid
+                            )
+                        )
+
+            extra_mappings = new_mappings_existing_candidate_sessions or []
+            combined_candidate_mappings = candidate_mappings + extra_mappings
+            if combined_candidate_mappings:
+                await insert_candidate_session_to_activity(
+                    conn, mappings=combined_candidate_mappings
+                )
+
+            if sessions_to_create:
+                session_ids = await insert_sessions(
+                    conn,
+                    sessions=[spec.session for spec in sessions_to_create],
+                    sessionization_run_id=sessionization_id,
+                )
+
+                session_to_activities: list[SessionToActivity] = []
+                for spec, sid in zip(sessions_to_create, session_ids):
+                    for aid in spec.activity_ids:
+                        session_to_activities.append(
+                            SessionToActivity(session_id=sid, activity_id=aid)
+                        )
+
+                if session_to_activities:
+                    await insert_session_to_activity(
+                        conn, mappings=session_to_activities
                     )
-            if session_to_activities:
-                await insert_session_to_activity(conn, mappings=session_to_activities)
 
-        await delete_candidate_sessions_without_activities(conn)
+            await delete_candidate_sessions_without_activities(conn)
+    except (sqlite3.OperationalError, aiosqlite.OperationalError) as exc:
+        if "database is locked" in str(exc).lower():
+            logger.warning(
+                "[sessionization] Database locked while persisting sessionization run; will retry"
+            )
+        raise
 
 
 async def deal_with_island(
@@ -1386,111 +1448,42 @@ async def run_sessionization():
             case _:
                 raise ValueError("Unexpected result from deal_with_island")
 
-    logger.info(
-        "[sessionization-isolated] Starting DEFERRED transaction for saving sessionization results"
+    sessionization_run = SessionizationRun(
+        candidate_creation_start=candidate_creation_interval_start,
+        candidate_creation_end=candidate_creation_interval_end,
+        finalized_horizon=finalized_horizon,
+        overlap_start=overlap_start,
+        right_tail_end=right_tail_end,
     )
-    async with get_db_connection(
-        start_transaction=True, transaction_type="DEFERRED"
-    ) as conn:
-        sessionization_run = SessionizationRun(
-            candidate_creation_start=candidate_creation_interval_start,
-            candidate_creation_end=candidate_creation_interval_end,
-            finalized_horizon=finalized_horizon,
-            overlap_start=overlap_start,
-            right_tail_end=right_tail_end,
-        )
 
-        sessionization_id = await insert_sessionization_run(
-            conn, sessionization_run=sessionization_run
-        )
+    await persist_sessionization_run_results(
+        sessionization_run=sessionization_run,
+        sessions_to_create=sessions_to_create,
+        candidate_session_ids_to_delete=candidate_session_ids_to_delete,
+        candidate_session_specs_to_create=candidate_session_specs_to_create,
+        new_mappings_existing_candidate_sessions=new_mappings_existing_candidate_sessions,
+        activity_ids_to_delete_from_candidate_sessions=activity_ids_to_delete_from_candidate_sessions,
+    )
 
-        # Step 1: Delete candidate sessions (by ids)
-        if candidate_session_ids_to_delete:
-            await delete_candidate_sessions_by_ids(
-                conn, candidate_session_ids=candidate_session_ids_to_delete
-            )
+    logger.info(
+        "Post-island summary | finalized sessions ready: {} | new candidate sessions: {} | existing candidate mappings: {} | candidate sessions to delete: {} | candidate activity ids to prune: {}",
+        len(sessions_to_create),
+        len(candidate_session_specs_to_create),
+        len(new_mappings_existing_candidate_sessions),
+        len(candidate_session_ids_to_delete),
+        len(activity_ids_to_delete_from_candidate_sessions),
+    )
 
-        # Step 2: Delete candidate activity mappings (left-side finalized ids)
-        if activity_ids_to_delete_from_candidate_sessions:
-            await delete_candidate_session_to_activity_by_activity_ids(
-                conn,
-                activity_ids=activity_ids_to_delete_from_candidate_sessions,
-            )
-
-        # Step 3: Insert new candidate sessions and their mappings
-        candidate_sessions_to_create = []
-        candidate_session_mappings_to_create = []
-
-        if candidate_session_specs_to_create:
-            candidate_sessions_to_create = [
-                x.session for x in candidate_session_specs_to_create
-            ]
-
-            candidate_session_ids = await insert_candidate_sessions(
-                conn,
-                sessions=candidate_sessions_to_create,
-                sessionization_run_id=sessionization_id,
-            )
-
-            for spec, cid in zip(
-                candidate_session_specs_to_create, candidate_session_ids
-            ):
-                for aid in spec.activity_ids:
-                    candidate_session_mappings_to_create.append(
-                        CandidateSessionToActivity(
-                            candidate_session_id=cid, activity_id=aid
-                        )
-                    )
-
-            await insert_candidate_session_to_activity(
-                conn, mappings=candidate_session_mappings_to_create
-            )
-
+    if (
+        finalized_horizon is not None
+        or overlap_start is not None
+        or right_tail_end is not None
+    ):
         logger.info(
-            "Post-island summary | finalized sessions ready: {} | new candidate sessions: {} | existing candidate mappings: {} | candidate sessions to delete: {} | candidate activity ids to prune: {}",
-            len(sessions_to_create),
-            len(candidate_session_specs_to_create),
-            len(new_mappings_existing_candidate_sessions),
-            len(candidate_session_ids_to_delete),
-            len(activity_ids_to_delete_from_candidate_sessions),
+            "Window markers | finalized_horizon: {} | overlap_start: {} | right_tail_end: {}",
+            finalized_horizon,
+            overlap_start,
+            right_tail_end,
         )
 
-        if (
-            finalized_horizon is not None
-            or overlap_start is not None
-            or right_tail_end is not None
-        ):
-            logger.info(
-                "Window markers | finalized_horizon: {} | overlap_start: {} | right_tail_end: {}",
-                finalized_horizon,
-                overlap_start,
-                right_tail_end,
-            )
-
-        # Step 4: Insert mappings for existing candidates
-        if new_mappings_existing_candidate_sessions:
-            await insert_candidate_session_to_activity(
-                conn, mappings=new_mappings_existing_candidate_sessions
-            )
-
-        # Step 5: Insert finalized sessions + session_to_activity
-        if sessions_to_create:
-            session_ids = await insert_sessions(
-                conn,
-                sessions=[spec.session for spec in sessions_to_create],
-                sessionization_run_id=sessionization_id,
-            )
-
-            session_to_activities = []
-            for spec, sid in zip(sessions_to_create, session_ids):
-                for aid in spec.activity_ids:
-                    session_to_activities.append(
-                        SessionToActivity(session_id=sid, activity_id=aid)
-                    )
-            if session_to_activities:
-                await insert_session_to_activity(conn, mappings=session_to_activities)
-
-        # Step 6: Cleanup delete_candidate_sessions_without_activities
-        await delete_candidate_sessions_without_activities(conn)
-
-    logger.info("[sessionization-isolated] DEFERRED transaction committed successfully")
+    logger.info("[sessionization-isolated] Sessionization results persisted")

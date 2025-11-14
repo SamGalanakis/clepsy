@@ -498,6 +498,36 @@ class SourceStatus(StrEnum):
     REVOKED = "revoked"
 
 
+class ScheduleStatus(StrEnum):
+    IDLE = "idle"
+    ERROR = "error"
+    DISABLED = "disabled"
+
+
+class JobType(StrEnum):
+    GOAL_UPDATE_CURRENT_PROGRESS = "goals_update_current_progress"
+    GOAL_UPDATE_PREVIOUS_PERIOD = "goals_update_previous_period"
+    AGGREGATION_WINDOW = "aggregation_window"
+    SESSIONIZATION = "sessions_sessionization"
+
+
+class ScheduledJob(BaseModel):
+    schedule_key: str
+    job_type: JobType
+    cron_expr: str
+    next_run_at: datetime
+    enabled: bool = True
+    payload: dict[str, Any] | None = None
+    running_count: int = 0
+    max_concurrent: int = 1
+    last_started_at: datetime | None = None
+    status: ScheduleStatus = ScheduleStatus.IDLE
+
+
+class DBScheduledJob(ScheduledJob):
+    id: int
+
+
 class DeviceSource(BaseModel):
     name: str
     source_type: SourceType

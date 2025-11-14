@@ -9,8 +9,8 @@ from clepsy.jobs.actor_init import actor_init
 from loguru import logger
 
 from clepsy.modules.goals.calculate_goals import (
-    update_current_progress_job as _update_current_progress_job,
-    update_previous_full_period_goal_result_job as _update_previous_full_period_goal_result_job,
+    update_current_progress_job,
+    update_previous_full_period_goal_result_job,
 )
 
 
@@ -30,7 +30,7 @@ async def run_update_current_progress_job(goal_id: int, ttl_seconds: float) -> N
             goal_id,
             ttl_seconds,
         )
-        await _update_current_progress_job(
+        await update_current_progress_job(
             goal_id=goal_id, ttl=timedelta(seconds=ttl_seconds)
         )
     except Exception:
@@ -47,7 +47,7 @@ async def run_update_previous_full_period_result_job(goal_id: int) -> None:
         logger.info(
             "[Dramatiq] run_update_previous_full_period_result_job goal_id={}", goal_id
         )
-        await _update_previous_full_period_goal_result_job(goal_id=goal_id)
+        await update_previous_full_period_goal_result_job(goal_id=goal_id)
     except Exception:
         logger.exception("[Dramatiq] run_update_previous_full_period_result_job failed")
         raise

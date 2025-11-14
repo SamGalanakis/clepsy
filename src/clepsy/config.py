@@ -130,6 +130,8 @@ class Config(BaseSettings):
     source_enrollment_code_ttl: timedelta = timedelta(minutes=30)
     log_level: str | None = None
 
+    scheduled_job_timeout: timedelta = timedelta(minutes=15)
+
     max_session_gap: timedelta = timedelta(minutes=10)
     min_session_length: timedelta = timedelta(minutes=15)
     min_activities_per_session: int = 3
@@ -141,12 +143,7 @@ class Config(BaseSettings):
     gliner_pii_threshold: float = 0.5
     gliner_cache_dir: Path = cache_dir / "gliner"
     valkey_url: str
-    ap_scheduler_sqlite_db_path: Path = Path("/var/lib/clepsy/apscheduler.sqlite3")
     monitoring_enabled: bool = False
-
-    @property
-    def ap_scheduler_db_connection_string(self) -> str:
-        return f"sqlite:////{self.ap_scheduler_sqlite_db_path.as_posix()}"
 
     @property
     def is_dev(self) -> bool:

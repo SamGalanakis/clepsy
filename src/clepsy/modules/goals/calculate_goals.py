@@ -1,4 +1,5 @@
 from datetime import date, datetime, time, timedelta, timezone
+import sqlite3
 from zoneinfo import ZoneInfo
 
 import aiosqlite
@@ -526,13 +527,13 @@ async def update_current_progress_for_goal(
     include_tags: list[DBTag] | None,
     exclude_tags: list[DBTag] | None,
     now_utc: datetime,
-) -> None:
+) -> bool:
     # If goal is currently paused, skip computing current progress.
     if await is_goal_paused_at(conn, goal_id=goal.id, at_utc=now_utc):
         logger.info(
             f"Goal {goal.id} is paused at {now_utc.isoformat()}, skipping current progress update."
         )
-        return
+        return False
 
     start_utc, end_utc = get_current_period_bounds(goal.period, goal.timezone, now_utc)
     res = await calculate_goal_progress_current(
@@ -544,19 +545,34 @@ async def update_current_progress_for_goal(
         end_utc=end_utc,
         conn=conn,
     )
-    await upsert_goal_progress_current(
-        conn,
-        goal_definition_id=definition.id,
-        period_start_utc=res.period_start,
-        period_end_utc=res.period_end,
-        metric_value=float(res.metric_value)
+    upsert_kwargs = {
+        "goal_definition_id": definition.id,
+        "period_start_utc": res.period_start,
+        "period_end_utc": res.period_end,
+        "metric_value": float(res.metric_value)
         if isinstance(res.metric_value, (int, float))
         else 0.0,
-        success=res.success,
-        eval_state=res.eval_state,
-        eval_state_reason=res.eval_state_reason,
-        updated_at_utc=now_utc,
-    )
+        "success": res.success,
+        "eval_state": res.eval_state,
+        "eval_state_reason": res.eval_state_reason,
+        "updated_at_utc": now_utc,
+    }
+
+    try:
+        async with get_db_connection(
+            commit_on_exit=True, start_transaction=True, transaction_type="IMMEDIATE"
+        ) as write_conn:
+            await upsert_goal_progress_current(write_conn, **upsert_kwargs)
+    except (sqlite3.OperationalError, aiosqlite.OperationalError) as exc:
+        if "database is locked" in str(exc).lower():
+            logger.warning(
+                "[goals] Skipping current progress upsert for goal_id={} due to locked database",
+                goal.id,
+            )
+            return False
+        raise
+
+    return True
 
 
 async def update_current_progress_job(goal_id: int, ttl: timedelta) -> None:
@@ -568,12 +584,10 @@ async def update_current_progress_job(goal_id: int, ttl: timedelta) -> None:
     - Otherwise, compute current progress and upsert.
     """
     logger.info(
-        "[goals] Starting DEFERRED transaction for updating current progress (goal_id={})",
+        "[goals] Preparing current progress refresh for goal_id={}",
         goal_id,
     )
-    async with get_db_connection(
-        commit_on_exit=True, start_transaction=True, transaction_type="DEFERRED"
-    ) as conn:
+    async with get_db_connection(start_transaction=False) as conn:
         # Early-exit freshness check for the latest definition's current-progress row
         latest_updated_at = await select_latest_progress_updated_at_for_goal(
             conn, goal_id=goal_id
@@ -598,7 +612,7 @@ async def update_current_progress_job(goal_id: int, ttl: timedelta) -> None:
         )
         if gwr is None:
             return
-        await update_current_progress_for_goal(
+        updated = await update_current_progress_for_goal(
             conn=conn,
             goal=gwr.goal,
             definition=gwr.definition,
@@ -606,8 +620,13 @@ async def update_current_progress_job(goal_id: int, ttl: timedelta) -> None:
             exclude_tags=gwr.exclude_tags,
             now_utc=now_utc,
         )
+    if updated:
+        logger.info(
+            "[goals] Current progress refreshed for goal_id={}",
+            goal_id,
+        )
 
-    logger.info("[goals] DEFERRED transaction committed for goal_id={}", goal_id)
+    logger.debug("[goals] Current progress job finished for goal_id={}", goal_id)
 
 
 async def update_previous_full_period_goal_result_job(goal_id: int) -> None:

@@ -162,7 +162,7 @@ async def render_goal_row(
         root_attrs.update(
             {
                 "hx-get": f"/s/goals/row/{goal.id}",
-                "hx-trigger": "load, every 3s",
+                "hx-trigger": "load delay:5s, every 60s",
                 "hx-target": f"#goal-row-{goal.id}",
                 "hx-swap": "outerHTML",
             }

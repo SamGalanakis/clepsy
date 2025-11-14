@@ -35,6 +35,7 @@ from clepsy.entities import (
     DBGoal,
     DBGoalDefinition,
     DBGoalResult,
+    DBScheduledJob,
     DBSession,
     DBSessionizationRun,
     DBTag,
@@ -48,12 +49,15 @@ from clepsy.entities import (
     GoogleAIConfig,
     ImageProcessingApproach,
     IncludeMode,
+    JobType,
     MetricOperator,
     ModelProvider,
     OpenAIConfig,
     OpenAIGenericConfig,
     ProductivityGoalProgressCurrent,
     ProductivityLevel,
+    ScheduledJob,
+    ScheduleStatus,
     Session,
     SessionizationRun,
     SourceEnrollmentCode,
@@ -214,6 +218,355 @@ async def get_filtered_activity_specs_for_goal(
         )
         result.append(spec_with_tags)
     return result
+
+
+def row_to_scheduled_job(row: aiosqlite.Row) -> DBScheduledJob:
+    payload_raw = row["payload"]
+    payload: dict[str, Any] | None = None
+    if payload_raw is not None:
+        try:
+            payload = json.loads(payload_raw)
+        except json.JSONDecodeError:
+            logger.warning(
+                "Scheduled job {} has invalid payload JSON; ignoring payload",
+                row["id"],
+            )
+
+    enabled_value = row["enabled"]
+    enabled = (
+        bool(enabled_value) if not isinstance(enabled_value, bool) else enabled_value
+    )
+
+    status_value = row["status"]
+    try:
+        status = ScheduleStatus(status_value)
+    except ValueError:
+        logger.warning(
+            "Scheduled job {} has unknown status '{}'; defaulting to idle",
+            row["id"],
+            status_value,
+        )
+        status = ScheduleStatus.IDLE
+
+    job_type_value = row["job_type"]
+    try:
+        job_type = JobType(job_type_value)
+    except ValueError as exc:
+        raise ValueError(
+            f"Scheduled job {row['id']} has unknown job_type '{job_type_value}'"
+        ) from exc
+
+    return DBScheduledJob(
+        id=row["id"],
+        schedule_key=row["schedule_key"],
+        job_type=job_type,
+        cron_expr=row["cron_expr"],
+        next_run_at=row["next_run_at"],
+        enabled=enabled,
+        payload=payload,
+        running_count=row["running_count"],
+        max_concurrent=row["max_concurrent"],
+        last_started_at=row["last_started_at"],
+        status=status,
+    )
+
+
+async def upsert_scheduled_job(
+    conn: aiosqlite.Connection,
+    *,
+    job: ScheduledJob,
+) -> DBScheduledJob:
+    payload_json = json.dumps(job.payload) if job.payload is not None else None
+    cursor = await conn.execute(
+        """
+        INSERT INTO scheduled_jobs (
+            schedule_key,
+            job_type,
+            cron_expr,
+            next_run_at,
+            enabled,
+            payload,
+            running_count,
+            max_concurrent,
+            last_started_at,
+            status
+        )
+        VALUES (:schedule_key, :job_type, :cron_expr, :next_run_at, :enabled, :payload, :running_count, :max_concurrent, :last_started_at, :status)
+        ON CONFLICT(schedule_key) DO UPDATE SET
+            job_type = excluded.job_type,
+            cron_expr = excluded.cron_expr,
+            next_run_at = CASE
+                WHEN scheduled_jobs.next_run_at > excluded.next_run_at THEN scheduled_jobs.next_run_at
+                ELSE excluded.next_run_at
+            END,
+            enabled = excluded.enabled,
+            payload = excluded.payload,
+            max_concurrent = excluded.max_concurrent
+        RETURNING
+            id,
+            schedule_key,
+            job_type,
+            cron_expr,
+            next_run_at,
+            enabled,
+            payload,
+            running_count,
+            max_concurrent,
+            last_started_at,
+            status
+        """,
+        {
+            "schedule_key": job.schedule_key,
+            "job_type": job.job_type.value,
+            "cron_expr": job.cron_expr,
+            "next_run_at": job.next_run_at,
+            "enabled": 1 if job.enabled else 0,
+            "payload": payload_json,
+            "running_count": job.running_count,
+            "max_concurrent": job.max_concurrent,
+            "last_started_at": job.last_started_at,
+            "status": job.status.value,
+        },
+    )
+
+    row = await cursor.fetchone()
+    assert row is not None, "scheduled_job upsert did not return a row"
+    return row_to_scheduled_job(row)
+
+
+async def select_scheduled_job_by_id(
+    conn: aiosqlite.Connection, *, schedule_id: int
+) -> DBScheduledJob | None:
+    async with conn.execute(
+        """
+        SELECT
+            id,
+            schedule_key,
+            job_type,
+            cron_expr,
+            next_run_at,
+            enabled,
+            payload,
+            running_count,
+            max_concurrent,
+            last_started_at,
+            status
+        FROM scheduled_jobs
+        WHERE id = :schedule_id
+        """,
+        {"schedule_id": schedule_id},
+    ) as cursor:
+        row = await cursor.fetchone()
+
+    if row is None:
+        return None
+
+    return row_to_scheduled_job(row)
+
+
+async def select_scheduled_job_by_key(
+    conn: aiosqlite.Connection, *, schedule_key: str
+) -> DBScheduledJob | None:
+    async with conn.execute(
+        """
+        SELECT
+            id,
+            schedule_key,
+            job_type,
+            cron_expr,
+            next_run_at,
+            enabled,
+            payload,
+            running_count,
+            max_concurrent,
+            last_started_at,
+            status
+        FROM scheduled_jobs
+        WHERE schedule_key = :schedule_key
+        """,
+        {"schedule_key": schedule_key},
+    ) as cursor:
+        row = await cursor.fetchone()
+
+    if row is None:
+        return None
+
+    return row_to_scheduled_job(row)
+
+
+async def select_due_scheduled_jobs(
+    conn: aiosqlite.Connection,
+    *,
+    now: datetime,
+    include_disabled: bool = False,
+    limit: int | None = None,
+) -> list[DBScheduledJob]:
+    query = """
+        SELECT
+            id,
+            schedule_key,
+            job_type,
+            cron_expr,
+            next_run_at,
+            enabled,
+            payload,
+            running_count,
+            max_concurrent,
+            last_started_at,
+            status
+        FROM scheduled_jobs
+        WHERE enabled = 1
+          AND next_run_at <= :now
+          AND running_count < max_concurrent
+    """
+
+    if not include_disabled:
+        query += "\n          AND status != 'disabled'"
+
+    query += "\n        ORDER BY next_run_at ASC, id ASC"
+
+    params: dict[str, Any] = {"now": now}
+
+    if limit is not None:
+        query += "\n        LIMIT :limit"
+        params["limit"] = limit
+
+    async with conn.execute(query, params) as cursor:
+        rows = await cursor.fetchall()
+
+    return [row_to_scheduled_job(row) for row in rows]
+
+
+async def select_next_scheduled_run_after(
+    conn: aiosqlite.Connection,
+    *,
+    now: datetime,
+) -> datetime | None:
+    async with conn.execute(
+        """
+        SELECT
+            next_run_at
+        FROM scheduled_jobs
+        WHERE enabled = 1
+          AND status != 'disabled'
+          AND next_run_at > :now
+        ORDER BY next_run_at ASC, id ASC
+        LIMIT 1
+        """,
+        {"now": now},
+    ) as cursor:
+        row = await cursor.fetchone()
+
+    if row is None:
+        return None
+
+    return row["next_run_at"]
+
+
+async def release_timed_out_scheduled_jobs(
+    conn: aiosqlite.Connection,
+    *,
+    timeout_threshold: datetime,
+    now: datetime,
+) -> list[DBScheduledJob]:
+    async with conn.execute(
+        """
+        UPDATE scheduled_jobs
+        SET
+            running_count = 0,
+            status = 'error',
+            next_run_at = CASE
+                WHEN next_run_at <= :now THEN next_run_at
+                ELSE :now
+            END
+        WHERE running_count > 0
+          AND last_started_at IS NOT NULL
+          AND last_started_at <= :timeout_threshold
+          AND status != 'disabled'
+        RETURNING
+            id,
+            schedule_key,
+            job_type,
+            cron_expr,
+            next_run_at,
+            enabled,
+            payload,
+            running_count,
+            max_concurrent,
+            last_started_at,
+            status
+        """,
+        {"timeout_threshold": timeout_threshold, "now": now},
+    ) as cursor:
+        rows = await cursor.fetchall()
+
+    return [row_to_scheduled_job(row) for row in rows]
+
+
+async def mark_scheduled_job_started(
+    conn: aiosqlite.Connection,
+    *,
+    schedule_id: int,
+    expected_next_run_at: datetime,
+    started_at: datetime,
+    new_next_run_at: datetime,
+) -> bool:
+    cursor = await conn.execute(
+        """
+        UPDATE scheduled_jobs
+        SET
+            running_count = running_count + 1,
+            last_started_at = :started_at,
+            next_run_at = :new_next_run_at,
+            status = CASE WHEN status = 'disabled' THEN status ELSE 'idle' END
+        WHERE id = :schedule_id
+          AND enabled = 1
+          AND status != 'disabled'
+          AND running_count < max_concurrent
+          AND next_run_at = :expected_next_run_at
+        """,
+        {
+            "schedule_id": schedule_id,
+            "started_at": started_at,
+            "new_next_run_at": new_next_run_at,
+            "expected_next_run_at": expected_next_run_at,
+        },
+    )
+
+    return cursor.rowcount == 1
+
+
+async def decrement_scheduled_job_running_count(
+    conn: aiosqlite.Connection,
+    *,
+    schedule_id: int,
+    new_status: ScheduleStatus | None = None,
+) -> None:
+    set_clauses = [
+        "running_count = CASE WHEN running_count > 0 THEN running_count - 1 ELSE 0 END"
+    ]
+    params: dict[str, Any] = {"schedule_id": schedule_id}
+
+    if new_status is not None:
+        set_clauses.append("status = :status")
+        params["status"] = new_status.value
+
+    sql = """
+        UPDATE scheduled_jobs
+        SET {set_clause}
+        WHERE id = :schedule_id
+    """.format(set_clause=", ".join(set_clauses))
+
+    await conn.execute(sql, params)
+
+
+async def delete_scheduled_job_by_key(
+    conn: aiosqlite.Connection, *, schedule_key: str
+) -> None:
+    await conn.execute(
+        "DELETE FROM scheduled_jobs WHERE schedule_key = :schedule_key",
+        {"schedule_key": schedule_key},
+    )
 
 
 async def is_goal_paused_at(

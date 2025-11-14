@@ -1,6 +1,8 @@
 volumes:
   db_data_dev:
   valkey_data_dev:
+  loki_data_dev:
+  promtail_data_dev:
 
 services:
   clepsy:
@@ -106,5 +108,28 @@ services:
 
     depends_on:
       prometheus:
+        condition: service_started
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yml
+    volumes:
+      - ./ops/loki-config.yml:/etc/loki/local-config.yml:ro
+      - loki_data_dev:/loki
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./ops/promtail-config.yml:/etc/promtail/config.yml:ro
+      - promtail_data_dev:/data
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      loki:
         condition: service_started
     restart: unless-stopped

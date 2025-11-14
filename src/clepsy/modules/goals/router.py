@@ -70,14 +70,14 @@ async def delete_goal_endpoint(
 ) -> Response:
     try:
         async with get_db_connection(
-            commit_on_exit=True, start_transaction=False
+            commit_on_exit=True, start_transaction=True
         ) as conn:
             await delete_goal(conn, goal_id)
+            await unschedule_goal_previous_period_update(goal_id=goal_id, conn=conn)
 
         # Return 200 with empty body so hx-swap="outerHTML" clears the row element
         resp = HTMLResponse("", status_code=200)
         # Remove periodic schedule for this goal (best effort)
-        await unschedule_goal_previous_period_update(goal_id=goal_id)
 
         resp.headers["HX-Trigger"] = json.dumps(
             {
@@ -166,9 +166,7 @@ async def get_goal_row(_: Request, goal_id: int) -> Response:
 
 @router.get("/row/{goal_id}/refresh")
 async def refresh_goal_row(_: Request, goal_id: int) -> Response:
-    async with get_db_connection(
-        commit_on_exit=True, start_transaction=True, transaction_type="DEFERRED"
-    ) as conn:
+    async with get_db_connection() as conn:
         gwrs = await select_goals_with_latest_definition(conn, last_successes_limit=8)
         gwr = next((g for g in gwrs if g.goal.id == goal_id), None)
         if not gwr:
@@ -542,7 +540,11 @@ async def persist_created_goal(
     include_tag_ids: list[int],
     exclude_tag_ids: list[int],
 ) -> Response:
-    async with get_db_connection(commit_on_exit=True, start_transaction=True) as conn:
+    eff_from = datetime.now(dt_timezone.utc)
+
+    async with get_db_connection(
+        commit_on_exit=True, start_transaction=True, transaction_type="IMMEDIATE"
+    ) as conn:
         goal_id = await insert_goal(
             conn,
             metric=metric,
@@ -551,7 +553,6 @@ async def persist_created_goal(
             timezone=timezone_str,
         )
 
-        eff_from = datetime.now(dt_timezone.utc)
         def_id = await insert_goal_definition(
             conn,
             goal_id=goal_id,
@@ -570,13 +571,14 @@ async def persist_created_goal(
             include_tag_ids=include_tag_ids,
             exclude_tag_ids=exclude_tag_ids,
         )
-    # Schedule periodic evaluation for previous full period result
-    await schedule_goal_previous_period_update(
-        goal_id=goal_id,
-        period=period,
-        timezone_str=timezone_str or None,
-        created_at=eff_from,
-    )
+        # Schedule periodic evaluation for previous full period result within the same transaction
+        await schedule_goal_previous_period_update(
+            goal_id=goal_id,
+            period=period,
+            timezone_str=timezone_str or None,
+            created_at=eff_from,
+            conn=conn,
+        )
 
     response = RedirectResponse(url="/s/goals", status_code=200)
     response.headers["HX-Trigger"] = json.dumps(
