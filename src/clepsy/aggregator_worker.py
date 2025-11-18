@@ -30,6 +30,7 @@ from clepsy.db.queries import (
     select_tags,
     select_user_settings,
     update_activity,
+    update_scheduled_job_next_run_at,
 )
 import clepsy.entities as E
 from clepsy.llm import create_client_registry
@@ -647,6 +648,7 @@ async def aggregator(
 async def do_aggregation(
     input_logs: list[E.AggregationInputEvent],
     aggregation_time_span: E.TimeSpan,
+    schedule_update: E.ScheduleUpdate | None = None,
 ):
     collector = Collector(name="Aggregation")
 
@@ -693,6 +695,7 @@ async def do_aggregation(
         aggregation_events_time_span=aggregation_events_time_span,
         core_output=core_output,
         activity_extras=activity_extras,
+        schedule_update=schedule_update,
     )
 
     logger.info("[aggregator] Aggregation results persisted")
@@ -713,6 +716,7 @@ async def persist_aggregation_results(
     aggregation_events_time_span: E.TimeSpan,
     core_output: Any,
     activity_extras: list[Any],
+    schedule_update: E.ScheduleUpdate | None,
 ) -> None:
     logger.info(
         "[aggregator] Starting IMMEDIATE transaction for persisting aggregation results"
@@ -766,6 +770,14 @@ async def persist_aggregation_results(
                         for activity_id, kv_pairs in core_output.activities_to_update
                     )
                 )
+
+            if schedule_update:
+                await update_scheduled_job_next_run_at(
+                    conn,
+                    schedule_id=schedule_update.schedule_id,
+                    next_run_at=schedule_update.next_run_at,
+                )
+
     except (sqlite3.OperationalError, aiosqlite.OperationalError) as exc:
         if "database is locked" in str(exc).lower():
             logger.warning(
@@ -774,12 +786,22 @@ async def persist_aggregation_results(
         raise
 
 
-async def do_empty_aggregation():
+async def do_empty_aggregation(schedule_update: E.ScheduleUpdate | None = None):
     # Open a connection and perform both read and optional write within the same context
-    async with get_db_connection(start_transaction=False, commit_on_exit=True) as conn:
+    async with get_db_connection(
+        start_transaction=False,
+        commit_on_exit=True,
+        transaction_type="DEFERRED",
+    ) as conn:
         previous_aggregation = await select_latest_aggregation(conn)
         close_events = await get_interrupted_activity_close_events(
             conn, previous_aggregation=previous_aggregation
         )
         if close_events:
             await insert_activity_events(conn, close_events)
+        if schedule_update:
+            await update_scheduled_job_next_run_at(
+                conn,
+                schedule_id=schedule_update.schedule_id,
+                next_run_at=schedule_update.next_run_at,
+            )

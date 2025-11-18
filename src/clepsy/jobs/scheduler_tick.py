@@ -81,7 +81,7 @@ async def schedule_follow_up_tick(
 
 
 @dramatiq.actor
-async def scheduler_tick(now_iso: str | None = None) -> None:
+async def scheduler_tick() -> None:
     """Central scheduler tick.
 
     Reads the database for due schedules, safely advances their run cursor, and
@@ -90,8 +90,7 @@ async def scheduler_tick(now_iso: str | None = None) -> None:
     """
 
     await actor_init()
-
-    now = coerce_to_utc(now_iso)
+    now = datetime.now(tz=timezone.utc)
     logger.debug("[SchedulerTick] evaluating schedules at {}", now.isoformat())
 
     immediate_retry = False
@@ -143,7 +142,7 @@ async def scheduler_tick(now_iso: str | None = None) -> None:
                 "[SchedulerTick] schedule {} ({}) due at {} (running={}/{})",
                 job.schedule_key,
                 job.job_type.value,
-                ensure_utc(job.next_run_at).isoformat(),
+                job.next_run_at.isoformat(),
                 job.running_count,
                 job.max_concurrent,
             )

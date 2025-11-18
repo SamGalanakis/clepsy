@@ -885,3 +885,8 @@ class DBCandidateSessionSpec(BaseModel):
 
     def __hash__(self):
         return hash((self.session.id, tuple(self.activity_ids)))
+
+
+class ScheduleUpdate(BaseModel):
+    schedule_id: int
+    next_run_at: datetime

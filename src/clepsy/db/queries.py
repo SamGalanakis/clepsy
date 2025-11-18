@@ -560,6 +560,24 @@ async def decrement_scheduled_job_running_count(
     await conn.execute(sql, params)
 
 
+async def update_scheduled_job_next_run_at(
+    conn: aiosqlite.Connection,
+    *,
+    schedule_id: int,
+    next_run_at: datetime,
+) -> bool:
+    cursor = await conn.execute(
+        """
+        UPDATE scheduled_jobs
+        SET next_run_at = :next_run_at
+        WHERE id = :schedule_id
+        """,
+        {"schedule_id": schedule_id, "next_run_at": next_run_at},
+    )
+
+    return cursor.rowcount == 1
+
+
 async def delete_scheduled_job_by_key(
     conn: aiosqlite.Connection, *, schedule_key: str
 ) -> None:
