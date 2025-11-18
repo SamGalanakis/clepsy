@@ -10,7 +10,7 @@ from clepsy.aggregator_worker import do_empty_aggregation, do_aggregation
 from clepsy.config import config
 from clepsy.entities import TimeSpan
 from clepsy.infra import dramatiq_setup as _dramatiq_setup  # noqa: F401
-from clepsy.infra.streams import xrange_source_events
+from clepsy.infra.streams import xrange_source_events, get_oldest_source_event_timestamp
 from clepsy.jobs.actor_init import actor_init
 from clepsy.db import get_db_connection
 from clepsy.db.queries import (
@@ -46,39 +46,79 @@ def map_source_event(row) -> E.AggregationInputEvent:
 
 async def aggregate_window(schedule_id: int) -> None:
     current_time = datetime.now(tz=timezone.utc)
+
+    oldest_source_event_timestamp = get_oldest_source_event_timestamp()
+
     async with get_db_connection() as conn:
         previous_aggregation = await select_latest_aggregation(conn)
-    if previous_aggregation:
-        previous_aggregation_end_time = previous_aggregation.end_time
 
-        if previous_aggregation_end_time - current_time < config.aggregation_interval:
-            logger.info("Aggregation too close to previous aggregation")
-            next_aggregation_time = (
-                previous_aggregation_end_time + config.aggregation_interval
+    if not previous_aggregation:
+        # First run: start at the oldest event (if available)
+        if oldest_source_event_timestamp:
+            start = oldest_source_event_timestamp
+        else:
+            # No events yet, start from current_time - interval - grace_period
+            start = (
+                current_time
+                - config.aggregation_interval
+                - config.aggregation_grace_period
             )
+    else:
+        # Subsequent runs: start where previous aggregation ended
+        start = previous_aggregation.end_time
+        # If oldest source event is newer than previous aggregation end,
+        # skip empty periods and start from where events actually begin
+        # (This handles cases where the server was down and events only resumed recently)
+        if oldest_source_event_timestamp and oldest_source_event_timestamp > start:
             logger.info(
-                "[Dramatiq] Next aggregation scheduled at {}",
-                next_aggregation_time,
+                "Skipping empty period: previous_aggregation.end_time={}, oldest_source_event={}",
+                start,
+                oldest_source_event_timestamp,
             )
+            start = oldest_source_event_timestamp
+        # Note: If oldest_source_event_timestamp < start, this means there are older events
+        # that should have been processed. This shouldn't happen in normal operation, but
+        # if it does (e.g., backfill), we'll process from previous_aggregation.end_time
+        # and those older events will remain unprocessed until manually handled.
 
+    # Windows are always fixed length: [start, start + interval)
+    end = start + config.aggregation_interval
+
+    # Check if we can safely process this window
+    # We need current_time >= start + interval + grace_period to ensure we're lagging by at least grace_period
+    if (
+        current_time - start
+        < config.aggregation_interval + config.aggregation_grace_period
+    ):
+        logger.info(
+            "Aggregation too close to real-time. start={}, end={}, current_time={}, required_lag={}",
+            start,
+            end,
+            current_time,
+            config.aggregation_interval + config.aggregation_grace_period,
+        )
+        # Schedule next run at: start + interval + grace_period
+        # This ensures we're always lagging by interval + grace_period
+        next_aggregation_time = (
+            start + config.aggregation_interval + config.aggregation_grace_period
+        )
+        logger.info(
+            "[Dramatiq] Next aggregation scheduled at {}",
+            next_aggregation_time,
+        )
+
+        async with get_db_connection() as update_conn:
             await update_scheduled_job_next_run_at(
-                conn,
+                update_conn,
                 schedule_id=schedule_id,
                 next_run_at=next_aggregation_time,
             )
-            return
-        else:
-            start = previous_aggregation_end_time
-            end = start + config.aggregation_interval
-
-    else:
-        end = current_time - config.aggregation_grace_period
-        start = end - config.aggregation_interval
+        return
 
     effective_end = end + config.aggregation_grace_period
-
     schedule_update = E.ScheduleUpdate(
-        schedule_id=schedule_id, next_run_at=effective_end + config.aggregation_interval
+        schedule_id=schedule_id,
+        next_run_at=end + config.aggregation_interval + config.aggregation_grace_period,
     )
 
     logger.info(

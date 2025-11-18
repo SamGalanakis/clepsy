@@ -1,7 +1,7 @@
 import asyncio
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import sqlite3
 from typing import List, Optional
 
@@ -28,6 +28,7 @@ from clepsy.db.queries import (
     select_latest_sessionization_run,
     select_specs_with_tags_in_time_range,
     select_user_settings,
+    update_scheduled_job_next_run_at,
 )
 from clepsy.entities import (
     CandidateSession,
@@ -38,6 +39,7 @@ from clepsy.entities import (
     DBCandidateSession,
     DBCandidateSessionSpec,
     LLMConfig,
+    ScheduleUpdate,
     Session,
     SessionizationRun,
     SessionSpec,
@@ -854,6 +856,7 @@ async def persist_sessionization_run_results(
     new_mappings_existing_candidate_sessions: list[CandidateSessionToActivity]
     | None = None,
     activity_ids_to_delete_from_candidate_sessions: list[int] | None = None,
+    schedule_update: ScheduleUpdate | None = None,
 ) -> None:
     logger.info(
         "[sessionization] Starting IMMEDIATE transaction for saving sessionization results"
@@ -922,6 +925,14 @@ async def persist_sessionization_run_results(
                     )
 
             await delete_candidate_sessions_without_activities(conn)
+
+            # Update next_run_at in the same transaction for idempotency
+            if schedule_update:
+                await update_scheduled_job_next_run_at(
+                    conn,
+                    schedule_id=schedule_update.schedule_id,
+                    next_run_at=schedule_update.next_run_at,
+                )
     except (sqlite3.OperationalError, aiosqlite.OperationalError) as exc:
         if "database is locked" in str(exc).lower():
             logger.warning(
@@ -1111,12 +1122,25 @@ async def deal_with_island(
     )
 
 
-async def run_sessionization():
+async def run_sessionization(schedule_id: int):
     logger.info("Starting sessionization run")
     async with get_db_connection() as conn:
         user_settings = await select_user_settings(conn)
         if not user_settings:
             logger.warning("No user settings found. Exiting sessionization run.")
+            # Schedule next run to retry later
+            schedule_update = ScheduleUpdate(
+                schedule_id=schedule_id,
+                next_run_at=datetime.now(timezone.utc)
+                + config.session_window_length
+                + config.aggregation_grace_period,
+            )
+            async with get_db_connection() as update_conn:
+                await update_scheduled_job_next_run_at(
+                    update_conn,
+                    schedule_id=schedule_update.schedule_id,
+                    next_run_at=schedule_update.next_run_at,
+                )
             return
         llm_config = user_settings.text_model_config
         previous_run = await select_latest_sessionization_run(conn)
@@ -1127,6 +1151,19 @@ async def run_sessionization():
 
         if not latest_aggregation:
             logger.warning("No aggregations found. Exiting sessionization run.")
+            # Schedule next run to retry later
+            schedule_update = ScheduleUpdate(
+                schedule_id=schedule_id,
+                next_run_at=datetime.now(timezone.utc)
+                + config.session_window_length
+                + config.aggregation_grace_period,
+            )
+            async with get_db_connection() as update_conn:
+                await update_scheduled_job_next_run_at(
+                    update_conn,
+                    schedule_id=schedule_update.schedule_id,
+                    next_run_at=schedule_update.next_run_at,
+                )
             return
         latest_aggregation_interval_end_time = latest_aggregation.end_time
         carry_over_candidate_session_specs = await select_candidate_session_specs(conn)
@@ -1150,18 +1187,7 @@ async def run_sessionization():
             start_plus_window = (
                 candidate_creation_interval_start + config.session_window_length
             )
-            logger.info(
-                "Sessionization interval debug | prev_end: {} (tzinfo={} type={}) | +window: {} (tzinfo={} type={}) | latest_agg_end: {} (tzinfo={} type={})",
-                candidate_creation_interval_start,
-                getattr(candidate_creation_interval_start, "tzinfo", None),
-                type(candidate_creation_interval_start),
-                start_plus_window,
-                getattr(start_plus_window, "tzinfo", None),
-                type(start_plus_window),
-                latest_aggregation_interval_end_time,
-                getattr(latest_aggregation_interval_end_time, "tzinfo", None),
-                type(latest_aggregation_interval_end_time),
-            )
+
             candidate_creation_interval_end = min(
                 start_plus_window,
                 latest_aggregation_interval_end_time,
@@ -1178,6 +1204,22 @@ async def run_sessionization():
                     f"({candidate_creation_interval_start}) >= latest aggregation end "
                     f"({latest_aggregation_interval_end_time}). Skipping sessionization."
                 )
+                # Schedule next run after next aggregation window completes
+                # Wait for aggregation to catch up: latest_agg_end + session_window + grace_period
+                schedule_update = ScheduleUpdate(
+                    schedule_id=schedule_id,
+                    next_run_at=(
+                        latest_aggregation_interval_end_time
+                        + config.session_window_length
+                        + config.aggregation_grace_period
+                    ),
+                )
+                async with get_db_connection() as update_conn:
+                    await update_scheduled_job_next_run_at(
+                        update_conn,
+                        schedule_id=schedule_update.schedule_id,
+                        next_run_at=schedule_update.next_run_at,
+                    )
                 return
 
         if candidate_creation_interval_start > candidate_creation_interval_end:
@@ -1205,6 +1247,7 @@ async def run_sessionization():
             previous_run.finalized_horizon,
             previous_run.candidate_creation_end,
         )
+
         async with get_db_connection() as conn:
             specs_not_finalized = await select_specs_with_tags_in_time_range(
                 conn,
@@ -1224,11 +1267,13 @@ async def run_sessionization():
         )
 
     # Fetch new activities in current window
-    new_activity_specs = await select_specs_with_tags_in_time_range(
-        conn,
-        start=candidate_creation_interval_start,
-        end=candidate_creation_interval_end,
-    )
+
+    async with get_db_connection() as conn:
+        new_activity_specs = await select_specs_with_tags_in_time_range(
+            conn,
+            start=candidate_creation_interval_start,
+            end=candidate_creation_interval_end,
+        )
 
     logger.info(
         "Current window: {} -> {} | new activity specs: {} | unique activities: {}",
@@ -1456,6 +1501,17 @@ async def run_sessionization():
         right_tail_end=right_tail_end,
     )
 
+    # Calculate next run time: always lag by session_window_length + grace_period
+    # Next window will start at candidate_creation_end, so schedule at candidate_creation_end + window_length + grace_period
+    schedule_update = ScheduleUpdate(
+        schedule_id=schedule_id,
+        next_run_at=(
+            candidate_creation_interval_end
+            + config.session_window_length
+            + config.aggregation_grace_period
+        ),
+    )
+
     await persist_sessionization_run_results(
         sessionization_run=sessionization_run,
         sessions_to_create=sessions_to_create,
@@ -1463,6 +1519,7 @@ async def run_sessionization():
         candidate_session_specs_to_create=candidate_session_specs_to_create,
         new_mappings_existing_candidate_sessions=new_mappings_existing_candidate_sessions,
         activity_ids_to_delete_from_candidate_sessions=activity_ids_to_delete_from_candidate_sessions,
+        schedule_update=schedule_update,
     )
 
     logger.info(

@@ -18,8 +18,8 @@ services:
       VALKEY_URL: redis://valkey:6379/0
       MONITORING_ENABLED: "true"
       CLEPSY_MODE: dev
-      CLEPSY_GID : "0"
-      CLEPSY_UID : "0"
+      CLEPSY_GID: "0"
+      CLEPSY_UID: "0"
 
     volumes:
       - .:/app
@@ -29,10 +29,16 @@ services:
       - .env
     ports:
       - "8000:8000"
-
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/healthz"]
+      interval: 10s
+      timeout: 2s
+      retries: 30
+      start_period: 30s # Give time for debug command to start the server
     depends_on:
       valkey:
         condition: service_healthy
+    restart: no
 
   valkey:
     image: valkey/valkey:9.0.0
@@ -68,7 +74,7 @@ services:
     restart: unless-stopped
     depends_on:
       clepsy:
-        condition: service_started
+        condition: service_healthy
       valkey:
         condition: service_healthy
 

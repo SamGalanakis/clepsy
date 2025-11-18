@@ -94,7 +94,7 @@ async def ensure_core_schedules(now: datetime) -> None:
     aggregation_job = ScheduledJob(
         schedule_key=AGGREGATION_SCHEDULE_KEY,
         job_type=JobType.AGGREGATION_WINDOW,
-        cron_expr=cron_expr_for_interval(config.aggregation_interval),
+        cron_expr=None,  # Self-managed scheduling
         next_run_at=align_interval_forward(
             now, config.aggregation_interval + config.aggregation_grace_period
         ),
@@ -103,14 +103,20 @@ async def ensure_core_schedules(now: datetime) -> None:
     session_job = ScheduledJob(
         schedule_key=SESSIONIZATION_SCHEDULE_KEY,
         job_type=JobType.SESSIONIZATION,
-        cron_expr=cron_expr_for_interval(config.session_window_length),
+        cron_expr=None,  # Self-managed scheduling
         next_run_at=align_interval_forward(
             now, config.session_window_length + config.aggregation_grace_period
         ),
     )
 
+    # Use longer busy_timeout for initialization to handle potential database locks from:
+    # - bootstrap.init() connections that may not be fully closed yet
+    # - WAL checkpoint operations
+    # - Concurrent uvicorn workers in production (entrypoint.sh uses --workers 2)
     async with get_db_connection(
-        start_transaction=True, transaction_type="IMMEDIATE"
+        start_transaction=True,
+        transaction_type="IMMEDIATE",
+        busy_timeout=30000,  # 30 seconds to wait for locks to clear
     ) as conn:
         await upsert_scheduled_job(conn, job=aggregation_job)
         await upsert_scheduled_job(conn, job=session_job)

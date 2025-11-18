@@ -91,6 +91,24 @@ def xadd_source_event(
         raise
 
 
+def get_oldest_source_event_timestamp() -> datetime | None:
+    """Get the timestamp of the oldest event in the source events stream.
+
+    Returns None if the stream is empty.
+    """
+    conn = get_connection(decode_responses=False)
+    # Get the first entry in the stream (oldest)
+    entries: Iterable = conn.xrange(SOURCE_EVENTS_STREAM, min="-", max="+", count=1)  # type: ignore[attr-defined]
+    entries_list = list(entries)
+    if not entries_list:
+        return None
+
+    # Extract timestamp from message ID (format: "{timestamp_ms}-{sequence}")
+    msg_id, _ = entries_list[0]
+    timestamp_ms = int(str(msg_id).split("-")[0])
+    return datetime.fromtimestamp(timestamp_ms / 1000.0, tz=timezone.utc)
+
+
 def xrange_source_events(*, start: datetime, end: datetime) -> list[dict]:
     """Read events from the source stream within [start, end] by stream ID range.
 

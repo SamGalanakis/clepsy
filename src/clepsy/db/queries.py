@@ -394,6 +394,35 @@ async def select_scheduled_job_by_key(
     return row_to_scheduled_job(row)
 
 
+async def select_all_scheduled_jobs(
+    conn: aiosqlite.Connection,
+) -> list[DBScheduledJob]:
+    """Select all scheduled jobs from the database.
+
+    Used when we want to do all logic in Python rather than multiple queries.
+    """
+    async with conn.execute(
+        """
+        SELECT
+            id,
+            schedule_key,
+            job_type,
+            cron_expr,
+            next_run_at,
+            enabled,
+            payload,
+            running_count,
+            max_concurrent,
+            last_started_at,
+            status
+        FROM scheduled_jobs
+        """,
+    ) as cursor:
+        rows = await cursor.fetchall()
+
+    return [row_to_scheduled_job(row) for row in rows]
+
+
 async def select_due_scheduled_jobs(
     conn: aiosqlite.Connection,
     *,
@@ -463,6 +492,43 @@ async def select_next_scheduled_run_after(
     return row["next_run_at"]
 
 
+async def select_potentially_timed_out_scheduled_jobs(
+    conn: aiosqlite.Connection,
+    *,
+    timeout_threshold: datetime,
+) -> list[DBScheduledJob]:
+    """Read-only query to find jobs that might be timed out.
+
+    Returns jobs that are running and have a last_started_at before the threshold.
+    This allows checking in Python before doing any writes.
+    """
+    async with conn.execute(
+        """
+        SELECT
+            id,
+            schedule_key,
+            job_type,
+            cron_expr,
+            next_run_at,
+            enabled,
+            payload,
+            running_count,
+            max_concurrent,
+            last_started_at,
+            status
+        FROM scheduled_jobs
+        WHERE running_count > 0
+          AND last_started_at IS NOT NULL
+          AND last_started_at <= :timeout_threshold
+          AND status != 'disabled'
+        """,
+        {"timeout_threshold": timeout_threshold},
+    ) as cursor:
+        rows = await cursor.fetchall()
+
+    return [row_to_scheduled_job(row) for row in rows]
+
+
 async def release_timed_out_scheduled_jobs(
     conn: aiosqlite.Connection,
     *,
@@ -509,29 +575,57 @@ async def mark_scheduled_job_started(
     schedule_id: int,
     expected_next_run_at: datetime,
     started_at: datetime,
-    new_next_run_at: datetime,
+    new_next_run_at: datetime | None,
 ) -> bool:
-    cursor = await conn.execute(
-        """
-        UPDATE scheduled_jobs
-        SET
-            running_count = running_count + 1,
-            last_started_at = :started_at,
-            next_run_at = :new_next_run_at,
-            status = CASE WHEN status = 'disabled' THEN status ELSE 'idle' END
-        WHERE id = :schedule_id
-          AND enabled = 1
-          AND status != 'disabled'
-          AND running_count < max_concurrent
-          AND next_run_at = :expected_next_run_at
-        """,
-        {
-            "schedule_id": schedule_id,
-            "started_at": started_at,
-            "new_next_run_at": new_next_run_at,
-            "expected_next_run_at": expected_next_run_at,
-        },
-    )
+    """Mark a scheduled job as started.
+
+    If new_next_run_at is None, the next_run_at field will not be updated,
+    allowing the job to manage its own scheduling.
+    """
+    if new_next_run_at is not None:
+        # Update next_run_at from cron expression
+        cursor = await conn.execute(
+            """
+            UPDATE scheduled_jobs
+            SET
+                running_count = running_count + 1,
+                last_started_at = :started_at,
+                next_run_at = :new_next_run_at,
+                status = CASE WHEN status = 'disabled' THEN status ELSE 'idle' END
+            WHERE id = :schedule_id
+              AND enabled = 1
+              AND status != 'disabled'
+              AND running_count < max_concurrent
+              AND next_run_at = :expected_next_run_at
+            """,
+            {
+                "schedule_id": schedule_id,
+                "started_at": started_at,
+                "new_next_run_at": new_next_run_at,
+                "expected_next_run_at": expected_next_run_at,
+            },
+        )
+    else:
+        # Don't update next_run_at, let the job manage it
+        cursor = await conn.execute(
+            """
+            UPDATE scheduled_jobs
+            SET
+                running_count = running_count + 1,
+                last_started_at = :started_at,
+                status = CASE WHEN status = 'disabled' THEN status ELSE 'idle' END
+            WHERE id = :schedule_id
+              AND enabled = 1
+              AND status != 'disabled'
+              AND running_count < max_concurrent
+              AND next_run_at = :expected_next_run_at
+            """,
+            {
+                "schedule_id": schedule_id,
+                "started_at": started_at,
+                "expected_next_run_at": expected_next_run_at,
+            },
+        )
 
     return cursor.rowcount == 1
 

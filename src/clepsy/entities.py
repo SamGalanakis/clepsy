@@ -514,7 +514,7 @@ class JobType(StrEnum):
 class ScheduledJob(BaseModel):
     schedule_key: str
     job_type: JobType
-    cron_expr: str
+    cron_expr: str | None = None
     next_run_at: datetime
     enabled: bool = True
     payload: dict[str, Any] | None = None

@@ -303,7 +303,7 @@ CREATE TABLE scheduled_jobs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   schedule_key TEXT NOT NULL UNIQUE,
   job_type TEXT NOT NULL,
-  cron_expr TEXT NOT NULL,
+  cron_expr TEXT,
   next_run_at DATETIME NOT NULL,
   enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0,1)),
   payload TEXT,

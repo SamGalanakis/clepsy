@@ -15,17 +15,25 @@ from clepsy.jobs.goals import (
 from clepsy.jobs.sessions import run_sessionization
 
 
-async def dispatch_job(job_type: JobType, payload: dict | None = None) -> None:
+async def dispatch_job(
+    job_type: JobType, schedule_id: int, payload: dict | None = None
+) -> None:
     """Execute a scheduled job within the current Dramatiq worker.
 
     Uses structural pattern matching to ensure exhaustive handling of registered
     job types. Raises a ValueError if the requested job type is unknown.
+
+    Args:
+        job_type: The type of job to execute
+        schedule_id: The ID of the scheduled job (required for all jobs)
+        payload: Optional job-specific payload data
     """
 
     data = dict(payload or {})
     logger.debug(
-        "Dispatching {job_type} with payload {payload}",
+        "Dispatching {job_type} with schedule_id={schedule_id} payload={payload}",
         job_type=job_type,
+        schedule_id=schedule_id,
         payload=payload,
     )
     started_at = perf_counter()
@@ -35,14 +43,9 @@ async def dispatch_job(job_type: JobType, payload: dict | None = None) -> None:
         case JobType.GOAL_UPDATE_PREVIOUS_PERIOD:
             await run_update_previous_full_period_result(**data)
         case JobType.AGGREGATION_WINDOW:
-            await aggregate_window(**data)
+            await aggregate_window(schedule_id=schedule_id)
         case JobType.SESSIONIZATION:
-            if data:
-                logger.warning(
-                    "[Dispatch] SESSIONIZATION job received unexpected payload %s",
-                    data,
-                )
-            await run_sessionization()
+            await run_sessionization(schedule_id=schedule_id)
         case _ as unknown:
             raise ValueError(f"Unhandled job type {unknown!r}")
 
@@ -67,7 +70,8 @@ async def run_scheduled_job(job_dict: dict) -> None:
     )
 
     try:
-        await dispatch_job(job.job_type, job.payload)
+        # Pass schedule_id separately from payload - it's execution metadata, not job data
+        await dispatch_job(job.job_type, schedule_id=job.id, payload=job.payload)
     except Exception:
         status_on_completion = ScheduleStatus.ERROR
         logger.exception(

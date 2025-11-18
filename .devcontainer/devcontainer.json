@@ -11,7 +11,9 @@
 		"dramatiq-worker",
 		"valkey-exporter",
 		"prometheus",
-		"grafana"
+		"grafana",
+		"loki",
+		"promtail"
 	],
 	"features": {
 		"ghcr.io/devcontainers/features/git:1": {},
