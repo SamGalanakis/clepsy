@@ -4,7 +4,8 @@ from __future__ import annotations
 import asyncio
 from collections import defaultdict
 from datetime import datetime
-from typing import NamedTuple
+from typing import Any, NamedTuple
+import sqlite3
 
 import aiosqlite
 from baml_py import Collector
@@ -29,6 +30,7 @@ from clepsy.db.queries import (
     select_tags,
     select_user_settings,
     update_activity,
+    update_scheduled_job_next_run_at,
 )
 import clepsy.entities as E
 from clepsy.llm import create_client_registry
@@ -36,6 +38,10 @@ from clepsy.modules.aggregator.programmatic_timeline_validation import (
     validate_timeline_programmatically,
 )
 from clepsy.modules.aggregator.stitching import stitch_timeline
+
+logger = logger.patch(
+    lambda record: record.update(message=f"[aggregator] {record['message']}")
+)
 
 
 async def llm_productivity_level_activity(
@@ -483,6 +489,10 @@ async def aggregator_core(
     text_model_config: E.LLMConfig,
     collector: Collector,
 ) -> E.AggregatorCoreOutput:
+    specific_aggregation_interval_seconds = int(
+        aggregation_time_span.duration.total_seconds()
+    )
+
     (
         generated_timeline_activities,
         generated_timeline_events,
@@ -494,7 +504,7 @@ async def aggregator_core(
         qc_policy=E.IsolatedTimelineQCPolicy.ALWAYS,
         max_desktop_screenshot_log_interval_seconds=config.max_desktop_screenshot_log_interval_seconds,
         max_pause_time_seconds=config.max_pause_time_seconds,
-        aggregation_interval_seconds=config.aggregation_interval_minutes * 60,
+        aggregation_interval_seconds=specific_aggregation_interval_seconds,
     )
 
     (
@@ -642,6 +652,7 @@ async def aggregator(
 async def do_aggregation(
     input_logs: list[E.AggregationInputEvent],
     aggregation_time_span: E.TimeSpan,
+    schedule_update: E.ScheduleUpdate | None = None,
 ):
     collector = Collector(name="Aggregation")
 
@@ -683,59 +694,15 @@ async def do_aggregation(
             )
         )
 
-    logger.info(
-        "[aggregator] Starting DEFERRED transaction for persisting aggregation results"
+    await persist_aggregation_results(
+        aggregation_time_span=aggregation_time_span,
+        aggregation_events_time_span=aggregation_events_time_span,
+        core_output=core_output,
+        activity_extras=activity_extras,
+        schedule_update=schedule_update,
     )
-    async with get_db_connection(
-        start_transaction=True, commit_on_exit=True, transaction_type="DEFERRED"
-    ) as conn:
-        aggregation_id = await insert_aggregation(
-            aggregation=E.Aggregation(
-                start_time=aggregation_time_span.start_time,
-                end_time=aggregation_time_span.end_time,
-                first_timestamp=aggregation_events_time_span.start_time,
-                last_timestamp=aggregation_events_time_span.end_time,
-            ),
-            conn=conn,
-        )
 
-        events_to_insert: list[E.ActivityEventInsert] = []
-        for ev in (
-            core_output.stitched_activities_events
-            + core_output.unstitched_activities_close_events
-        ):
-            events_to_insert.append(
-                E.ActivityEventInsert(
-                    activity_id=ev.activity_id,
-                    event_time=ev.event_time,
-                    event_type=ev.event_type,
-                    aggregation_id=aggregation_id,
-                    last_manual_action_time=None,
-                )
-            )
-
-        if core_output.new_activities:
-            await persist_new_activities(
-                new_activities=core_output.new_activities,
-                new_events=core_output.new_activity_events,
-                conn=conn,
-                activity_extras=activity_extras,
-                events_to_insert=events_to_insert,
-                aggregation_time_span=aggregation_time_span,
-                aggregation_id=aggregation_id,
-            )
-        elif events_to_insert:
-            await insert_activity_events(conn, events_to_insert)
-
-        if core_output.activities_to_update:
-            await asyncio.gather(
-                *(
-                    update_activity(conn, activity_id, kv_pairs)
-                    for activity_id, kv_pairs in core_output.activities_to_update
-                )
-            )
-
-    logger.info("[aggregator] DEFERRED transaction committed successfully")
+    logger.info("Aggregation results persisted")
 
     formatted_function_logs = "\n".join(
         [utils.format_function_log(x) for x in collector.logs]
@@ -747,12 +714,94 @@ async def do_aggregation(
     )
 
 
-async def do_empty_aggregation():
+async def persist_aggregation_results(
+    *,
+    aggregation_time_span: E.TimeSpan,
+    aggregation_events_time_span: E.TimeSpan,
+    core_output: Any,
+    activity_extras: list[Any],
+    schedule_update: E.ScheduleUpdate | None,
+) -> None:
+    logger.info("Starting IMMEDIATE transaction for persisting aggregation results")
+    try:
+        async with get_db_connection(
+            start_transaction=True, commit_on_exit=True, transaction_type="IMMEDIATE"
+        ) as conn:
+            aggregation_id = await insert_aggregation(
+                aggregation=E.Aggregation(
+                    start_time=aggregation_time_span.start_time,
+                    end_time=aggregation_time_span.end_time,
+                    first_timestamp=aggregation_events_time_span.start_time,
+                    last_timestamp=aggregation_events_time_span.end_time,
+                ),
+                conn=conn,
+            )
+
+            events_to_insert: list[E.ActivityEventInsert] = []
+            for ev in (
+                core_output.stitched_activities_events
+                + core_output.unstitched_activities_close_events
+            ):
+                events_to_insert.append(
+                    E.ActivityEventInsert(
+                        activity_id=ev.activity_id,
+                        event_time=ev.event_time,
+                        event_type=ev.event_type,
+                        aggregation_id=aggregation_id,
+                        last_manual_action_time=None,
+                    )
+                )
+
+            if core_output.new_activities:
+                await persist_new_activities(
+                    new_activities=core_output.new_activities,
+                    new_events=core_output.new_activity_events,
+                    conn=conn,
+                    activity_extras=activity_extras,
+                    events_to_insert=events_to_insert,
+                    aggregation_time_span=aggregation_time_span,
+                    aggregation_id=aggregation_id,
+                )
+            elif events_to_insert:
+                await insert_activity_events(conn, events_to_insert)
+
+            if core_output.activities_to_update:
+                await asyncio.gather(
+                    *(
+                        update_activity(conn, activity_id, kv_pairs)
+                        for activity_id, kv_pairs in core_output.activities_to_update
+                    )
+                )
+
+            if schedule_update:
+                await update_scheduled_job_next_run_at(
+                    conn,
+                    schedule_id=schedule_update.schedule_id,
+                    next_run_at=schedule_update.next_run_at,
+                )
+
+    except (sqlite3.OperationalError, aiosqlite.OperationalError) as exc:
+        if "database is locked" in str(exc).lower():
+            logger.warning("Database locked while persisting aggregation; will retry")
+        raise
+
+
+async def do_empty_aggregation(schedule_update: E.ScheduleUpdate | None = None):
     # Open a connection and perform both read and optional write within the same context
-    async with get_db_connection(start_transaction=False, commit_on_exit=True) as conn:
+    async with get_db_connection(
+        start_transaction=False,
+        commit_on_exit=True,
+        transaction_type="DEFERRED",
+    ) as conn:
         previous_aggregation = await select_latest_aggregation(conn)
         close_events = await get_interrupted_activity_close_events(
             conn, previous_aggregation=previous_aggregation
         )
         if close_events:
             await insert_activity_events(conn, close_events)
+        if schedule_update:
+            await update_scheduled_job_next_run_at(
+                conn,
+                schedule_id=schedule_update.schedule_id,
+                next_run_at=schedule_update.next_run_at,
+            )

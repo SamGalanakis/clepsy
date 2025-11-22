@@ -11,7 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 import uvicorn
 
 from clepsy import bootstrap
-from clepsy.scheduling import scheduler, init_schedules
+from clepsy.scheduling import initialize_scheduler
 from clepsy.auth.auth_middleware import DeviceTokenMiddleware, JWTMiddleware
 from clepsy.modules.account_creation.router import router as account_creation_router
 from clepsy.modules.activities.router import router as activity_router
@@ -25,6 +25,7 @@ from clepsy.modules.tags.router import router as tags_router
 from clepsy.modules.user_settings.router import router as user_settings_router
 from prometheus_fastapi_instrumentator import Instrumentator
 from clepsy.config import config
+from clepsy.infra.streams import flush_valkey
 
 
 @asynccontextmanager
@@ -32,15 +33,14 @@ async def lifespan(app_: FastAPI):
     # ---- startup -------------------------------------------------
     logger.info("Starting Clepsy backend...")
     logger.info("Initializing bootstrap...")
+    if config.is_dev and not config.preserve_dev_streams:
+        logger.info("Flushing valkey...")
+        flush_valkey()
+
     await bootstrap.init()
 
-    # Start persistent APScheduler (v4) with SQLAlchemy datastore
-
-    async with scheduler:
-        await init_schedules(scheduler)
-        await scheduler.start_in_background()
-        app_.state.scheduler = scheduler
-        yield
+    await initialize_scheduler()
+    yield
 
 
 app = FastAPI(title="Clepsy backend", lifespan=lifespan)
