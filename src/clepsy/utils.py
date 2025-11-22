@@ -4,9 +4,8 @@ import io
 import math
 import os
 import re
-from typing import Callable, Sequence, TypeVar
+from typing import Callable, Sequence, TypeVar, cast
 from uuid import UUID, uuid4
-import zlib
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from baml_py import FunctionLog, Image as BamlImage
@@ -409,7 +408,7 @@ def get_bootstrap_password() -> str:
     password = generate_bootstrap_password()
     write_bootstrap_password_file(password)
     logger.info(
-        "Generated new Clepsy bootstrap password at %s. Retrieve it from the container volume and rotate it after login.",
+        "Generated new Clepsy bootstrap password at {}. Retrieve it from the container volume and rotate it after login.",
         config.bootstrap_password_file_path,
     )
     return password
@@ -524,30 +523,25 @@ def store_image_in_redis(
         ttl_seconds: Time-to-live in seconds (default 10 minutes)
     """
 
-    # Serialize image to PNG bytes
+    # Serialize image to PNG bytes and store directly in Redis
     buffered = io.BytesIO()
     image.save(buffered, format="PNG")
     image_bytes = buffered.getvalue()
 
-    # Compress with zlib
-    compressed = zlib.compress(image_bytes, level=6)
-
     # Store in Redis with TTL
-    conn = get_connection()
+    conn = get_connection(decode_responses=False)
     key = f"image:{event_id}"
-    conn.setex(key, ttl_seconds, compressed)
+    conn.setex(key, ttl_seconds, image_bytes)
 
     logger.debug(
-        "Stored image {event_id} in Redis: {original} bytes -> {compressed} bytes ({ratio:.1f}% compression)",
+        "Stored image {event_id} in Redis: {size} bytes",
         event_id=event_id,
-        original=len(image_bytes),
-        compressed=len(compressed),
-        ratio=(1 - len(compressed) / len(image_bytes)) * 100,
+        size=len(image_bytes),
     )
 
 
 def retrieve_image_from_redis(event_id: UUID) -> Image.Image | None:
-    """Retrieve and decompress an image from Redis.
+    """Retrieve and load an image from Redis.
 
     Args:
         event_id: UUID key to retrieve
@@ -556,31 +550,22 @@ def retrieve_image_from_redis(event_id: UUID) -> Image.Image | None:
         PIL Image if found, None if expired or missing
     """
 
-    conn = get_connection()
+    conn = get_connection(decode_responses=False)
     key = f"image:{event_id}"
-    compressed_data = conn.get(key)
+    image_bytes = cast(bytes | None, conn.get(key))
 
-    if compressed_data is None:
+    if image_bytes is None:
         logger.warning(
             "Image {event_id} not found in Redis (expired or missing)",
             event_id=event_id,
         )
         return None
 
-    # Type guard: ensure we have bytes (decode_responses=False ensures this)
-    assert isinstance(
-        compressed_data, bytes
-    ), f"Expected bytes from Redis, got {type(compressed_data)}"
+    with io.BytesIO(image_bytes) as f:
+        image = Image.open(f)
+        image.load()
 
-    # Decompress and load image
-    image_bytes = zlib.decompress(compressed_data)
-    image = Image.open(io.BytesIO(image_bytes))
-    image.load()  # Force load into memory before BytesIO goes out of scope
-
-    # Delete from Redis after successful retrieval
-    conn.delete(key)
-
-    logger.debug("Retrieved and deleted image {event_id} from Redis", event_id=event_id)
+    logger.debug("Retrieved {event_id} image from Redis", event_id=event_id)
     return image
 
 
@@ -617,6 +602,18 @@ def parse_utc_naive_iso(s: str) -> datetime:
     if dt.tzinfo is None:
         return dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(timezone.utc)
+
+
+def ensure_utc(dt: datetime) -> datetime:
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def datetime_to_eta(dt: datetime) -> int:
+    """Convert a datetime to epoch milliseconds for Dramatiq ETA scheduling."""
+
+    return int(ensure_utc(dt).timestamp() * 1000)
 
 
 def custom_template(pattern: str) -> Callable[[str, dict], str]:

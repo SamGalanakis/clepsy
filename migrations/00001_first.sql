@@ -298,6 +298,25 @@ ON aggregations(start_time, end_time);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_activity_events_unique
 ON activity_events(activity_id, event_time, event_type);
 
+
+CREATE TABLE scheduled_jobs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  schedule_key TEXT NOT NULL UNIQUE,
+  job_type TEXT NOT NULL,
+  cron_expr TEXT,
+  next_run_at DATETIME NOT NULL,
+  enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0,1)),
+  payload TEXT,
+  running_count INTEGER NOT NULL DEFAULT 0 CHECK (running_count >= 0),
+  max_concurrent INTEGER NOT NULL DEFAULT 1 CHECK (max_concurrent >= 1),
+  last_started_at DATETIME,
+  status TEXT NOT NULL DEFAULT 'idle' CHECK (status IN ('idle','error','disabled')),
+  created_at DATETIME NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX idx_scheduled_jobs_next_run ON scheduled_jobs(next_run_at);
+CREATE INDEX idx_scheduled_jobs_status ON scheduled_jobs(status);
+
+
 -- +goose StatementEnd
 
 -- +goose Down
@@ -371,5 +390,10 @@ DROP TABLE IF EXISTS sessionization_run;
 
 DROP INDEX IF EXISTS idx_activity_events_unique;
 DROP INDEX IF EXISTS idx_aggregations_window_unique;
+
+
+DROP TABLE IF EXISTS scheduled_jobs;
+DROP index IF EXISTS idx_scheduled_jobs_next_run;
+DROP index IF EXISTS idx_scheduled_jobs_status;
 
 -- +goose StatementEnd

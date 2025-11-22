@@ -24,5 +24,6 @@
         "shellscript": true,
         "python": true
     },
-    "baml.enablePlaygroundProxy": false
+    "baml.enablePlaygroundProxy": false,
+    "python.languageServer": "None"
 }

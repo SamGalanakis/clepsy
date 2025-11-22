@@ -22,7 +22,7 @@ async def get_db_connection(
     commit_on_exit: bool = True,
     parse_decltypes: bool = True,
     busy_timeout: int = 5000,
-    transaction_type: TransactionTypes = "IMMEDIATE",
+    transaction_type: TransactionTypes = "DEFERRED",
     pragma_synchronous: str = "NORMAL",
     cache_size: int = 2000,
 ) -> AsyncGenerator[aiosqlite.Connection, None]:
