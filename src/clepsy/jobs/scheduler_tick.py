@@ -14,6 +14,11 @@ from clepsy.jobs.scheduled_job_dispatch import run_scheduled_job
 from clepsy.utils import datetime_to_eta, ensure_utc
 
 
+logger = logger.patch(
+    lambda record: record.update(message=f"[SchedulerTick] {record['message']}")
+)
+
+
 def coerce_to_utc(now_iso: str | None) -> datetime:
     if now_iso is None:
         return datetime.now(tz=timezone.utc)
@@ -68,7 +73,7 @@ async def schedule_follow_up_tick(*, now: datetime) -> None:
     next_tick_at = ensure_utc(now) + DEFAULT_POLL_INTERVAL
 
     scheduler_tick.send_with_options(eta=datetime_to_eta(next_tick_at))
-    logger.debug("[SchedulerTick] scheduled next tick at {}", next_tick_at.isoformat())
+    logger.debug("scheduled next tick at {}", next_tick_at.isoformat())
 
 
 @dramatiq.actor
@@ -83,7 +88,7 @@ async def scheduler_tick() -> None:
 
     await actor_init()
     now = datetime.now(tz=timezone.utc)
-    logger.debug("[SchedulerTick] evaluating schedules at {}", now.isoformat())
+    logger.debug("evaluating schedules at {}", now.isoformat())
 
     # Read entire table once (no lock needed for read)
     try:
@@ -92,7 +97,7 @@ async def scheduler_tick() -> None:
                 conn
             )
     except Exception:
-        logger.exception("[SchedulerTick] failed to fetch scheduled jobs")
+        logger.exception("failed to fetch scheduled jobs")
         await schedule_follow_up_tick(now=now)
         return
 
@@ -131,7 +136,7 @@ async def scheduler_tick() -> None:
                         else "unknown"
                     )
                     logger.warning(
-                        "[SchedulerTick] schedule {} timed out after {} (last_started={})",
+                        "schedule {} timed out after {} (last_started={})",
                         job.schedule_key,
                         config.scheduled_job_timeout,
                         last_started,
@@ -143,15 +148,15 @@ async def scheduler_tick() -> None:
                     now=now,
                 )
         except Exception:
-            logger.exception("[SchedulerTick] failed to release timed-out schedules")
+            logger.exception("failed to release timed-out schedules")
 
     # Process due jobs
     if not due_jobs:
-        logger.debug("[SchedulerTick] no due schedules found")
+        logger.debug("no due schedules found")
     else:
         for job in due_jobs:
             logger.info(
-                "[SchedulerTick] schedule {} ({}) due at {} (running={}/{})",
+                "schedule {} ({}) due at {} (running={}/{})",
                 job.schedule_key,
                 job.job_type.value,
                 job.next_run_at.isoformat(),
@@ -165,14 +170,14 @@ async def scheduler_tick() -> None:
                     new_next_run = compute_next_run(job, now=now)
                 except ValueError:
                     logger.exception(
-                        "[SchedulerTick] failed to compute next run for {}",
+                        "failed to compute next run for {}",
                         job.schedule_key,
                     )
                     continue
             else:
                 # Job manages its own next_run_at, don't update it
                 logger.debug(
-                    "[SchedulerTick] schedule {} has no cron expression, will not update next_run_at",
+                    "schedule {} has no cron expression, will not update next_run_at",
                     job.schedule_key,
                 )
 
@@ -187,14 +192,14 @@ async def scheduler_tick() -> None:
                     )
             except Exception:
                 logger.exception(
-                    "[SchedulerTick] failed to mark schedule {} started",
+                    "failed to mark schedule {} started",
                     job.schedule_key,
                 )
                 continue
 
             if not started:
                 logger.debug(
-                    "[SchedulerTick] schedule {} was claimed by another worker",
+                    "schedule {} was claimed by another worker",
                     job.schedule_key,
                 )
                 continue

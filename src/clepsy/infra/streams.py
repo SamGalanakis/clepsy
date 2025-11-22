@@ -96,7 +96,7 @@ def get_oldest_source_event_timestamp() -> datetime | None:
 
     Returns None if the stream is empty.
     """
-    conn = get_connection(decode_responses=False)
+    conn = get_connection(decode_responses=True)
     # Get the first entry in the stream (oldest)
     entries: Iterable = conn.xrange(SOURCE_EVENTS_STREAM, min="-", max="+", count=1)  # type: ignore[attr-defined]
     entries_list = list(entries)

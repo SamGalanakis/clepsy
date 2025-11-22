@@ -39,6 +39,10 @@ from clepsy.modules.aggregator.programmatic_timeline_validation import (
 )
 from clepsy.modules.aggregator.stitching import stitch_timeline
 
+logger = logger.patch(
+    lambda record: record.update(message=f"[aggregator] {record['message']}")
+)
+
 
 async def llm_productivity_level_activity(
     activity_name: str, activity_description: str, user_settings: E.UserSettings
@@ -698,7 +702,7 @@ async def do_aggregation(
         schedule_update=schedule_update,
     )
 
-    logger.info("[aggregator] Aggregation results persisted")
+    logger.info("Aggregation results persisted")
 
     formatted_function_logs = "\n".join(
         [utils.format_function_log(x) for x in collector.logs]
@@ -718,9 +722,7 @@ async def persist_aggregation_results(
     activity_extras: list[Any],
     schedule_update: E.ScheduleUpdate | None,
 ) -> None:
-    logger.info(
-        "[aggregator] Starting IMMEDIATE transaction for persisting aggregation results"
-    )
+    logger.info("Starting IMMEDIATE transaction for persisting aggregation results")
     try:
         async with get_db_connection(
             start_transaction=True, commit_on_exit=True, transaction_type="IMMEDIATE"
@@ -780,9 +782,7 @@ async def persist_aggregation_results(
 
     except (sqlite3.OperationalError, aiosqlite.OperationalError) as exc:
         if "database is locked" in str(exc).lower():
-            logger.warning(
-                "[aggregator] Database locked while persisting aggregation; will retry"
-            )
+            logger.warning("Database locked while persisting aggregation; will retry")
         raise
 
 

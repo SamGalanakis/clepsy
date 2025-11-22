@@ -29,12 +29,6 @@ services:
       - .env
     ports:
       - "8000:8000"
-    healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8000/healthz"]
-      interval: 10s
-      timeout: 2s
-      retries: 30
-      start_period: 30s # Give time for debug command to start the server
     depends_on:
       valkey:
         condition: service_healthy
@@ -74,7 +68,7 @@ services:
     restart: unless-stopped
     depends_on:
       clepsy:
-        condition: service_healthy
+        condition: service_started
       valkey:
         condition: service_healthy
 

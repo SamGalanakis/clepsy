@@ -13,9 +13,15 @@ from clepsy.infra import dramatiq_setup as _dramatiq_setup  # noqa: F401
 from clepsy.infra.streams import xrange_source_events, get_oldest_source_event_timestamp
 from clepsy.jobs.actor_init import actor_init
 from clepsy.db import get_db_connection
+
 from clepsy.db.queries import (
     select_latest_aggregation,
     update_scheduled_job_next_run_at,
+)
+
+# Apply a patch to automatically prefix all logs in this module
+logger = logger.patch(
+    lambda record: record.update(message=f"[aggregate_window] {record['message']}")
 )
 
 
@@ -53,22 +59,29 @@ async def aggregate_window(schedule_id: int) -> None:
         previous_aggregation = await select_latest_aggregation(conn)
 
     if not previous_aggregation:
-        # First run: start at the oldest event (if available)
+        # Case: First run
         if oldest_source_event_timestamp:
+            # Case 2 & 3: Events exist.
+            # If too recent (Case 2), we'll wait.
+            # If old enough (Case 3), we'll process [oldest, oldest + interval).
             start = oldest_source_event_timestamp
         else:
-            # No events yet, start from current_time - interval - grace_period
+            # Case 1: No events yet.
+            # Start from (now - interval - grace).
+            # This will result in a "current job" processing (empty aggregation)
+            # and scheduling next run at (now + interval).
             start = (
                 current_time
                 - config.aggregation_interval
                 - config.aggregation_grace_period
             )
     else:
-        # Subsequent runs: start where previous aggregation ended
+        # Case: Subsequent runs
         start = previous_aggregation.end_time
+
+        # Case 6 & 7: Gap handling (e.g. server downtime)
         # If oldest source event is newer than previous aggregation end,
-        # skip empty periods and start from where events actually begin
-        # (This handles cases where the server was down and events only resumed recently)
+        # skip empty periods and start from where events actually begin.
         if oldest_source_event_timestamp and oldest_source_event_timestamp > start:
             logger.info(
                 "Skipping empty period: previous_aggregation.end_time={}, oldest_source_event={}",
@@ -81,6 +94,9 @@ async def aggregate_window(schedule_id: int) -> None:
         # if it does (e.g., backfill), we'll process from previous_aggregation.end_time
         # and those older events will remain unprocessed until manually handled.
 
+        # Case 4 & 5: Normal sequential processing
+        # We continue from previous_aggregation.end_time.
+
     # Windows are always fixed length: [start, start + interval)
     end = start + config.aggregation_interval
 
@@ -90,6 +106,9 @@ async def aggregate_window(schedule_id: int) -> None:
         current_time - start
         < config.aggregation_interval + config.aggregation_grace_period
     ):
+        # Case 2, 4, 6: Too close to real-time
+        # No aggregation in current job.
+        # Next run scheduled at: start + interval + grace_period
         logger.info(
             "Aggregation too close to real-time. start={}, end={}, current_time={}, required_lag={}",
             start,
@@ -103,7 +122,7 @@ async def aggregate_window(schedule_id: int) -> None:
             start + config.aggregation_interval + config.aggregation_grace_period
         )
         logger.info(
-            "[Dramatiq] Next aggregation scheduled at {}",
+            "Next aggregation scheduled at {}",
             next_aggregation_time,
         )
 
@@ -115,6 +134,9 @@ async def aggregate_window(schedule_id: int) -> None:
             )
         return
 
+    # Case 1, 3, 5, 7: Ready to process
+    # Aggregation (or empty aggregation) will run in current job.
+    # Next run scheduled at: end + interval + grace_period
     effective_end = end + config.aggregation_grace_period
     schedule_update = E.ScheduleUpdate(
         schedule_id=schedule_id,
@@ -122,7 +144,7 @@ async def aggregate_window(schedule_id: int) -> None:
     )
 
     logger.info(
-        "[Dramatiq] aggregate_window start={} end={} (grace={})",
+        "aggregate_window start={} end={} (grace={})",
         start,
         end,
         config.aggregation_grace_period,
@@ -133,16 +155,12 @@ async def aggregate_window(schedule_id: int) -> None:
     # We'll filter strictly by event timestamp within [start, end) afterwards.
     rows = xrange_source_events(start=start, end=effective_end)
     logger.debug(
-        "[aggregate_window] fetched {row_count} rows in {duration:.2f}s",
+        "fetched {row_count} rows in {duration:.2f}s",
         row_count=len(rows),
         duration=perf_counter() - fetch_started,
     )
 
     window_span = TimeSpan(start_time=start, end_time=end)
-    if not rows:
-        logger.info("[Dramatiq] No source events in window; running empty aggregation")
-        await do_empty_aggregation(schedule_update=schedule_update)
-        return
 
     input_logs: list[E.AggregationInputEvent] = []
     transform_started = perf_counter()
@@ -155,24 +173,26 @@ async def aggregate_window(schedule_id: int) -> None:
             input_logs.append(mapped)
 
     if not input_logs:
-        logger.info(
-            "[Dramatiq] No mappable source events in window; running empty aggregation"
-        )
+        logger.info("No mappable source events in window; running empty aggregation")
         await do_empty_aggregation(schedule_update=schedule_update)
         return
 
     # Ensure deterministic ordering by event timestamp
     input_logs.sort(key=lambda e: e.timestamp)
     logger.debug(
-        "[aggregate_window] prepared {log_count} logs in {duration:.2f}s",
+        "prepared {log_count} logs in {duration:.2f}s",
         log_count=len(input_logs),
         duration=perf_counter() - transform_started,
     )
 
     aggregation_started = perf_counter()
-    await do_aggregation(input_logs=input_logs, aggregation_time_span=window_span)
+    await do_aggregation(
+        input_logs=input_logs,
+        aggregation_time_span=window_span,
+        schedule_update=schedule_update,
+    )
     logger.info(
-        "[aggregate_window] aggregation completed in {duration:.2f}s",
+        "aggregation completed in {duration:.2f}s",
         duration=perf_counter() - aggregation_started,
         schedule_update=schedule_update,
     )

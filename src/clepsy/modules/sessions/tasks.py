@@ -8,6 +8,7 @@ from typing import List, Optional
 import aiosqlite
 from loguru import logger
 
+# Apply patch to automatically prefix all logs in this module
 from baml_client import b
 from baml_client.type_builder import TypeBuilder
 import baml_client.types as baml_types
@@ -48,6 +49,11 @@ from clepsy.entities import (
     TimeSpan,
 )
 from clepsy.llm import create_client_registry
+
+
+logger = logger.patch(
+    lambda record: record.update(message=f"[sessionization] {record['message']}")
+)
 
 
 async def detect_sessions(
@@ -858,9 +864,7 @@ async def persist_sessionization_run_results(
     activity_ids_to_delete_from_candidate_sessions: list[int] | None = None,
     schedule_update: ScheduleUpdate | None = None,
 ) -> None:
-    logger.info(
-        "[sessionization] Starting IMMEDIATE transaction for saving sessionization results"
-    )
+    logger.info("Starting IMMEDIATE transaction for saving sessionization results")
     try:
         async with get_db_connection(
             start_transaction=True, commit_on_exit=True, transaction_type="IMMEDIATE"
@@ -936,7 +940,7 @@ async def persist_sessionization_run_results(
     except (sqlite3.OperationalError, aiosqlite.OperationalError) as exc:
         if "database is locked" in str(exc).lower():
             logger.warning(
-                "[sessionization] Database locked while persisting sessionization run; will retry"
+                "Database locked while persisting sessionization run; will retry"
             )
         raise
 
@@ -1543,4 +1547,4 @@ async def run_sessionization(schedule_id: int):
             right_tail_end,
         )
 
-    logger.info("[sessionization-isolated] Sessionization results persisted")
+    logger.info("Sessionization results persisted")
